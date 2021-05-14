@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"tommy.net.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqusjs","storage":true,"lazyload":false,"nav":null,"activeClass":"disqusjs"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="最近将大部分的服务都 Docker 化了，遂打算把 Crowd 也给 Docker 化了。不知道 Crowd 的同学可以去官网看一下介绍，简单说，就是一个单点登录和集中身份验证的东东。因为要使用 Stash，Jira 和 Confluence 等 Atlassian 的产品，所以用个 Crowd 可以偷懒，不用每个系统设置账户。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="修复 Crowd 无法登录的问题">
+<meta property="og:url" content="https://tommy.net.cn/2015/04/15/fix-the-crowd-cannot-login-issue/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="最近将大部分的服务都 Docker 化了，遂打算把 Crowd 也给 Docker 化了。不知道 Crowd 的同学可以去官网看一下介绍，简单说，就是一个单点登录和集中身份验证的东东。因为要使用 Stash，Jira 和 Confluence 等 Atlassian 的产品，所以用个 Crowd 可以偷懒，不用每个系统设置账户。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2015/04/15/fix-the-crowd-cannot-login-issue/authentication-fail.png">
+<meta property="og:image" content="https://tommy.net.cn/2015/04/15/fix-the-crowd-cannot-login-issue/authentication-ok.png">
+<meta property="article:published_time" content="2015-04-15T06:14:56.000Z">
+<meta property="article:modified_time" content="2021-05-14T18:44:24.619Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Atlassian">
+<meta property="article:tag" content="Crowd">
+<meta property="article:tag" content="PostgreSQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2015/04/15/fix-the-crowd-cannot-login-issue/authentication-fail.png">
+
+<link rel="canonical" href="https://tommy.net.cn/2015/04/15/fix-the-crowd-cannot-login-issue/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>修复 Crowd 无法登录的问题 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-26506304-1');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Tommy 的自留地</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-sitemap">
+
+    <a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a>
+
+  </li>
+        <li class="menu-item menu-item-python">
+
+    <a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2015/04/15/fix-the-crowd-cannot-login-issue/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          修复 Crowd 无法登录的问题
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2015-04-15 14:14:56" itemprop="dateCreated datePublished" datetime="2015-04-15T14:14:56+08:00">2015-04-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-15 02:44:24" itemprop="dateModified" datetime="2021-05-15T02:44:24+08:00">2021-05-15</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/server/" itemprop="url" rel="index"><span itemprop="name">Server</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>最近将大部分的服务都 Docker 化了，遂打算把 <a target="_blank" rel="noopener" href="https://www.atlassian.com/software/crowd/overview">Crowd</a> 也给 Docker 化了。不知道 Crowd 的同学可以去官网看一下介绍，简单说，就是一个单点登录和集中身份验证的东东。因为要使用 Stash，Jira 和 Confluence 等 Atlassian 的产品，所以用个 Crowd 可以偷懒，不用每个系统设置账户。</p>
+<span id="more"></span>
+
+<p>成也 Docker，败也 Docker，正是因为使用了 Docker 结果导致无法登录 Crowd 了。因为 Crowd 是使用 Application 跟 IP 两种方式认证的，而 Docker 重启实例后 IP 就会变化，同时我又使用了 Nginx 做反向代理，结果就无法正常认证了。</p>
+<p>网页登录的时候，显示如下类似界面，刚开始以为是用户名密码错误，最后才发现，是 IP 地址的问题。</p>
+<img src="/2015/04/15/fix-the-crowd-cannot-login-issue/authentication-fail.png" class="">
+
+<p>在 Docker 中查看 Log 信息如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">Caused by: org.codehaus.xfire.fault.XFireFault: Client with address <span class="string">&quot;172.17.0.24&quot;</span> is forbidden from making requests to the application, crowd.</span><br><span class="line">        at org.codehaus.xfire.fault.Soap11FaultSerializer.readMessage(Soap11FaultSerializer.java:<span class="number">31</span>)</span><br><span class="line">        at org.codehaus.xfire.fault.SoapFaultSerializer.readMessage(SoapFaultSerializer.java:<span class="number">28</span>)</span><br><span class="line">        at org.codehaus.xfire.soap.handler.ReadHeadersHandler.checkForFault(ReadHeadersHandler.java:<span class="number">111</span>)</span><br><span class="line">        at org.codehaus.xfire.soap.handler.ReadHeadersHandler.invoke(ReadHeadersHandler.java:<span class="number">67</span>)</span><br><span class="line">        at org.codehaus.xfire.handler.HandlerPipeline.invoke(HandlerPipeline.java:<span class="number">131</span>)</span><br><span class="line">        at org.codehaus.xfire.client.Client.onReceive(Client.java:<span class="number">406</span>)</span><br><span class="line">        at org.codehaus.xfire.transport.http.HttpChannel.sendViaClient(HttpChannel.java:<span class="number">139</span>)</span><br><span class="line">        at org.codehaus.xfire.transport.http.HttpChannel.send(HttpChannel.java:<span class="number">48</span>)</span><br><span class="line">        at org.codehaus.xfire.handler.OutMessageSender.invoke(OutMessageSender.java:<span class="number">26</span>)</span><br><span class="line">        at org.codehaus.xfire.handler.HandlerPipeline.invoke(HandlerPipeline.java:<span class="number">131</span>)</span><br><span class="line">        at org.codehaus.xfire.client.Invocation.invoke(Invocation.java:<span class="number">79</span>)</span><br><span class="line">        at org.codehaus.xfire.client.Invocation.invoke(Invocation.java:<span class="number">114</span>)</span><br><span class="line">        at org.codehaus.xfire.client.Client.invoke(Client.java:<span class="number">336</span>)</span><br><span class="line">        at org.codehaus.xfire.client.XFireProxy.handleRequest(XFireProxy.java:<span class="number">77</span>)</span><br><span class="line">        at org.codehaus.xfire.client.XFireProxy.invoke(XFireProxy.java:<span class="number">57</span>)</span><br><span class="line">        at com.sun.proxy.$Proxy379.authenticateApplication(Unknown Source)</span><br><span class="line">        at com.atlassian.crowd.service.soap.client.SecurityServerClientImpl.authenticate(SecurityServerClientImpl.java:<span class="number">235</span>)</span><br><span class="line">        ... <span class="number">97</span> more</span><br></pre></td></tr></table></figure>
+
+<p>第一行就暴露了，IP <code>172.17.0.24</code> 被禁止，而这个 IP 正是 Nginx 的 Docker 实例，找到问题的根本点，那么就好解决了。登录到 PostgreSQL 的实例中，添加 IP 到数据库便可。</p>
+<p>先进入 PostgreSQL 的实例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># docker exec -ti postgres bash</span></span><br></pre></td></tr></table></figure>
+
+<p>然后切换到数据库账号身份</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># su - postgres</span></span><br><span class="line">No directory, logging <span class="keyword">in</span> with HOME=/</span><br></pre></td></tr></table></figure>
+
+<p>开启 PostgreSQL 客户端</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ psql</span><br><span class="line">psql (9.4.1)</span><br><span class="line">Type <span class="string">&quot;help&quot;</span> <span class="keyword">for</span> <span class="built_in">help</span>.</span><br><span class="line"></span><br><span class="line">postgres=<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+
+<p>切换到 <code>Crowd</code> 数据库，名字可能不同，请根据实际情况修改</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">postgres=<span class="comment"># \c crowd</span></span><br><span class="line">You are now connected to database <span class="string">&quot;crowd&quot;</span> as user <span class="string">&quot;postgres&quot;</span>.</span><br></pre></td></tr></table></figure>
+
+<p>查看一下现有的 IP 允许情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">rowd=<span class="comment"># SELECT * FROM cwd_application_address;</span></span><br><span class="line"> application_id | remote_address</span><br><span class="line">----------------+-----------------</span><br><span class="line">              2 | crowd.zhimou.io</span><br><span class="line">              2 | 3743b52a0e96</span><br><span class="line">              2 | 172.17.0.22</span><br><span class="line">              2 | 172.16.10.200</span><br><span class="line">              2 | 127.0.0.1</span><br><span class="line">              2 | localhost</span><br><span class="line">(6 rows)</span><br></pre></td></tr></table></figure>
+
+<p>果然，没有发现被禁止的 <code>172.17.0.24</code> 这个 IP，把它添加进去</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">crowd=<span class="comment"># INSERT INTO cwd_application_address VALUES (2, &#x27;172.17.0.24&#x27;);</span></span><br><span class="line">INSERT 0 1</span><br></pre></td></tr></table></figure>
+
+<p>再查看一下 table</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">crowd=<span class="comment"># SELECT * FROM cwd_application_address;</span></span><br><span class="line"> application_id | remote_address</span><br><span class="line">----------------+-----------------</span><br><span class="line">              2 | crowd.zhimou.io</span><br><span class="line">              2 | 3743b52a0e96</span><br><span class="line">              2 | 172.17.0.22</span><br><span class="line">              2 | 172.16.10.200</span><br><span class="line">              2 | 127.0.0.1</span><br><span class="line">              2 | localhost</span><br><span class="line">              2 | 172.17.0.24</span><br><span class="line">(7 rows)</span><br></pre></td></tr></table></figure>
+
+<p>Good，有了，再访问一下网页看看</p>
+<img src="/2015/04/15/fix-the-crowd-cannot-login-issue/authentication-ok.png" class="">
+
+<p>欧耶，好了。</p>
+<p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://jira.atlassian.com/browse/CWD-2315">Cannot login to Crowd when IP address is changed</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>赞助 Tommy 买书看</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+  <div class="followme">
+    <p>欢迎关注我的其它发布渠道</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/images/wechat_channel.jpg">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/atlassian/" rel="tag"># Atlassian</a>
+              <a href="/tags/crowd/" rel="tag"># Crowd</a>
+              <a href="/tags/postgresql/" rel="tag"># PostgreSQL</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2015/03/05/study-of-atlassian-license/" rel="prev" title="Atlassian 授权机制研究">
+      <i class="fa fa-chevron-left"></i> Atlassian 授权机制研究
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2015/08/05/upgrade-hexo-from-2-8-3-to-3-1-1/" rel="next" title="将 Hexo 从 2.8.3 更新到 3.1.1">
+      将 Hexo 从 2.8.3 更新到 3.1.1 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">115</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">396</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2014 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">289k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:22</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var canonicalURL, curProtocol;
+      //Get the <link> tag
+      var x=document.getElementsByTagName("link");
+		//Find the last canonical URL
+		if(x.length > 0){
+			for (i=0;i<x.length;i++){
+				if(x[i].rel.toLowerCase() == 'canonical' && x[i].href){
+					canonicalURL=x[i].href;
+				}
+			}
+		}
+    //Get protocol
+	    if (!canonicalURL){
+	    	curProtocol = window.location.protocol.split(':')[0];
+	    }
+	    else{
+	    	curProtocol = canonicalURL.split(':')[0];
+	    }
+      //Get current URL if the canonical URL does not exist
+	    if (!canonicalURL) canonicalURL = window.location.href;
+	    //Assign script content. Replace current URL with the canonical URL
+      !function(){var e=/([http|https]:\/\/[a-zA-Z0-9\_\.]+\.baidu\.com)/gi,r=canonicalURL,t=document.referrer;if(!e.test(r)){var n=(String(curProtocol).toLowerCase() === 'https')?"https://sp0.baidu.com/9_Q4simg2RQJ8t7jm9iCKT-xh_/s.gif":"//api.share.baidu.com/s.gif";t?(n+="?r="+encodeURIComponent(document.referrer),r&&(n+="&l="+r)):r&&(n+="?l="+r);var i=new Image;i.src=n}}(window);})();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/disqusjs@1/dist/disqusjs.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/disqusjs@1/dist/disqus.js', () => {
+    window.dsqjs = new DisqusJS({
+      api       : 'https://tomoko.tommy.net.cn/disqus/api/' || 'https://disqus.com/api/',
+      apikey    : 'k2VAQBvuE8xyWT7utV1dzzA7um2Jb0XyZP43kdP49XBu1ceQC59bmEHTjIgQRFVO',
+      shortname : 'tommylau',
+      url       : "https://tommy.net.cn/2015/04/15/fix-the-crowd-cannot-login-issue/",
+      identifier: "2015/04/15/fix-the-crowd-cannot-login-issue/",
+      title     : "修复 Crowd 无法登录的问题",
+    });
+  }, window.DisqusJS);
+});
+</script>
+
+</body>
+</html>
