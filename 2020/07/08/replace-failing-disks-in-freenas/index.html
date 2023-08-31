@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.18.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"default"},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqusjs","storage":true,"lazyload":false,"nav":null,"activeClass":"disqusjs"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="在 2015 年的时候，使用 FreeNAS 配置了一台 NAS 服务器，用于家庭网络内储存数据方便共享。 因为贫穷，所以选择了蓝盘作为数据存储盘，没办法，就是这么屌丝。 那个时候的蓝盘其实就是早期的绿盘，理论上是不适用于 NAS 这种网络存储的，因为它磁头归位时间为 8 秒，长期开机使用很快就会坏掉。 但是伟大的网友们发现了 WDIDLE3 这个工具，可以把磁头归位时间调整为 300 秒（也">
+<meta property="og:type" content="article">
+<meta property="og:title" content="更换 FreeNAS 中损坏的硬盘">
+<meta property="og:url" content="https://tommy.net.cn/2020/07/08/replace-failing-disks-in-freenas/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="在 2015 年的时候，使用 FreeNAS 配置了一台 NAS 服务器，用于家庭网络内储存数据方便共享。 因为贫穷，所以选择了蓝盘作为数据存储盘，没办法，就是这么屌丝。 那个时候的蓝盘其实就是早期的绿盘，理论上是不适用于 NAS 这种网络存储的，因为它磁头归位时间为 8 秒，长期开机使用很快就会坏掉。 但是伟大的网友们发现了 WDIDLE3 这个工具，可以把磁头归位时间调整为 300 秒（也">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2020/07/08/replace-failing-disks-in-freenas/freenas.png">
+<meta property="og:image" content="https://tommy.net.cn/2020/07/08/replace-failing-disks-in-freenas/new.jpg">
+<meta property="og:image" content="https://tommy.net.cn/2020/07/08/replace-failing-disks-in-freenas/old.jpg">
+<meta property="og:image" content="https://tommy.net.cn/2020/07/08/replace-failing-disks-in-freenas/hdd.jpg">
+<meta property="article:published_time" content="2020-07-08T10:39:17.000Z">
+<meta property="article:modified_time" content="2023-08-31T06:55:36.164Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="HDD">
+<meta property="article:tag" content="Corral">
+<meta property="article:tag" content="Disk">
+<meta property="article:tag" content="FreeBSD">
+<meta property="article:tag" content="FreeNAS">
+<meta property="article:tag" content="FreeNAS 10">
+<meta property="article:tag" content="FreeNAS Corral">
+<meta property="article:tag" content="GPT">
+<meta property="article:tag" content="NAS">
+<meta property="article:tag" content="Oracle">
+<meta property="article:tag" content="RAID">
+<meta property="article:tag" content="RAID-Z2">
+<meta property="article:tag" content="SMART">
+<meta property="article:tag" content="ZFS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2020/07/08/replace-failing-disks-in-freenas/freenas.png">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2020/07/08/replace-failing-disks-in-freenas/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2020/07/08/replace-failing-disks-in-freenas/","path":"2020/07/08/replace-failing-disks-in-freenas/","title":"更换 FreeNAS 中损坏的硬盘"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>更换 FreeNAS 中损坏的硬盘 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%92%E6%9F%A5%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">排查问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9B%B4%E6%8D%A2%E6%95%85%E9%9A%9C%E7%A1%AC%E7%9B%98"><span class="nav-number">2.</span> <span class="nav-text">更换故障硬盘</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%98%B5%E5%88%97%E7%A3%81%E7%9B%98%E7%A6%BB%E7%BA%BF"><span class="nav-number">2.1.</span> <span class="nav-text">阵列磁盘离线</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9B%B4%E6%8D%A2%E7%A1%AC%E7%9B%98"><span class="nav-number">2.2.</span> <span class="nav-text">更换硬盘</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E5%BB%BA%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97"><span class="nav-number">2.3.</span> <span class="nav-text">重建磁盘阵列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A5%B8%E4%B8%8D%E5%8D%95%E8%A1%8C"><span class="nav-number">2.4.</span> <span class="nav-text">祸不单行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%8D%E6%9D%A5%E4%B8%80%E6%AC%A1"><span class="nav-number">2.5.</span> <span class="nav-text">再来一次</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">121</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">421</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2020/07/08/replace-failing-disks-in-freenas/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="更换 FreeNAS 中损坏的硬盘 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          更换 FreeNAS 中损坏的硬盘
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-07-08 18:39:17" itemprop="dateCreated datePublished" datetime="2020-07-08T18:39:17+08:00">2020-07-08</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2023-08-31 14:55:36" itemprop="dateModified" datetime="2023-08-31T14:55:36+08:00">2023-08-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/hardware/" itemprop="url" rel="index"><span itemprop="name">Hardware</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>7.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><img src="/2020/07/08/replace-failing-disks-in-freenas/freenas.png" class="" title="FreeNAS">
+
+<p>在 2015 年的时候，使用 <a target="_blank" rel="noopener" href="https://www.freenas.org/">FreeNAS</a> 配置了一台 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Network-attached_storage">NAS</a> 服务器，用于家庭网络内储存数据方便共享。</p>
+<p>因为贫穷，所以选择了蓝盘作为数据存储盘，没办法，就是这么屌丝。</p>
+<p>那个时候的蓝盘其实就是早期的绿盘，理论上是不适用于 NAS 这种网络存储的，因为它磁头归位时间为 8 秒，长期开机使用很快就会坏掉。</p>
+<p>但是伟大的网友们发现了 <a target="_blank" rel="noopener" href="https://support.wdc.com/downloads.aspx?p=113">WDIDLE3</a> 这个工具，可以把<a target="_blank" rel="noopener" href="https://www.ixsystems.com/community/threads/hacking-wd-greens-and-reds-with-wdidle3-exe.18171/">磁头归位时间</a>调整为 300 秒（也就是 5 分钟），于是乎就有了下面的故事。</p>
+<span id="more"></span>
+
+<h2 id="排查问题"><a href="#排查问题" class="headerlink" title="排查问题"></a>排查问题</h2><p>某年某月的某一天，NAS 开机用了十几分钟还不能正常提供服务，开关机速度都很慢。</p>
+<p>于是乎登录终端，检查一下 FreeNAS 的状态，发现其中一块硬盘挂了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">$ zpool status</span><br><span class="line">  pool: freenas-boot</span><br><span class="line"> state: ONLINE</span><br><span class="line">  scan: scrub repaired 0 <span class="keyword">in</span> 0h9m with 0 errors on Wed Mar 22 03:54:02 2017</span><br><span class="line">config:</span><br><span class="line"></span><br><span class="line">	NAME                                          STATE     READ WRITE CKSUM</span><br><span class="line">	freenas-boot                                  ONLINE       0     0     0</span><br><span class="line">	  gptid/003f3068-e99c-11e4-9c07-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line"></span><br><span class="line">errors: No known data errors</span><br><span class="line"></span><br><span class="line">  pool: nas</span><br><span class="line"> state: DEGRADED</span><br><span class="line">status: One or more devices could not be opened.  Sufficient replicas exist <span class="keyword">for</span></span><br><span class="line">	the pool to <span class="built_in">continue</span> functioning <span class="keyword">in</span> a degraded state.</span><br><span class="line">action: Attach the missing device and online it using <span class="string">&#x27;zpool online&#x27;</span>.</span><br><span class="line">   see: http://illumos.org/msg/ZFS-8000-2Q</span><br><span class="line">  scan: resilvered 1.55M <span class="keyword">in</span> 0h16m with 0 errors on Fri Jul  3 16:47:13 2020</span><br><span class="line">config:</span><br><span class="line"></span><br><span class="line">	NAME                                            STATE     READ WRITE CKSUM</span><br><span class="line">	nas                                             DEGRADED     0     0     0</span><br><span class="line">	  raidz2-0                                      DEGRADED     0     0     0</span><br><span class="line">	    gptid/8bc84eb2-a099-11e5-8fd4-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">	    gptid/4f6e78a5-a166-11e5-bb78-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">	    gptid/4c4a9c43-a00e-11e5-bf62-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">	    gptid/103acf85-a043-11e5-b6db-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">	    209564843571883103                          UNAVAIL      0     0     0  was /dev/gptid/391e53c2-a06f-11e5-8ff9-0cc47a0742be</span><br><span class="line">	    gptid/18324016-a19e-11e5-82be-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line"></span><br><span class="line">errors: No known data errors</span><br></pre></td></tr></table></figure>
+
+<p>按状态说明来看是设备无法打开，但好在冗余备份的磁盘数量足够，所以阵列正运行在<strong>「降级」</strong>状态。</p>
+<p>接下来我们看一下<strong>已失效（UNAVAIL）</strong>的硬盘对应的是哪一个设备符号：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ glabel status</span><br><span class="line">                                      Name  Status  Components</span><br><span class="line">gptid/4c33da40-a00e-11e5-bf62-0cc47a0742be     N/A  ada0p1</span><br><span class="line">gptid/4c4a9c43-a00e-11e5-bf62-0cc47a0742be     N/A  ada0p2</span><br><span class="line">gptid/102588a3-a043-11e5-b6db-0cc47a0742be     N/A  ada1p1</span><br><span class="line">gptid/103acf85-a043-11e5-b6db-0cc47a0742be     N/A  ada1p2</span><br><span class="line">gptid/390a21f0-a099-11e5-8fd4-0cc47a0742be     N/A  ada2p1</span><br><span class="line">gptid/391e53c2-a099-11e5-8fd4-0cc47a0742be     N/A  ada2p2</span><br><span class="line">gptid/4f56fc6c-a166-11e5-bb78-0cc47a0742be     N/A  ada3p1</span><br><span class="line">gptid/4f6e78a5-a166-11e5-bb78-0cc47a0742be     N/A  ada3p2</span><br><span class="line">gptid/181aee26-a19e-11e5-82be-0cc47a0742be     N/A  ada4p1</span><br><span class="line">gptid/18324016-a19e-11e5-82be-0cc47a0742be     N/A  ada4p2</span><br><span class="line">gptid/00370b53-e99c-11e4-9c07-0cc47a0742be     N/A  da0p1</span><br><span class="line">gptid/003f3068-e99c-11e4-9c07-0cc47a0742be     N/A  da0p2</span><br></pre></td></tr></table></figure>
+
+<p>可以看到对应的磁盘分区为 <code>ada2p2</code> 也就是磁盘 <code>ada2</code>，我们可以查看一下 S.M.A.R.T. 信息，看看有没有什么有价值的信息：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo smartctl -a /dev/ada2</span><br></pre></td></tr></table></figure>
+
+<p>通过检查发现该磁盘的 <code>Seek_Error_Rate</code> 异常的高，而其它磁盘都是 0 错误，基本上可以判定是硬件损坏，软件修复是不可能了。</p>
+<p>本想着随便检查检查磁盘就修复了，没想到……</p>
+<p>不说了，心疼钱包一秒钟，买硬盘去了…… (╥╯^╰╥)</p>
+<h2 id="更换故障硬盘"><a href="#更换故障硬盘" class="headerlink" title="更换故障硬盘"></a>更换故障硬盘</h2><img src="/2020/07/08/replace-failing-disks-in-freenas/new.jpg" class="" title="New HDD">
+
+<p>新硬盘到货，更换之前先确认是哪一块硬盘有问题，通过下面的命令获得硬盘序列号，以方便后续更换：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo smartctl -a /dev/ada2 | grep Serial</span><br><span class="line">Serial Number:    WD-WCC4E6CV0445</span><br></pre></td></tr></table></figure>
+
+<h3 id="阵列磁盘离线"><a href="#阵列磁盘离线" class="headerlink" title="阵列磁盘离线"></a>阵列磁盘离线</h3><p>在换硬盘之前还有一个动作要做，就是把有问题的硬盘做离线（OFFLINE）操作：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">$ sudo zpool offline nas /dev/gptid/391e53c2-a06f-11e5-8ff9-0cc47a0742be</span><br><span class="line">$ zpool status</span><br><span class="line">  pool: freenas-boot</span><br><span class="line"> state: ONLINE</span><br><span class="line">  scan: scrub repaired 0 <span class="keyword">in</span> 0h9m with 0 errors on Wed Mar 22 03:54:02 2017</span><br><span class="line">config:</span><br><span class="line"></span><br><span class="line">	NAME                                          STATE     READ WRITE CKSUM</span><br><span class="line">	freenas-boot                                  ONLINE       0     0     0</span><br><span class="line">	  gptid/003f3068-e99c-11e4-9c07-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line"></span><br><span class="line">errors: No known data errors</span><br><span class="line"></span><br><span class="line">  pool: nas</span><br><span class="line"> state: DEGRADED</span><br><span class="line">status: One or more devices has been taken offline by the administrator.</span><br><span class="line">	Sufficient replicas exist <span class="keyword">for</span> the pool to <span class="built_in">continue</span> functioning <span class="keyword">in</span> a</span><br><span class="line">	degraded state.</span><br><span class="line">action: Online the device using <span class="string">&#x27;zpool online&#x27;</span> or replace the device with</span><br><span class="line">	<span class="string">&#x27;zpool replace&#x27;</span>.</span><br><span class="line">  scan: resilvered 1.55M <span class="keyword">in</span> 0h16m with 0 errors on Fri Jul  3 16:47:13 2020</span><br><span class="line">config:</span><br><span class="line"></span><br><span class="line">	NAME                                            STATE     READ WRITE CKSUM</span><br><span class="line">	nas                                             DEGRADED     0     0     0</span><br><span class="line">	  raidz2-0                                      DEGRADED     0     0     0</span><br><span class="line">	    gptid/8bc84eb2-a099-11e5-8fd4-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">	    gptid/4f6e78a5-a166-11e5-bb78-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">	    gptid/4c4a9c43-a00e-11e5-bf62-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">	    gptid/103acf85-a043-11e5-b6db-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">	    209564843571883103                          OFFLINE      0     0     0  was /dev/gptid/391e53c2-a06f-11e5-8ff9-0cc47a0742be</span><br><span class="line">	    gptid/18324016-a19e-11e5-82be-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line"></span><br><span class="line">errors: No known data errors</span><br></pre></td></tr></table></figure>
+
+<h3 id="更换硬盘"><a href="#更换硬盘" class="headerlink" title="更换硬盘"></a>更换硬盘</h3><p>就是这个倒霉货！</p>
+<img src="/2020/07/08/replace-failing-disks-in-freenas/old.jpg" class="" title="Failed HDD">
+
+<p>不过想想质保只有 2 年的硬盘，使用了 4 年半快 5 年，也算是可以了，毕竟不是服务器硬盘不是。</p>
+<p>剩下的工作就跟平常组装电脑一样，拆开机箱，找到坏了的旧硬盘，卸下来，装上新硬盘，接好各种电源线、数据线，完工。</p>
+<p>唯一有点烦的就是，线太多，硬盘太多，要拆一个硬盘出来，得拆好几个硬盘。</p>
+<img src="/2020/07/08/replace-failing-disks-in-freenas/hdd.jpg" class="" title="HDD Cage">
+
+<p>这个经验教训教育我们，如果可以买快拆，免工具，推拉盒式的硬盘架，还是买吧，不要省钱。</p>
+<p>毕竟花钱买个开心，图个方便和省心，相信我……不要跟自己过不去，能花钱解决的问题都不是问题！</p>
+<p>问题是：没钱…… 😭</p>
+<h3 id="重建磁盘阵列"><a href="#重建磁盘阵列" class="headerlink" title="重建磁盘阵列"></a>重建磁盘阵列</h3><p>因为我用的是 <a target="_blank" rel="noopener" href="https://www.ixsystems.com/community/threads/important-announcement-regarding-freenas-corral.53502/">FreeNAS 10 Corral</a> 这个倒霉的，官方已经完全不支持的，充话费送的货。</p>
+<p>所以网上找到的所有基于 Web UI 界面操作的方式都不可用，只能自己摸索，最后发现要在 FreeNAS 的 Console（控制台）中操作，进行替换。</p>
+<p>虽然网上也有说通过 Shell 登录来替换磁盘的，但是替换了以后的磁盘并没有使用 GPTID 的方式标识，这样将来硬盘换位置什么的，很容易导致阵列的失效或者数据丢失。</p>
+<p>而在 Console 中操作则没有这种问题，最终也是用 GPTID 方式来标识阵列中的磁盘的。</p>
+<p>首先看看磁盘情况（以下操作在 FreeNAS 终端下操作完成）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">volume nas show_disks</span><br></pre></td></tr></table></figure>
+
+<p>确认我们新的硬盘已经就位，被系统正确识别，且设备号为 <code>ada2</code>，开始重建阵列：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">volume nas replace gptid/391e53c2-a06f-11e5-8ff9-0cc47a0742be ada2</span><br></pre></td></tr></table></figure>
+
+<p>重新回到 FreeNAS 的命令行 Shell，查看阵列状态：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">$ zpool status</span><br><span class="line">  pool: freenas-boot</span><br><span class="line"> state: ONLINE</span><br><span class="line">  scan: scrub repaired 0 <span class="keyword">in</span> 0h9m with 0 errors on Wed Mar 22 03:54:02 2017</span><br><span class="line">config:</span><br><span class="line"></span><br><span class="line">	NAME                                          STATE     READ WRITE CKSUM</span><br><span class="line">	freenas-boot                                  ONLINE       0     0     0</span><br><span class="line">	  gptid/003f3068-e99c-11e4-9c07-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line"></span><br><span class="line">errors: No known data errors</span><br><span class="line"></span><br><span class="line">  pool: nas</span><br><span class="line"> state: DEGRADED</span><br><span class="line">status: One or more devices is currently being resilvered.  The pool will</span><br><span class="line">	<span class="built_in">continue</span> to <span class="keyword">function</span>, possibly <span class="keyword">in</span> a degraded state.</span><br><span class="line">action: Wait <span class="keyword">for</span> the resilver to complete.</span><br><span class="line">  scan: resilver <span class="keyword">in</span> progress since Sat Jul  4 15:50:05 2020</span><br><span class="line">        245M scanned out of 12.7T at 5.21M/s, 708h49m to go</span><br><span class="line">        37.8M resilvered, 0.00% <span class="keyword">done</span></span><br><span class="line">config:</span><br><span class="line"></span><br><span class="line">	NAME                                              STATE     READ WRITE CKSUM</span><br><span class="line">	nas                                               DEGRADED     0     0     0</span><br><span class="line">	  raidz2-0                                        DEGRADED     0     0     0</span><br><span class="line">	    gptid/8bc84eb2-a099-11e5-8fd4-0cc47a0742be    ONLINE       0     0     9  (resilvering)</span><br><span class="line">	    gptid/4f6e78a5-a166-11e5-bb78-0cc47a0742be    ONLINE       0     0     0</span><br><span class="line">	    gptid/4c4a9c43-a00e-11e5-bf62-0cc47a0742be    ONLINE       0     0     0</span><br><span class="line">	    gptid/103acf85-a043-11e5-b6db-0cc47a0742be    ONLINE       0     0     0</span><br><span class="line">	    replacing-4                                   OFFLINE      0     0     0</span><br><span class="line">	      209564843571883103                          OFFLINE      0     0     0  was /dev/gptid/391e53c2-a06f-11e5-8ff9-0cc47a0742be</span><br><span class="line">	      gptid/f83914be-bdca-11ea-9f22-0cc47a0742be  ONLINE       0     0     0  (resilvering)</span><br><span class="line">	    gptid/18324016-a19e-11e5-82be-0cc47a0742be    ONLINE       0     0     0</span><br><span class="line"></span><br><span class="line">errors: No known data errors</span><br></pre></td></tr></table></figure>
+
+<p>可以看见阵列已经在重建了，耐心等待吧，要 10 几个小时呢，我们直接快进到完成。</p>
+<h3 id="祸不单行"><a href="#祸不单行" class="headerlink" title="祸不单行"></a>祸不单行</h3><p>经过漫长的等待之后，终于迎来了激动人心的时刻，磁盘阵列重建好啦！</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">$ zpool status -v</span><br><span class="line">  pool: freenas-boot</span><br><span class="line"> state: ONLINE</span><br><span class="line">  scan: scrub repaired 0 <span class="keyword">in</span> 0h9m with 0 errors on Wed Mar 22 03:54:02 2017</span><br><span class="line">config:</span><br><span class="line"></span><br><span class="line">        NAME                                          STATE     READ WRITE CKSUM</span><br><span class="line">        freenas-boot                                  ONLINE       0     0     0</span><br><span class="line">          gptid/003f3068-e99c-11e4-9c07-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line"></span><br><span class="line">errors: No known data errors</span><br><span class="line"></span><br><span class="line">  pool: nas</span><br><span class="line"> state: ONLINE</span><br><span class="line">status: One or more devices has experienced an unrecoverable error.  An</span><br><span class="line">        attempt was made to correct the error.  Applications are unaffected.</span><br><span class="line">action: Determine <span class="keyword">if</span> the device needs to be replaced, and clear the errors</span><br><span class="line">        using <span class="string">&#x27;zpool clear&#x27;</span> or replace the device with <span class="string">&#x27;zpool replace&#x27;</span>.</span><br><span class="line">   see: http://illumos.org/msg/ZFS-8000-9P</span><br><span class="line">  scan: resilvered 2.11T <span class="keyword">in</span> 15h24m with 0 errors on Sun Jul  5 07:14:22 2020</span><br><span class="line">config:</span><br><span class="line"></span><br><span class="line">        NAME                                            STATE     READ WRITE CKSUM</span><br><span class="line">        nas                                             ONLINE       0     0     0</span><br><span class="line">          raidz2-0                                      ONLINE       0     0     0</span><br><span class="line">            gptid/8bc84eb2-a099-11e5-8fd4-0cc47a0742be  ONLINE       0     0 1.04K</span><br><span class="line">            gptid/4f6e78a5-a166-11e5-bb78-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">            gptid/4c4a9c43-a00e-11e5-bf62-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">            gptid/103acf85-a043-11e5-b6db-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">            gptid/f83914be-bdca-11ea-9f22-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">            gptid/18324016-a19e-11e5-82be-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line"></span><br><span class="line">errors: No known data errors</span><br><span class="line">tommy@nas:~ %</span><br></pre></td></tr></table></figure>
+
+<p>可以看见阵列的状态已经变成了<strong>在线（ONLINE）</strong>，表示阵列已经可以正常使用了。</p>
+<p>但是，等一下，设备发生了无法恢复的错误是什么鬼？！</p>
+<p>其中一块老硬盘后面的 <strong>CKSUM</strong> 不为 0，又是什么情况？！</p>
+<p>查阅资料后发现，<a target="_blank" rel="noopener" href="https://docs.oracle.com/cd/E19253-01/819-5461/gbcve/index.html">CKSUM</a> 表示读取设备的过程中出现了数据的损坏。</p>
+<p>很好，福无双至祸不单行，屋漏又逢连夜雨，这是不是说，我又双叒叕要买硬盘了呢？！</p>
+<p>欲哭无泪……</p>
+<h3 id="再来一次"><a href="#再来一次" class="headerlink" title="再来一次"></a>再来一次</h3><p>反正就是，上网下单买硬盘，等快递，重复以上所有步骤，再来一次。</p>
+<p>最后的结果如下，总算是修好了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">$ zpool status -v</span><br><span class="line">  pool: freenas-boot</span><br><span class="line"> state: ONLINE</span><br><span class="line">  scan: scrub repaired 0 <span class="keyword">in</span> 0h24m with 0 errors on Sun Jul  5 08:34:22 2020</span><br><span class="line">config:</span><br><span class="line"></span><br><span class="line">	NAME                                          STATE     READ WRITE CKSUM</span><br><span class="line">	freenas-boot                                  ONLINE       0     0     0</span><br><span class="line">	  gptid/003f3068-e99c-11e4-9c07-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line"></span><br><span class="line">errors: No known data errors</span><br><span class="line"></span><br><span class="line">  pool: nas</span><br><span class="line"> state: ONLINE</span><br><span class="line">  scan: resilvered 2.14T <span class="keyword">in</span> 15h14m with 0 errors on Mon Jul  6 11:46:18 2020</span><br><span class="line">config:</span><br><span class="line"></span><br><span class="line">	NAME                                            STATE     READ WRITE CKSUM</span><br><span class="line">	nas                                             ONLINE       0     0     0</span><br><span class="line">	  raidz2-0                                      ONLINE       0     0     0</span><br><span class="line">	    gptid/7ae1958f-bebb-11ea-9789-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">	    gptid/4f6e78a5-a166-11e5-bb78-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">	    gptid/4c4a9c43-a00e-11e5-bf62-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">	    gptid/103acf85-a043-11e5-b6db-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">	    gptid/f83914be-bdca-11ea-9f22-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line">	    gptid/18324016-a19e-11e5-82be-0cc47a0742be  ONLINE       0     0     0</span><br><span class="line"></span><br><span class="line">errors: No known data errors</span><br></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>如果大家要做磁盘阵列的话，请务必用 2 块或以上的校验盘，<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/RAID#RAID_5">RAID 5</a> 已死！</p>
+<p>虽然从概率的角度来看，同时坏 2 块硬盘的可能性极小，但是在实际使用过程中，意外就是这么发生的。</p>
+<p>想想也是，硬盘都是一起买的，生产批次一般也都一样，坏的时间可能也差不多。</p>
+<p>所以不要心存侥幸，一定要使用 2 块以上的校验盘，珍惜生命远离 RAID5，更不要说 <a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/RAID#RAID_0">RAID 0</a> 了。</p>
+<p>我使用的是 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Non-standard_RAID_levels#RAID-Z">RAID-Z2</a> 类似于 <a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/RAID#RAID_6">RAID 6</a>，总共 6 个盘，4 个做数据存储，2 个做奇偶校验，最多可以坏 2 块硬盘而不会丢失数据。</p>
+<p>假如不是 RAID-Z2 的话，很有可能我现在的所有数据都丢失了。</p>
+<p>硬盘有价，数据无价！还是那句话能花钱解决的问题都不是问题，数据没了花钱都解决不了。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/hdd/" rel="tag"># HDD</a>
+              <a href="/tags/corral/" rel="tag"># Corral</a>
+              <a href="/tags/disk/" rel="tag"># Disk</a>
+              <a href="/tags/freebsd/" rel="tag"># FreeBSD</a>
+              <a href="/tags/freenas/" rel="tag"># FreeNAS</a>
+              <a href="/tags/freenas-10/" rel="tag"># FreeNAS 10</a>
+              <a href="/tags/freenas-corral/" rel="tag"># FreeNAS Corral</a>
+              <a href="/tags/gpt/" rel="tag"># GPT</a>
+              <a href="/tags/nas/" rel="tag"># NAS</a>
+              <a href="/tags/oracle/" rel="tag"># Oracle</a>
+              <a href="/tags/raid/" rel="tag"># RAID</a>
+              <a href="/tags/raid-z2/" rel="tag"># RAID-Z2</a>
+              <a href="/tags/smart/" rel="tag"># SMART</a>
+              <a href="/tags/zfs/" rel="tag"># ZFS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/07/07/upgrade-hexo-to-v4-2-1/" rel="prev" title="将 Hexo 升级到 v4.2.1">
+                  <i class="fa fa-angle-left"></i> 将 Hexo 升级到 v4.2.1
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/07/09/how-to-type-japanese/" rel="next" title="如何进行日文输入">
+                  如何进行日文输入 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments disqusjs-container">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">312k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:44</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/disqusjs/3.0.2/styles/disqusjs.css" integrity="sha256-71XarXwNr1Td27HmZI9zjY+rMzRdush6/glo6VFXp7o=" crossorigin="anonymous">
+
+<script class="next-config" data-name="disqusjs" type="application/json">{"enable":true,"api":"https://tomoko.tommy.net.cn/disqus/api/","apikey":"k2VAQBvuE8xyWT7utV1dzzA7um2Jb0XyZP43kdP49XBu1ceQC59bmEHTjIgQRFVO","shortname":"tommylau","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/disqusjs/3.0.2/disqusjs.es2015.umd.min.js","integrity":"sha256-okP99ZQKVpIy7+NogAMpGlIQzJa9XKXhIJcFgdju5bU="}}</script>
+<script src="/js/third-party/comments/disqusjs.js"></script>
+
+</body>
+</html>
