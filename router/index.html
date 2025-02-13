@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OIS Config Tool</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet" integrity="sha384-SOnAn/m2fVJCwnbEYgD4xzrPtvsXdElhOVvR8ND1YjB5nhGNwwf7nBQlhfAwHAZC" crossorigin="anonymous">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a href="#" class="navbar-brand">OIS Config Tool</a>
+        <!--
+        <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav">
+                <a href="#" class="nav-item nav-link active">Home</a>
+                <a href="#" class="nav-item nav-link">Services</a>
+                <a href="#" class="nav-item nav-link">About</a>
+                <a href="#" class="nav-item nav-link">Contact</a>
+            </div>
+            <div class="navbar-nav ms-auto">
+                <a href="#" class="nav-item nav-link">Register</a>
+                <a href="#" class="nav-item nav-link">Login</a>
+            </div>
+        </div>
+        -->
+    </div>
+</nav>
+<div class="container">
+    <div class="p-5 my-4 bg-light rounded-3">
+        <h1>OpenWrt Init Script (OIS) Configuration Tool</h1>
+        <p class="lead">This tools is used to work with OIS script, and generate the configuration file in JSON format.</p>
+    </div>
+    <form class="needs-validation">
+        <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="inputName">Name</label>
+            <div class="col-sm-10">
+                <input class="form-control" type="text" id="inputName" name="inputName" placeholder="Name" aria-describedby="errorName" required>
+                <div class="invalid-feedback" id="errorName"></div>
+                <div class="form-text">The hostname for the OpenWrt.</div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="inputPassword">Password</label>
+            <div class="col-sm-10">
+                <div class="input-group">
+                    <input class="form-control" type="password" id="inputPassword" name="inputPassword" placeholder="Password" aria-describedby="errorPassword" required>
+                    <div class="input-group-text">
+                        <a class="btn btn-sm" href="#" id="btnPassword"><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
+                    </div>
+                </div>
+                <div class="invalid-feedback" id="errorPassword"></div>
+                <div class="form-text">The password used to login OpenWrt.</div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="inputLanIp">LAN IP</label>
+            <div class="col-sm-10">
+                <div class="input-group">
+                    <div class="col-sm-9">
+                        <input class="form-control" type="text" id="inputLanIp" name="inputLanIp" placeholder="LAN IP" aria-describedby="errorLanIp" required>
+                    </div>
+                    <div class="col-sm-3">
+                        <select class="form-select input-group-text" aria-label="Select LAN IP" id="selectLanIp">
+                            <optgroup label="General">
+                                <option value="192.168.1.1">192.168.1.1</option>
+                                <option value="172.16.1.1">172.16.1.1</option>
+                                <option value="10.0.0.1">10.0.0.1</option>
+                            </optgroup>
+                            <optgroup label="Behind router">
+                                <option value="192.168.0.1">192.168.0.1</option>
+                                <option value="192.168.2.1">192.168.2.1</option>
+                            </optgroup>
+                            <optgroup label="Xiaomi Mi Wi-Fi">
+                                <option value="192.168.31.1">192.16.31.1</option>
+                            </optgroup>
+                            <optgroup label="Other">
+                                <option value="" selected>Custom IP</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                <div class="invalid-feedback" id="errorLanIp"></div>
+                <div class="form-text">The default gateway IP of OpenWrt.</div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="checkSsid">SSID</label>
+            <div class="col-sm-10">
+                <div class="input-group">
+                    <div class="input-group-text">
+                        <input class="form-check-input mt-0" type="checkbox" id="checkSsid">
+                    </div>
+                    <input class="form-control" type="text" id="inputSsid2" name="inputSsid2" placeholder="SSID 2.4GHz" aria-describedby="errorSsid2" required disabled>
+                    <input class="form-control" type="text" id="inputSsid5" name="inputSsid5" placeholder="SSID 5GHz" aria-describedby="errorSsid5" required disabled>
+                </div>
+                <div class="invalid-feedback" id="errorSsid2"></div>
+                <div class="invalid-feedback" id="errorSsid5"></div>
+                <div class="form-text">The Wi-Fi name that displayed while you search for network.</div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="checkWifiPassword">Wi-Fi Password</label>
+            <div class="col-sm-10">
+                <div class="input-group">
+                    <div class="input-group-text">
+                        <input class="form-check-input mt-0" type="checkbox" id="checkWifiPassword">
+                    </div>
+                    <input class="form-control" type="password" id="inputWifiPassword" name="inputWifiPassword" placeholder="Wi-Fi Password" maxlength="63" aria-describedby="errorWifiPassword" required disabled>
+                    <div class="input-group-text">
+                        <a class="btn btn-sm disabled" href="#" id="btnWifiPassword"><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
+                    </div>
+                </div>
+                <div class="invalid-feedback" id="errorWifiPassword"></div>
+                <div class="form-text">WPA2 password must be 8-63 characters long, but must not contain spaces.</div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="checkPppoe">PPPoE</label>
+            <div class="col-sm-10">
+                <div class="input-group">
+                    <div class="input-group-text">
+                        <input class="form-check-input mt-0" type="checkbox" id="checkPppoe">
+                    </div>
+                    <input class="form-control" type="text" id="inputPppoeUsername" name="inputPppoeUsername" placeholder="PPPoE Username" aria-describedby="errorPppoeUsername" required disabled>
+                    <input class="form-control" type="password" id="inputPppoePassword" name="inputPppoePassword" placeholder="PPPoE Password" aria-describedby="errorPppoePassword" required disabled>
+                    <div class="input-group-text">
+                        <a class="btn btn-sm disabled" href="#" id="btnPppoePassword"><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
+                    </div>
+                </div>
+                <div class="invalid-feedback" id="errorPppoeUsername"></div>
+                <div class="invalid-feedback" id="errorPppoePassword"></div>
+                <div class="form-text">The PPPoE username and password provided by your ISP.</div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="checkSshKey">SSH Key</label>
+            <div class="col-sm-10">
+                <div class="input-group">
+                    <div class="input-group-text align-items-start">
+                        <input class="form-check-input mt-0" type="checkbox" id="checkSshKey">
+                    </div>
+                    <textarea class="form-control" id="inputSshKey" name="inputSshKey" rows="3" placeholder="SSH Key" aria-describedby="errorSshKey" required disabled></textarea>
+                </div>
+                <div class="invalid-feedback" id="errorSshKey"></div>
+                <div class="form-text">Public key for Dropbear (OpenSSH) authentication.</div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label class="col-sm-2 col-form-label" for="checkNebula">Nebula</label>
+            <div class="col-sm-10">
+                <div class="input-group">
+                    <div class="input-group-text align-items-start">
+                        <input class="form-check-input mt-0" type="checkbox" id="checkNebula">
+                    </div>
+                    <div class="form-control">
+                        <div class="row mb-3">
+                            <textarea class="form-control" id="inputNebulaCa" name="inputNebulaCa" rows="3" placeholder="Nebula CA" required disabled></textarea>
+                            <div class="form-text">Nebula CA.</div>
+                        </div>
+                        <div class="row mb-3">
+                            <textarea class="form-control" id="inputNebulaCrt" name="inputNebulaCrt" rows="3" placeholder="Nebula Certificate" required disabled></textarea>
+                            <div class="form-text">Nebula host certificate.</div>
+                        </div>
+                        <div class="row mb-3">
+                            <textarea class="form-control" id="inputNebulaKey" name="inputNebulaKey" rows="3" placeholder="Nebula Key" required disabled></textarea>
+                            <div class="form-text">Nebula host private key.</div>
+                        </div>
+                        <div class="row mb-3">
+                            <textarea class="form-control" id="inputNebulaConfig" name="inputNebulaConfig" rows="3" placeholder="Nebula Config" required disabled></textarea>
+                            <div class="form-text">Nebula config file in yaml format.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-text">Nebula configuration.</div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label class="col-sm-2 col-form-label">Static Leases</label>
+            <div class="col-sm-10">
+                <a class="btn btn-outline-success" href="#" id="btnStaticLeasesAdd"><i class="fa-regular fa-plus" aria-hidden="true"></i> Add</a>
+                <div id="rowStaticLeases"></div>
+                <div class="form-text">Static leases for specific MAC address.</div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label class="col-sm-2 col-form-label">Domain Address</label>
+            <div class="col-sm-10">
+                <a class="btn btn-outline-success" href="#" id="btnAddressesAdd"><i class="fa-regular fa-plus" aria-hidden="true"></i> Add</a>
+                <div id="rowAddresses"></div>
+                <div class="form-text">Domains to force to an IP address.</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-10 offset-2">
+                <button type="submit" class="btn btn-primary">Generate</button>
+            </div>
+        </div>
+    </form>
+    <div class="row mt-5 mb-5">
+        <textarea class="form-control" rows="30" id="output" name="output" readonly></textarea>
+    </div>
+</div>
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.0/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+<!-- jQuery -->
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha384-i61gTtaoovXtAbKjo903+O55Jkn2+RtzHtvNez+yI49HAASvznhe9sZyjaSHTau9" crossorigin="anonymous"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js" integrity="sha384-aEDtD4n2FLrMdE9psop0SHdNyy/W9cBjH22rSRp+3wPHd62Y32uijc0H2eLmgaSn" crossorigin="anonymous"></script>
+<script>
+    function changeCheckbox(checked, selector) {
+        if (checked) {
+            $(selector).removeAttr("disabled");
+        } else {
+            $(selector).attr("disabled", "");
+            $(selector).val("");
+            // Remove invalid feedback
+            $(selector).removeClass("is-invalid");
+            $(selector).removeAttr("aria-invalid");
+        }
+    }
+
+    function updateLanIp() {
+        var inputLanIp = $("#inputLanIp");
+        var value = $("#selectLanIp").val();
+
+        if (value) {
+            inputLanIp.val(value);
+            inputLanIp.attr("disabled", "");
+        } else {
+            inputLanIp.removeAttr("disabled");
+        }
+    }
+
+    function updateSsid() {
+        var checked = $("#checkSsid")[0].checked;
+        var value = $("#inputName").val();
+
+        if (!checked) {
+            if (value.length > 0) {
+                // Update SSID accordingly
+                $("#inputSsid2").val(value + "_2G");
+                $("#inputSsid5").val(value);
+            } else {
+                $("#inputSsid2").val("");
+                $("#inputSsid5").val("");
+            }
+        }
+    }
+
+    function togglePassword(input, icon) {
+        if (input.attr("type") == "password") {
+            input.attr("type", "text");
+            icon.removeClass("fa-eye-slash");
+            icon.addClass("fa-eye");
+        } else {
+            input.attr("type", "password");
+            icon.removeClass("fa-eye");
+            icon.addClass("fa-eye-slash");
+        }
+    }
+
+    function generateJson() {
+        var values = {
+            name: $("#inputName").val(),
+            password: $("#inputPassword").val(),
+            lan_ip: $("#inputLanIp").val(),
+        }
+
+        // Wi-Fi Password
+        if ($("#checkWifiPassword")[0].checked) {
+            values.wifi_password = $("#inputWifiPassword").val();
+        }
+
+        // SSID
+        if ($("#checkSsid")[0].checked) {
+            values.ssid_2g = $("#inputSsid2").val();
+            values.ssid_5g = $("#inputSsid5").val();
+        }
+
+        // PPPoE
+        if ($("#checkPppoe")[0].checked) {
+            values.pppoe_username = $("#inputPppoeUsername").val();
+            values.pppoe_password = $("#inputPppoePassword").val();
+        }
+
+        // Static Leases
+        var host = $("input[id^='inputStaticLeases[Host]']");
+        var mac = $("input[id^='inputStaticLeases[Mac]']");
+        var ip = $("input[id^='inputStaticLeases[Ip]']");
+        var staticLeases = [];
+        if (host.length) {
+            for (var i = 0; i < host.length; i++) {
+                staticLeases.push([host[i].value, mac[i].value, ip[i].value]);
+            }
+            $.extend(values, {static_leases: staticLeases});
+        }
+
+        // Domain Addresses
+        var host = $("input[id^='inputAddresses[Host]']");
+        var ip = $("input[id^='inputAddresses[Ip]']");
+        var addresses = [];
+        if (host.length) {
+            for (var i = 0; i < host.length; i++) {
+                addresses.push([host[i].value, ip[i].value]);
+            }
+            $.extend(values, {addresses: addresses});
+        }
+
+        // SSH Key
+        if ($("#checkSshKey")[0].checked) {
+            values.ssh_key = btoa($("#inputSshKey").val());
+        }
+
+        // Nebula
+        if ($("#checkNebula")[0].checked) {
+            values.nebula_ca = btoa($("#inputNebulaCa").val());
+            values.nebula_crt = btoa($("#inputNebulaCrt").val());
+            values.nebula_key = btoa($("#inputNebulaKey").val());
+            values.nebula_config = btoa($("#inputNebulaConfig").val());
+        }
+
+        // Generate JSON
+        values.reserved = "";
+        var json = JSON.stringify(values, undefined, 4);
+        $("#output").val(json);
+        $("#output").focus();
+    }
+
+    $.validator.setDefaults({submitHandler: generateJson})
+
+    $(window).on('load', function () {
+        updateLanIp();
+        updateSsid();
+    });
+
+    $(document).ready(function () {
+        // Select LAN IP
+        $("#selectLanIp").change(function () {
+            updateLanIp();
+            $("#inputLanIp").removeClass("is-invalid");
+            $("#inputLanIp").removeAttr("aria-invalid");
+            $("#errorLanIp").hide();
+        });
+
+        // Check SSID
+        $("#checkSsid").change(function () {
+            var checked = this.checked;
+            changeCheckbox(checked, "#inputSsid2");
+            changeCheckbox(checked, "#inputSsid5");
+            updateSsid();
+
+            if (!checked) {
+                $("#errorSsid2").hide();
+                $("#errorSsid5").hide();
+            }
+        });
+
+        // Check PPPoE
+        $("#checkPppoe").change(function () {
+            var checked = this.checked;
+            changeCheckbox(checked, "#inputPppoeUsername");
+            changeCheckbox(checked, "#inputPppoePassword");
+
+            if (checked) {
+                $("#btnPppoePassword").removeClass("disabled");
+            } else {
+                $("#btnPppoePassword").addClass("disabled");
+                $("#errorPppoeUsername").hide();
+                $("#errorPppoePassword").hide();
+            }
+        });
+
+        // Check Wi-Fi password
+        $("#checkWifiPassword").change(function () {
+            changeCheckbox(this.checked, "#inputWifiPassword");
+
+            if (this.checked) {
+                $("#btnWifiPassword").removeClass("disabled");
+            } else {
+                $("#btnWifiPassword").addClass("disabled");
+                $("#errorWifiPassword").hide();
+            }
+        });
+
+        // Check SSH Key
+        $("#checkSshKey").change(function () {
+            changeCheckbox(this.checked, "#inputSshKey");
+
+            if (!this.checked) {
+                $("#errorSshKey").hide();
+            }
+        });
+
+        // Check Nebula
+        $("#checkNebula").change(function () {
+            var checked = this.checked;
+            changeCheckbox(checked, "#inputNebulaCa");
+            changeCheckbox(checked, "#inputNebulaCrt");
+            changeCheckbox(checked, "#inputNebulaKey");
+            changeCheckbox(checked, "#inputNebulaConfig");
+        });
+
+        // Name change
+        $("#inputName").on("input", function () {
+            updateSsid();
+        });
+
+        // Process password display
+        $("#btnPassword").on('click', function (event) {
+            event.preventDefault();
+            togglePassword($("#inputPassword"), $(this).children("i"));
+        });
+
+        // Process password display of Wi-Fi password
+        $("#btnWifiPassword").on('click', function (event) {
+            event.preventDefault();
+            togglePassword($("#inputWifiPassword"), $(this).children("i"));
+        });
+
+        // Process password display of PPPoE password
+        $("#btnPppoePassword").on('click', function (event) {
+            event.preventDefault();
+            togglePassword($("#inputPppoePassword"), $(this).children("i"));
+        });
+
+        // Process static leases
+        $("#btnStaticLeasesAdd").click(function (event) {
+            event.preventDefault();
+            var row = `
+<div id="itemStaticLeases">
+    <div class="input-group">
+        <a class="btn btn-outline-danger" href="#" id="btnStaticLeasesDelete"><i class="fa-regular fa-trash-can" aria-hidden="true"></i> Delete</a>
+        <input class="form-control" type="text" id="inputStaticLeases[Host][]" name="inputStaticLeases[Host][]" placeholder="Hostname" required>
+        <input class="form-control" type="text" id="inputStaticLeases[Mac][]" name="inputStaticLeases[Mac][]" placeholder="MAC address" required>
+        <input class="form-control" type="text" id="inputStaticLeases[Ip][]" name="inputStaticLeases[Ip][]" placeholder="IPv4 address" required>
+    </div>
+</div>
+`;
+
+            $('#rowStaticLeases').append(row);
+        });
+
+        $("body").on("click", "#btnStaticLeasesDelete", function (event) {
+            event.preventDefault();
+            $(this).parents("#itemStaticLeases").remove();
+        })
+
+        // Process domain addresses
+        $("#btnAddressesAdd").click(function (event) {
+            event.preventDefault();
+            var row = `
+<div id="itemAddresses">
+    <div class="input-group">
+        <a class="btn btn-outline-danger" href="#" id="btnAddressesDelete"><i class="fa-regular fa-trash-can" aria-hidden="true"></i> Delete</a>
+        <input class="form-control" type="text" id="inputAddresses[Host][]" name="inputAddresses[Host][]" placeholder="Hostname" required>
+        <input class="form-control" type="text" id="inputAddresses[Ip][]" name="inputAddresses[Ip][]" placeholder="IPv4 address" required>
+    </div>
+</div>
+`;
+
+            $('#rowAddresses').append(row);
+        });
+
+        $("body").on("click", "#btnAddressesDelete", function (event) {
+            event.preventDefault();
+            $(this).parents("#itemAddresses").remove();
+        })
+
+        jQuery.validator.setDefaults({
+            onfocusout: function (e) {
+                this.element(e);
+            },
+            // onkeyup: false,
+
+            highlight: function (element) {
+                jQuery(element).closest('.form-control').addClass('is-invalid');
+            },
+            unhighlight: function (element) {
+                jQuery(element).closest('.form-control').removeClass('is-invalid');
+                // jQuery(element).closest('.form-control').addClass('is-valid');
+            },
+
+            errorElement: 'div',
+            errorClass: 'invalid-feedback',
+            errorPlacement: function (error, element) {
+                if (element.parent('.input-group').length) {
+                    $(element).siblings(".invalid-feedback").append(error);
+                    error.insertAfter(element.parent());
+                } else {
+                    error.insertAfter(element);
+                }
+            },
+        });
+
+        $.validator.addMethod('validateIp', function (value) {
+            return value.match(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/);
+        }, 'Invalid IP address');
+
+        $("form").validate({
+            rules: {
+                inputName: "required",
+                inputPassword: {
+                    required: true,
+                    minlength: function () {
+                        return $("#checkWifiPassword").is(":checked") ? 1 : 8;
+                    }
+                },
+                inputLanIp: {
+                    required: true,
+                    validateIp: true
+                },
+                inputSsid2: "required",
+                inputSsid5: "required",
+                inputWifiPassword: {
+                    required: true,
+                    minlength: 8
+                },
+                inputPppoeUsername: "required",
+                inputPppoePassword: "required"
+            },
+            messages: {
+                inputName: {
+                    required: "Please enter the hostname of the router."
+                },
+                inputPassword: {
+                    required: "Please enter the 'root' password.",
+                    minlength: "Please enter at least 8 characters for Wi-Fi password."
+                },
+                inputSsid2: {
+                    required: "Please enter the Wi-Fi name for 2.4GHz."
+                },
+                inputSsid5: {
+                    required: "Please enter the Wi-Fi name for 5GHz."
+                },
+                inputPppoeUsername: {
+                    required: "Please enter PPPoE username."
+                },
+                inputPppoePassword: {
+                    required: "Please enter PPPoE password."
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>
