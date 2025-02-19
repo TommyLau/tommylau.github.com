@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前言博主最近脑回路抽筋， 突然想 neng 个机械键盘，之前也有用过 HHKB Pro 2 之类的货，但其按键声音实在是有点太扰民。看了网上不少的用户反馈，长时间使用的话，大家普遍推荐使用 Cherry 红轴。市面上销售的红轴感觉也有很多不错的，但是每个都有点美中不足，于是萌生了自己 DIY 一个的想法。 所谓工欲善其事，必先利其器，好的工具是必不可少的重要组成部分，而 EDA (Electron">
+<meta property="og:type" content="article">
+<meta property="og:title" content="为什么市面上有这么多 EDA 软件？">
+<meta property="og:url" content="https://tommy.net.cn/2016/08/28/why-there-are-so-many-eda-softwares/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="前言博主最近脑回路抽筋， 突然想 neng 个机械键盘，之前也有用过 HHKB Pro 2 之类的货，但其按键声音实在是有点太扰民。看了网上不少的用户反馈，长时间使用的话，大家普遍推荐使用 Cherry 红轴。市面上销售的红轴感觉也有很多不错的，但是每个都有点美中不足，于是萌生了自己 DIY 一个的想法。 所谓工欲善其事，必先利其器，好的工具是必不可少的重要组成部分，而 EDA (Electron">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-08-28T13:04:54.000Z">
+<meta property="article:modified_time" content="2025-02-19T05:47:01.040Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Allegro">
+<meta property="article:tag" content="Altium">
+<meta property="article:tag" content="Cadence">
+<meta property="article:tag" content="EDA">
+<meta property="article:tag" content="KiCAD">
+<meta property="article:tag" content="Mentor Graphics">
+<meta property="article:tag" content="OSHW">
+<meta property="article:tag" content="OrCAD">
+<meta property="article:tag" content="PADS">
+<meta property="article:tag" content="Protel">
+<meta property="article:tag" content="Software">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2016/08/28/why-there-are-so-many-eda-softwares/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2016/08/28/why-there-are-so-many-eda-softwares/","path":"2016/08/28/why-there-are-so-many-eda-softwares/","title":"为什么市面上有这么多 EDA 软件？"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>为什么市面上有这么多 EDA 软件？ | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8-EDA-%E8%BD%AF%E4%BB%B6"><span class="nav-number">2.</span> <span class="nav-text">常用 EDA 软件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AE%BA"><span class="nav-number">3.</span> <span class="nav-text">结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%80%E5%90%8E"><span class="nav-number">4.</span> <span class="nav-text">最后</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2016/08/28/why-there-are-so-many-eda-softwares/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="为什么市面上有这么多 EDA 软件？ | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          为什么市面上有这么多 EDA 软件？
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-08-28 21:04:54" itemprop="dateCreated datePublished" datetime="2016-08-28T21:04:54+08:00">2016-08-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-02-19 13:47:01" itemprop="dateModified" datetime="2025-02-19T13:47:01+08:00">2025-02-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/software/" itemprop="url" rel="index"><span itemprop="name">Software</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2016/08/28/why-there-are-so-many-eda-softwares/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/08/28/why-there-are-so-many-eda-softwares/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>博主最近脑回路抽筋， 突然想 neng 个机械键盘，之前也有用过 HHKB Pro 2 之类的货，但其按键声音实在是有点太扰民。看了网上不少的用户反馈，长时间使用的话，大家普遍推荐使用 Cherry 红轴。市面上销售的红轴感觉也有很多不错的，但是每个都有点美中不足，于是萌生了自己 DIY 一个的想法。</p>
+<p>所谓工欲善其事，必先利其器，好的工具是必不可少的重要组成部分，而 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Electronic_design_automation">EDA (Electronic Design Automation)</a> 软件更是设计 DIY 键盘 PCB 板的核心。</p>
+<span id="more"></span>
+
+<p>因为年代久远，且工作上并不需要使用 EDA 类的软件，所以我对 EDA 的认知还停留在大学毕业设计时所使用的 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Protel">Protel 98</a> 的水平上，😂。所谓与时俱进，先看看现在大家都在用哪些软件。</p>
+<h2 id="常用-EDA-软件"><a href="#常用-EDA-软件" class="headerlink" title="常用 EDA 软件"></a>常用 EDA 软件</h2><p>这里有一份来自 Wikipedia 的 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Comparison_of_EDA_software">EDA 软件对比列表</a>，里面罗列了大部分常用的 EDA 软件，包括开源的商业的。</p>
+<p>咨询几个朋友后发现大家使用的软件主要集中在以下几个：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://www.altium.com/altium-designer/overview">Altium Designer</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cadence.com/content/cadence-www/global/en_US/home/tools/pcb-design-and-analysis.html">Cadence SPB</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.pads.com/">PADS</a></li>
+<li><a target="_blank" rel="noopener" href="http://kicad-pcb.org/">KiCad EDA</a></li>
+</ul>
+<p><strong>Altium Designer</strong> 比较好理解，其实就是 <strong>Protel</strong> 后续的升级版本，没有太多不清晰的地方。</p>
+<p><strong>PADS</strong> 属于 <a target="_blank" rel="noopener" href="https://www.mentor.com/">Mentor Graphics</a>，比较多的手机厂商在使用这个软件，比如知名的 Samsung。</p>
+<p><strong>KiCad</strong> 大多出现在 <a target="_blank" rel="noopener" href="http://freedomdefined.org/OSHW">Open Source Hardware (OSHW)</a> 相关的项目上，比如现在比较出名的 60 Keyboard <a target="_blank" rel="noopener" href="http://blog.komar.be/projects/gh60-programmable-keyboard/">GH60</a> 就是使用该软件完成的。</p>
+<p>其中最让我 confusing 的地方，实际上是 <strong>Cadence SPB</strong>，也有人直接说 <strong>Cadence</strong> 的。因为别人跟我说，画原理图用 OrCAD，画 PCB 用 Allegro，What the hell?! 这都是什么跟什么啊？！一头雾水啊，有没有？！而且，这个 OrCAD 和 Allegro 也跟 Cadence 有关系。</p>
+<p>查了下历史，原来在 1999 年的时候，Cadence 收购了 OrCAD，于是乎 OrCAD 变成了 Cadence 公司的一个产品。而 Cadence 是公司名，<strong>Allegro</strong> 是该公司 EDA 产品的名字。</p>
+<p>收购后，Cadence 公司将 EDA 软件产品划分成了高端和低端，分别对应 <strong>Cadence SPB</strong> 和 <strong>OrCAD</strong>。</p>
+<p>而我朋友所说的，原理图 OrCAD，PCB 用 Allegro，实际上指的是 <code>OrCAD Caputre</code> 和 <code>Allegro PCB Editor</code>。</p>
+<p>到这里终于算是搞清楚了 <code>Altium Designer</code>，<code>Protel</code>，<code>Cadence</code>，<code>PADS</code>，<code>KiCad</code>，<code>Allegro</code>，<code>OrCAD</code> 之间的关系了。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>经过调查和了解，估计最终会使用 2 款软件：</p>
+<ul>
+<li>Cadence SPB</li>
+<li>KiCad EDA</li>
+</ul>
+<p>选择 Cadence 主要是考虑和朋友同事之间可以更好地进行交流，因为他们现在主要以使用 Cadence SPB 为主，当然也会了解下 Altium Designer 的使用，但应该不会深入了解了。</p>
+<p>选择 KiCad 主要是考虑参与、学习开源项目，或者自己做一些特别小型的练手项目，同时也是为了能把 KiCad 的项目转换成 Cadence 等 EDA 软件可存储的文件格式。KiCad 还有 2 个加分项，一是它可以以原生方式在 macOS 下直接使用（大多数 EDA 软件只能运行在 Windows 平台下），二是它是开源免费的，没有什么限制。</p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>有的时候觉得垄断不是件好事儿，但对于我这种有选择恐惧症的人来说，这么多软件也是让人挺崩溃的。为什么在 EDA 届就没有什么一家独大的寡头呢？还是说我对于这块的理解还是太肤浅了一点？</p>
+<p>如果有业内的大牛从事 EDA 开发相关的，欢迎赐教。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/allegro/" rel="tag"># Allegro</a>
+              <a href="/tags/altium/" rel="tag"># Altium</a>
+              <a href="/tags/cadence/" rel="tag"># Cadence</a>
+              <a href="/tags/eda/" rel="tag"># EDA</a>
+              <a href="/tags/kicad/" rel="tag"># KiCAD</a>
+              <a href="/tags/mentor-graphics/" rel="tag"># Mentor Graphics</a>
+              <a href="/tags/oshw/" rel="tag"># OSHW</a>
+              <a href="/tags/orcad/" rel="tag"># OrCAD</a>
+              <a href="/tags/pads/" rel="tag"># PADS</a>
+              <a href="/tags/protel/" rel="tag"># Protel</a>
+              <a href="/tags/software/" rel="tag"># Software</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/08/16/enable-automatic-excerpt/" rel="prev" title="开启自动摘要">
+                  <i class="fa fa-angle-left"></i> 开启自动摘要
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/09/03/thinking-about-writing/" rel="next" title="关于书写的思考">
+                  关于书写的思考 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

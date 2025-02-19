@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="我绝对是一个闲不下来，且喜欢自虐的人。早在一两个星期前，Yui 同学一直很纠结于她正在使用的「Shadowrocket」不好用。主要体现在程序在开启的状态下，很多国内的网站访问不正常，而相比之下「Surge」的表现则要良好的多得多，然而 50 刀（刚刚降价）的价钱，则不是人人都愿意买单的。后来发现有个叫「Potatso」的 App 有着类似的功能，而且在 GitHub 上开放源码。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="是时候该学 Swift 了">
+<meta property="og:url" content="https://tommy.net.cn/2016/10/02/time-to-learn-swift/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="我绝对是一个闲不下来，且喜欢自虐的人。早在一两个星期前，Yui 同学一直很纠结于她正在使用的「Shadowrocket」不好用。主要体现在程序在开启的状态下，很多国内的网站访问不正常，而相比之下「Surge」的表现则要良好的多得多，然而 50 刀（刚刚降价）的价钱，则不是人人都愿意买单的。后来发现有个叫「Potatso」的 App 有着类似的功能，而且在 GitHub 上开放源码。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2016/10/02/time-to-learn-swift/swift_3_0.jpg">
+<meta property="article:published_time" content="2016-10-01T16:20:28.000Z">
+<meta property="article:modified_time" content="2016-10-01T18:20:24.000Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Development">
+<meta property="article:tag" content="Apple">
+<meta property="article:tag" content="Swift">
+<meta property="article:tag" content="Swift 3">
+<meta property="article:tag" content="Xcode">
+<meta property="article:tag" content="Facebook">
+<meta property="article:tag" content="Google">
+<meta property="article:tag" content="IBM">
+<meta property="article:tag" content="Microsoft">
+<meta property="article:tag" content="Potatso">
+<meta property="article:tag" content="Programming">
+<meta property="article:tag" content="Shadowrocket">
+<meta property="article:tag" content="Surge">
+<meta property="article:tag" content="Uber">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2016/10/02/time-to-learn-swift/swift_3_0.jpg">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2016/10/02/time-to-learn-swift/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2016/10/02/time-to-learn-swift/","path":"2016/10/02/time-to-learn-swift/","title":"是时候该学 Swift 了"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>是时候该学 Swift 了 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2016/10/02/time-to-learn-swift/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="是时候该学 Swift 了 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          是时候该学 Swift 了
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2016-10-02 00:20:28 / 修改时间：02:20:24" itemprop="dateCreated datePublished" datetime="2016-10-02T00:20:28+08:00">2016-10-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/opinion/" itemprop="url" rel="index"><span itemprop="name">Opinion</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2016/10/02/time-to-learn-swift/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/10/02/time-to-learn-swift/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><img src="/2016/10/02/time-to-learn-swift/swift_3_0.jpg" class="">
+
+<p>我绝对是一个闲不下来，且喜欢自虐的人。早在一两个星期前，Yui 同学一直很纠结于她正在使用的「<a target="_blank" rel="noopener" href="https://itunes.apple.com/us/app/shadowrocket/id932747118?mt=8">Shadowrocket</a>」不好用。主要体现在程序在开启的状态下，很多国内的网站访问不正常，而相比之下「<a target="_blank" rel="noopener" href="https://itunes.apple.com/us/app/surge-web-developer-tool-proxy/id1040100637?mt=8">Surge</a>」的表现则要良好的多得多，然而 50 刀（刚刚降价）的价钱，则不是人人都愿意买单的。后来发现有个叫「<a target="_blank" rel="noopener" href="https://itunes.apple.com/us/app/tu-dou-si-potatso-qiang-da/id1070901416?mt=8">Potatso</a>」的 App 有着类似的功能，而且在 GitHub 上<a target="_blank" rel="noopener" href="https://github.com/shadowsocks/Potatso">开放源码</a>。</p>
+<span id="more"></span>
+
+<p>有 Apple 开发者账号的我和 Jason 很跃跃欲试地尝试了一下编译该工程，结果无疾而终。一堆一堆的依赖错误和无法解决的编译错误，纵然就算我们拿到了很多人梦寐以求的 <strong>Network Extensions Entitlement</strong> 也是无功而返。而这个「土豆丝」正是用 Swift 来编写的，由于我的才疏学浅，从 Swift 发布至今，一直尚未染指 Swift。但是因为这个倒霉的 App 编译不过，反而激起了我极大地学习兴趣。</p>
+<p>仔细研究过后发现，编译不过一方面是作者的 <code>Podfile</code> 写得不好（各种依赖关系没有很严格限制，出现了 2.0 -&gt; 3.0 这种大版本的跨度），另一方面是我刚好赶在了苹果发布 <code>Xcode 8</code> 和 <code>Swift 3</code> 的时候。嗯，没错，新版本不兼容旧版本的语法哦，是不是很开心？反正我是炒（ping）鸡（guo）开（qu）心（si）的啦，欢喜之情溢于言表。</p>
+<p>但是伟大的苹果总得照顾下这么多的开发者吧？当然有照顾了，苹果很贴心地提供了语法转换工具。好，那我们就看看这个强大的转换工具吧！转换之后，好开心，编译错误从几百变成了 <code>999+</code>，我的内心OS：!#(<em>&amp;!@</em>#&amp;!(@*$&amp;</p>
+<p>最后的最后，无论是 Jason 还是我，都没有能成功的把这个程序编译出来，更不要说解决签名问题了。但是，这确引发了我的兴趣，到处了解一下 Swift 现在的情况，这一看不要紧，厉害了。</p>
+<p>不是我不知道，这世界变化快啊。首先是 IBM 在 2015 年底出了个 <a target="_blank" rel="noopener" href="https://developer.ibm.com/swift/ibm-swift-sandbox/">IBM Swift Sandbox</a>，这货可以直接在线体验 Swift 编程、还可以跟同事分享代码。我就想说，IBM 的人都这么无聊么？每次出什么新东西，他们都可以跟进的这么快吗？感兴趣的同学可以去体验下，跟 Xcode 里面跑 Swift Playground 的感觉类似。</p>
+<p>然后上半年又有消息传出说 <a target="_blank" rel="noopener" href="http://thenextweb.com/dd/2016/04/07/google-facebook-uber-swift/">Google 可能用 Swift 作为 Android 第一语言</a>。而 Facebook 和 Uber 也在考虑把 Swift 作为中心运营使用的语言。我觉得 Google 这也是被 Oracle 给欺负的吧。不了解的同学可以自行搜索一下 Java 语言的前世今生以及 Google 与 Oracle 之间因为 Java 而产生的恩怨情仇。</p>
+<p>接下来我又发现了用 Swift 构建的服务端框架 <a target="_blank" rel="noopener" href="http://perfect.org/">Perfect</a>。好吧，连名字都这么大（xiao）气（zhang）！我就好奇，这个域名得多少钱呢？一个开源的软件，能买得起这么好的域名，背后必然有「黑手」啊。感情这是要跟 <code>Node.js</code>、<code>Ruby on Rails</code> 和 <code>PHP</code> 大打出手的节奏啊！什么时候出个浏览器前端专用，iOS 工程师可以改变世界了啊！</p>
+<p>然后，连 <code>C#</code> 背后的大佬 Microsoft 都按耐不住了，有文章说为了吸引更多的 iOS 开发者来开发 Windows 10 应用，<a target="_blank" rel="noopener" href="http://www.windowscentral.com/microsoft-also-working-towards-swift-compiler-ios-developers-come-windows-10">微软已经在努力开发 Swift 编译器</a>了！太可怕了，这简直就是要逆天的节奏啊。</p>
+<p>虽然大家都这么 high，但是我实在不觉得一个商业公司推动的一个像玩具一样的语言，从推出仅仅 2 年左右的时间，就给这么多人洗了脑。Youtube 上一大堆 10 几岁除了 Swift 其他语言都不懂的年轻程序员更是大放厥词，大有 Swift 一统天下的感觉。不信邪的我去查了一下 <a target="_blank" rel="noopener" href="http://www.tiobe.com/tiobe-index/">TIOBE Index for September 2016</a>，现时语言排名 Swift 排名第 13，已经超越 Objective-C 紧跟 Ruby 之后。看来，从现在开始应该用 Swift 来写 iOS 和 macOS 的 App 了。</p>
+<p>不得不说，男怕入错行，女怕嫁错郎。攻城狮这一行，确实不好做。看来还是得不断学习和进修才行。既然 Swift 开源了，Xcode 升级到 8 了，Swift 也已经 3.0 了，似乎又到了该学一门语言的时候了。在写本文之前，Swift 3 的基本语言特性和语法已经快速过了一遍了，接下来需要做一些实质性的编程工作来更深入地了解。</p>
+<p>在 Medium 上发现了 Sam Lu 写的「<a target="_blank" rel="noopener" href="https://medium.com/@samvlu/100-days-of-swift-736d45a19b63#.l9td2doel">100 Days of Swift</a>」，然后就心血来潮，想要加以效仿了。于是乎，本文又成了一篇立 flag 的湿货多、不接地气的文章了。</p>
+<blockquote>
+<p>目标：100 天内用 Xcode 8 和 Swift 3 独立完成 Sam 哥的 40 个小程序</p>
+</blockquote>
+<p>从伟大祖国母亲生日开始算的话，100 天，刚好是过农历新年前，看看那个时候我能不能完成这个挑战，欢迎各位鞭（gu）策（li）。所有的源代码都会上传到 <a target="_blank" rel="noopener" href="https://github.com/TommyLau/100-Days-of-Swift-3">GitHub</a> 上。感兴趣的同学可以关注一下，欢迎大家交流讨论。</p>
+<p>另外，那些已经有了好的点子，只差一个程序员的同学，你们要等我啊。给我 100 天的时间，苟富贵勿相忘，到时候我去帮你们做 App！</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/development/" rel="tag"># Development</a>
+              <a href="/tags/apple/" rel="tag"># Apple</a>
+              <a href="/tags/swift/" rel="tag"># Swift</a>
+              <a href="/tags/swift-3/" rel="tag"># Swift 3</a>
+              <a href="/tags/xcode/" rel="tag"># Xcode</a>
+              <a href="/tags/facebook/" rel="tag"># Facebook</a>
+              <a href="/tags/google/" rel="tag"># Google</a>
+              <a href="/tags/ibm/" rel="tag"># IBM</a>
+              <a href="/tags/microsoft/" rel="tag"># Microsoft</a>
+              <a href="/tags/potatso/" rel="tag"># Potatso</a>
+              <a href="/tags/programming/" rel="tag"># Programming</a>
+              <a href="/tags/shadowrocket/" rel="tag"># Shadowrocket</a>
+              <a href="/tags/surge/" rel="tag"># Surge</a>
+              <a href="/tags/uber/" rel="tag"># Uber</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/09/26/there-are-100-fairytales-between-you-and-the-realism/" rel="prev" title="你和现实之间差了100个童话故事">
+                  <i class="fa fa-angle-left"></i> 你和现实之间差了100个童话故事
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/10/02/swift-project-01-tap-counter/" rel="next" title="Swift Project 01 - TAP COUNTER">
+                  Swift Project 01 - TAP COUNTER <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

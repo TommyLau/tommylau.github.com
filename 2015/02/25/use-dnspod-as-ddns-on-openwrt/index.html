@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="原来一直在使用 3322.org 的动态域名解析，而且之前还写过一篇如何在 OpenWrt 上使用 3322.org 的动态域名的文章。但是一段时间不用后，发现 3322.org 现在的动态域名只支持一个免费域名，而且怎么设置都无法正常工作。上网转悠了一下后，发现 DnsPod 有提供 客户端 API，其中的 DNSPod用户API文档 有详细的描述如何使用 DDNS 功能。于是乎就自己写了一个基">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在 OpenWrt 环境下使用 DnsPod 来实现动态域名解析">
+<meta property="og:url" content="https://tommy.net.cn/2015/02/25/use-dnspod-as-ddns-on-openwrt/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="原来一直在使用 3322.org 的动态域名解析，而且之前还写过一篇如何在 OpenWrt 上使用 3322.org 的动态域名的文章。但是一段时间不用后，发现 3322.org 现在的动态域名只支持一个免费域名，而且怎么设置都无法正常工作。上网转悠了一下后，发现 DnsPod 有提供 客户端 API，其中的 DNSPod用户API文档 有详细的描述如何使用 DDNS 功能。于是乎就自己写了一个基">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2015-02-25T10:19:15.000Z">
+<meta property="article:modified_time" content="2025-02-19T05:47:01.024Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="DDNS">
+<meta property="article:tag" content="OpenWrt">
+<meta property="article:tag" content="Shell">
+<meta property="article:tag" content="DnsPod">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2015/02/25/use-dnspod-as-ddns-on-openwrt/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2015/02/25/use-dnspod-as-ddns-on-openwrt/","path":"2015/02/25/use-dnspod-as-ddns-on-openwrt/","title":"在 OpenWrt 环境下使用 DnsPod 来实现动态域名解析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>在 OpenWrt 环境下使用 DnsPod 来实现动态域名解析 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2015/02/25/use-dnspod-as-ddns-on-openwrt/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="在 OpenWrt 环境下使用 DnsPod 来实现动态域名解析 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          在 OpenWrt 环境下使用 DnsPod 来实现动态域名解析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2015-02-25 18:19:15" itemprop="dateCreated datePublished" datetime="2015-02-25T18:19:15+08:00">2015-02-25</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-02-19 13:47:01" itemprop="dateModified" datetime="2025-02-19T13:47:01+08:00">2025-02-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/network/" itemprop="url" rel="index"><span itemprop="name">Network</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2015/02/25/use-dnspod-as-ddns-on-openwrt/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2015/02/25/use-dnspod-as-ddns-on-openwrt/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>8.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>7 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>原来一直在使用 3322.org 的动态域名解析，而且之前还写过一篇如何<a href="../../../../2014/10/14/dynamic-dns-setup-under-openwrt-with-3322-org">在 OpenWrt 上使用 3322.org 的动态域名</a>的文章。但是一段时间不用后，发现 3322.org 现在的动态域名只支持一个免费域名，而且怎么设置都无法正常工作。上网转悠了一下后，发现 <a target="_blank" rel="noopener" href="https://www.dnspod.cn/">DnsPod</a> 有提供 <a target="_blank" rel="noopener" href="https://support.dnspod.cn/Support/api">客户端 API</a>，其中的 <a target="_blank" rel="noopener" href="https://www.dnspod.cn/docs/index.html">DNSPod用户API文档</a> 有详细的描述如何使用 DDNS 功能。于是乎就自己写了一个基于 DnsPod 客户端 API 的 Shell 脚本。</p>
+<span id="more"></span>
+
+<p>要使用这个脚本你需要具备以下条件：</p>
+<ul>
+<li>一个顶级域名并且在 DnsPod 进行域名解析</li>
+<li>一个运行 OpenWrt 的路由器</li>
+<li>会使用 SSH 客户端登陆到路由器</li>
+<li>会传输文件到路由器</li>
+<li>基本的 Linux 命令行操作</li>
+</ul>
+<p>首先登陆到你的路由器，安装 <code>wget</code>，因为 OpenWrt 默认自带的基于 busybox 的 wget 无法处理 HTTPS 请求，而 DnsPod 的 API 处于安全考虑，强制使用 HTTPS 连接。下面的例子中<br><code>192.168.1.1</code> 是路由器的 IP 地址，请根据实际情况调整。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">$ ssh root@192.168.1.1</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">BusyBox v1.22.1 (2014-09-20 22:31:09 CEST) built-in shell (ash)</span><br><span class="line">Enter <span class="string">&#x27;help&#x27;</span> <span class="keyword">for</span> a list of built-in commands.</span><br><span class="line"></span><br><span class="line">  _______                     ________        __</span><br><span class="line"> |       |.-----.-----.-----.|  |  |  |.----.|  |_</span><br><span class="line"> |   -   ||  _  |  -__|     ||  |  |  ||   _||   _|</span><br><span class="line"> |_______||   __|_____|__|__||________||__|  |____|</span><br><span class="line">          |__| W I R E L E S S   F R E E D O M</span><br><span class="line"> -----------------------------------------------------</span><br><span class="line"> BARRIER BREAKER (14.07, r42625)</span><br><span class="line"> -----------------------------------------------------</span><br><span class="line">  * 1/2 oz Galliano         Pour all ingredients into</span><br><span class="line">  * 4 oz cold Coffee        an irish coffee mug filled</span><br><span class="line">  * 1 1/2 oz Dark Rum       with crushed ice. Stir.</span><br><span class="line">  * 2 tsp. Creme de Cacao</span><br><span class="line"> -----------------------------------------------------</span><br><span class="line"><span class="comment"># opkg update</span></span><br><span class="line">Downloading http://downloads.openwrt.org/barrier_breaker/14.07/ar71xx/nand/packages/base/Packages.gz.</span><br><span class="line">Updated list of available packages <span class="keyword">in</span> /var/opkg-lists/barrier_breaker_base.</span><br><span class="line">Downloading http://downloads.openwrt.org/barrier_breaker/14.07/ar71xx/nand/packages/luci/Packages.gz.</span><br><span class="line">Updated list of available packages <span class="keyword">in</span> /var/opkg-lists/barrier_breaker_luci.</span><br><span class="line">Downloading http://downloads.openwrt.org/barrier_breaker/14.07/ar71xx/nand/packages/packages/Packages.gz.</span><br><span class="line">Updated list of available packages <span class="keyword">in</span> /var/opkg-lists/barrier_breaker_packages.</span><br><span class="line">Downloading http://downloads.openwrt.org/barrier_breaker/14.07/ar71xx/nand/packages/routing/Packages.gz.</span><br><span class="line">Updated list of available packages <span class="keyword">in</span> /var/opkg-lists/barrier_breaker_routing.</span><br><span class="line">Downloading http://downloads.openwrt.org/barrier_breaker/14.07/ar71xx/nand/packages/telephony/Packages.gz.</span><br><span class="line">Updated list of available packages <span class="keyword">in</span> /var/opkg-lists/barrier_breaker_telephony.</span><br><span class="line">Downloading http://downloads.openwrt.org/barrier_breaker/14.07/ar71xx/nand/packages/management/Packages.gz.</span><br><span class="line">Updated list of available packages <span class="keyword">in</span> /var/opkg-lists/barrier_breaker_management.</span><br><span class="line">Downloading http://downloads.openwrt.org/barrier_breaker/14.07/ar71xx/nand/packages/oldpackages/Packages.gz.</span><br><span class="line">Updated list of available packages <span class="keyword">in</span> /var/opkg-lists/barrier_breaker_oldpackages.</span><br><span class="line">Downloading http://openwrt-dist.sourceforge.net/releases/ar71xx/packages/Packages.gz.</span><br><span class="line">Updated list of available packages <span class="keyword">in</span> /var/opkg-lists/openwrt_dist.</span><br><span class="line">Downloading http://openwrt-dist.sourceforge.net/releases/luci/packages/Packages.gz.</span><br><span class="line">Updated list of available packages <span class="keyword">in</span> /var/opkg-lists/openwrt_dist_luci.</span><br><span class="line"><span class="comment"># opkg install wget</span></span><br><span class="line">Installing wget (1.16-1) to root...</span><br><span class="line">Downloading http://downloads.openwrt.org/barrier_breaker/14.07/ar71xx/nand/packages/packages/wget_1.16-1_ar71xx.ipk.</span><br><span class="line">Configuring wget.</span><br></pre></td></tr></table></figure>
+
+<p>接着来获得我已经写好的 DDNS 脚本，你可以在 GitHub Gist 上找到最新的版本：<a target="_blank" rel="noopener" href="https://gist.github.com/TommyLau/21089ac976ef5fdfc39c">https://gist.github.com/TommyLau/21089ac976ef5fdfc39c</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># wget --no-check-certificate &quot;https://gist.github.com/TommyLau/21089ac976ef5fdfc39c/raw/51a45400e54291ab9bbc982b087f80dc57db5982/ddns.sh&quot;</span></span><br><span class="line">--2015-02-25 10:05:07--  https://gist.github.com/TommyLau/21089ac976ef5fdfc39c/raw/51a45400e54291ab9bbc982b087f80dc57db5982/ddns.sh</span><br><span class="line">Resolving gist.github.com... 192.30.252.141</span><br><span class="line">Connecting to gist.github.com|192.30.252.141|:443... connected.</span><br><span class="line">WARNING: cannot verify gist.github.com<span class="string">&#x27;s certificate, issued by &#x27;</span>/C=US/O=DigiCert Inc/OU=www.digicert.com/CN=DigiCert SHA2 High Assurance Server CA<span class="string">&#x27;:</span></span><br><span class="line"><span class="string">  Unable to locally verify the issuer&#x27;</span>s authority.</span><br><span class="line">HTTP request sent, awaiting response... 301 Moved Permanently</span><br><span class="line">Location: https://gist.githubusercontent.com/TommyLau/21089ac976ef5fdfc39c/raw/51a45400e54291ab9bbc982b087f80dc57db5982/ddns.sh [following]</span><br><span class="line">--2015-02-25 10:05:23--  https://gist.githubusercontent.com/TommyLau/21089ac976ef5fdfc39c/raw/51a45400e54291ab9bbc982b087f80dc57db5982/ddns.sh</span><br><span class="line">Resolving gist.githubusercontent.com... 103.245.222.133</span><br><span class="line">Connecting to gist.githubusercontent.com|103.245.222.133|:443... connected.</span><br><span class="line">WARNING: cannot verify gist.githubusercontent.com<span class="string">&#x27;s certificate, issued by &#x27;</span>/C=US/O=DigiCert Inc/OU=www.digicert.com/CN=DigiCert High Assurance CA-3<span class="string">&#x27;:</span></span><br><span class="line"><span class="string">  Unable to locally verify the issuer&#x27;</span>s authority.</span><br><span class="line">HTTP request sent, awaiting response... 200 OK</span><br><span class="line">Length: 2842 (2.8K) [text/plain]</span><br><span class="line">Saving to: <span class="string">&#x27;ddns.sh&#x27;</span></span><br><span class="line"></span><br><span class="line">ddns.sh                                            100%[================================================================================================================&gt;]   2.78K  --.-KB/s   <span class="keyword">in</span> 0.09s</span><br><span class="line"></span><br><span class="line">2015-02-25 10:05:25 (31.0 KB/s) - <span class="string">&#x27;ddns.sh&#x27;</span> saved [2842/2842]</span><br></pre></td></tr></table></figure>
+
+<p>把新下载回来的文件设置为可执行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># chmod +x ddns.sh</span></span><br></pre></td></tr></table></figure>
+
+<p>修改 crontab</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># crontab -e</span></span><br></pre></td></tr></table></figure>
+
+<p>增加如下的内容</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*/5 * * * * /root/ddns.sh your@email.com YourPassword test.com www &gt; /dev/null</span><br></pre></td></tr></table></figure>
+
+<p>上述的命令表示每 5 分钟检查一次域名更新，如果发现 IP 有变化的话，就自动更新相应的域名（<a target="_blank" rel="noopener" href="http://www.test.com)./">www.test.com）。</a></p>
+<ul>
+<li><code>your@email.com</code>，这个请替换成你的 DnsPod 账号</li>
+<li><code>YourPassword</code>，请替换成你自己的密码</li>
+<li><code>test.com</code>，这个替换成你在 DnsPod 解析的域名</li>
+<li><code>www</code>，这个是要解析的子域名</li>
+</ul>
+<p>PS: 如果你无法访问 GitHub Gist 的话，下面是脚本的内容，你需要自行复制到路由器里。</p>
+<figure class="highlight bash"><figcaption><span>ddns.sh</span><a target="_blank" rel="noopener" href="https://gist.githubusercontent.com/TommyLau/21089ac976ef5fdfc39c/raw/51a45400e54291ab9bbc982b087f80dc57db5982/ddns.sh">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"></span><br><span class="line"><span class="comment">########################################</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Tommy DnsPod DDNS Client v0.1.0</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Author: Tommy Lau &lt;tommy@gen-new.com&gt;</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Created: 2015-02-23 08:52:00 UTC</span></span><br><span class="line"><span class="comment"># Updated: 2015-02-23 12:15:46 UTC</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">########################################</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Use &#x27;json&#x27;, other option is &#x27;xml&#x27;</span></span><br><span class="line">format=<span class="string">&#x27;json&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Use English for default, &#x27;cn&#x27; for Chinese</span></span><br><span class="line">language=<span class="string">&#x27;en&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># API URL</span></span><br><span class="line">api_url=<span class="string">&#x27;https://dnsapi.cn/&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Get current IP</span></span><br><span class="line"><span class="function"><span class="title">get_ip</span></span>() &#123;</span><br><span class="line">    <span class="built_in">local</span> inter=<span class="string">&quot;http://members.3322.org/dyndns/getip&quot;</span></span><br><span class="line">    wget --quiet --no-check-certificate --output-document=- <span class="variable">$inter</span></span><br><span class="line">    <span class="comment">#curl --silent $inter</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Send the API request to DnsPod API</span></span><br><span class="line"><span class="comment"># @param1: The command to execute, for example, Info.Version and etc.</span></span><br><span class="line"><span class="comment"># @param2: The parameters to send to the API, for example, domain=&#x27;domain.tld&#x27;</span></span><br><span class="line"><span class="function"><span class="title">api_post</span></span>() &#123;</span><br><span class="line">    <span class="comment"># Client agent</span></span><br><span class="line">    <span class="built_in">local</span> agent=<span class="string">&quot;Tommy DnsPod Client/0.1.0 (tommy@gen-new.com)&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># Stop if no API command is given</span></span><br><span class="line">    <span class="built_in">local</span> inter=<span class="string">&quot;$api_url<span class="variable">$&#123;1:?&#x27;Info.Version&#x27;&#125;</span>&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># Default post content for every request</span></span><br><span class="line">    <span class="built_in">local</span> param=<span class="string">&quot;login_email=<span class="variable">$email</span>&amp;login_password=<span class="variable">$password</span>&amp;format=<span class="variable">$format</span>&amp;lang=<span class="variable">$language</span>&amp;<span class="variable">$&#123;2&#125;</span>&quot;</span></span><br><span class="line"></span><br><span class="line">    wget --quiet --no-check-certificate --output-document=- --post-data <span class="string">&quot;<span class="variable">$param</span>&quot;</span> --user-agent=<span class="string">&quot;<span class="variable">$agent</span>&quot;</span> <span class="variable">$inter</span></span><br><span class="line">    <span class="comment">#curl --silent --request POST --data &quot;$param&quot; --user-agent &quot;$agent&quot; $inter</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Lookup current ip</span></span><br><span class="line"><span class="comment"># @param1: The domain to nslookup</span></span><br><span class="line"><span class="function"><span class="title">dns_lookup</span></span>() &#123;</span><br><span class="line">    <span class="built_in">local</span> server=<span class="string">&quot;114.114.114.114&quot;</span></span><br><span class="line">    nslookup <span class="variable">$&#123;1&#125;</span> <span class="variable">$server</span> | <span class="built_in">tr</span> -d <span class="string">&#x27;\n[:blank:]&#x27;</span> | sed <span class="string">&#x27;s/.\+1 \([0-9\.]\+\).*/\1/&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Update the DNS record</span></span><br><span class="line"><span class="comment"># @param1: The domain name to update, for example, &#x27;domain.tld&#x27;</span></span><br><span class="line"><span class="comment"># @param2: The subdomain, for example, &#x27;www&#x27;</span></span><br><span class="line"><span class="function"><span class="title">dns_update</span></span>() &#123;</span><br><span class="line">    <span class="built_in">local</span> current_ip=$(get_ip)</span><br><span class="line">    <span class="built_in">local</span> dns_ip=$(dns_lookup <span class="string">&quot;<span class="variable">$&#123;2&#125;</span>.<span class="variable">$&#123;1&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$&#123;current_ip&#125;</span> : <span class="variable">$&#123;dns_ip&#125;</span>&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> [ <span class="string">&quot;<span class="variable">$current_ip</span>&quot;</span> == <span class="string">&quot;<span class="variable">$dns_ip</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">	<span class="built_in">echo</span> <span class="string">&quot;No need to update DDNS.&quot;</span></span><br><span class="line">        <span class="built_in">return</span> 0</span><br><span class="line">    <span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># Get domain id</span></span><br><span class="line">    <span class="built_in">local</span> domain_id=$(api_post <span class="string">&quot;Domain.Info&quot;</span> <span class="string">&quot;domain=<span class="variable">$&#123;1&#125;</span>&quot;</span>)</span><br><span class="line">    domain_id=$(<span class="built_in">echo</span> <span class="variable">$domain_id</span> | sed <span class="string">&#x27;s/.\+&#123;&quot;id&quot;:&quot;\([0-9]\+\)&quot;.\+/\1/&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Get record id of the subdomain</span></span><br><span class="line">    <span class="built_in">local</span> record_id=$(api_post <span class="string">&quot;Record.List&quot;</span> <span class="string">&quot;domain_id=<span class="variable">$&#123;domain_id&#125;</span>&amp;sub_domain=<span class="variable">$&#123;2&#125;</span>&quot;</span>)</span><br><span class="line">    record_id=$(<span class="built_in">echo</span> <span class="variable">$record_id</span> | sed <span class="string">&#x27;s/.\+\[&#123;&quot;id&quot;:&quot;\([0-9]\+\)&quot;.\+/\1/&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Update the record</span></span><br><span class="line">    <span class="built_in">local</span> result=$(api_post <span class="string">&quot;Record.Ddns&quot;</span> <span class="string">&quot;domain_id=<span class="variable">$&#123;domain_id&#125;</span>&amp;record_id=<span class="variable">$&#123;record_id&#125;</span>&amp;record_line=默认&amp;sub_domain=<span class="variable">$&#123;2&#125;</span>&quot;</span>)</span><br><span class="line">    result_code=$(<span class="built_in">echo</span> <span class="variable">$result</span> | sed <span class="string">&#x27;s/.\+&#123;&quot;code&quot;:&quot;\([0-9]\+\)&quot;.\+/\1/&#x27;</span>)</span><br><span class="line">    result_message=$(<span class="built_in">echo</span> <span class="variable">$result</span> | sed <span class="string">&#x27;s/.\+,&quot;message&quot;:&quot;\([^&quot;]\+\)&quot;.\+/\1/&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Output</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;Code: <span class="variable">$result_code</span>, Message: <span class="variable">$result_message</span>&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Email for login</span></span><br><span class="line">email=<span class="string">&quot;<span class="variable">$&#123;1:?&#x27;Please input e-mail&#x27;&#125;</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Password for the account</span></span><br><span class="line">password=<span class="variable">$&#123;2:?&#x27;Please input your password&#x27;&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Domain</span></span><br><span class="line">domain=<span class="variable">$&#123;3:?&#x27;Please input domain&#x27;&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Sub domain</span></span><br><span class="line">subdomain=<span class="variable">$&#123;4:?&#x27;Please input sub domain&#x27;&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Update the DDNS</span></span><br><span class="line">dns_update <span class="string">&quot;<span class="variable">$domain</span>&quot;</span> <span class="string">&quot;<span class="variable">$subdomain</span>&quot;</span></span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/ddns/" rel="tag"># DDNS</a>
+              <a href="/tags/openwrt/" rel="tag"># OpenWrt</a>
+              <a href="/tags/shell/" rel="tag"># Shell</a>
+              <a href="/tags/dnspod/" rel="tag"># DnsPod</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2015/02/24/enable-zsh-completion-of-brew-under-mac-os-x/" rel="prev" title="在 Mac OS X 系统下为 Brew 开启 Zsh 补全功能">
+                  <i class="fa fa-angle-left"></i> 在 Mac OS X 系统下为 Brew 开启 Zsh 补全功能
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2015/03/05/study-of-atlassian-license/" rel="next" title="Atlassian 授权机制研究">
+                  Atlassian 授权机制研究 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

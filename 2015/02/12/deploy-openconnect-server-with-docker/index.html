@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="什么是 OpenConnect ServerOpenConnect server (ocserv) 是一个基于 SSL 的 VPN 服务器。它是基于 OpenConnect SSL VPN 协议实现的，同时（实验性质）兼容使用 Cisco AnyConnect SSL VPN 协议的客户端。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="通过 Docker 部署 OpenConnect 服务器">
+<meta property="og:url" content="https://tommy.net.cn/2015/02/12/deploy-openconnect-server-with-docker/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="什么是 OpenConnect ServerOpenConnect server (ocserv) 是一个基于 SSL 的 VPN 服务器。它是基于 OpenConnect SSL VPN 协议实现的，同时（实验性质）兼容使用 Cisco AnyConnect SSL VPN 协议的客户端。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2015-02-12T02:15:43.000Z">
+<meta property="article:modified_time" content="2015-02-12T11:35:55.000Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="Network">
+<meta property="article:tag" content="OpenConnect">
+<meta property="article:tag" content="VPN">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2015/02/12/deploy-openconnect-server-with-docker/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2015/02/12/deploy-openconnect-server-with-docker/","path":"2015/02/12/deploy-openconnect-server-with-docker/","title":"通过 Docker 部署 OpenConnect 服务器"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>通过 Docker 部署 OpenConnect 服务器 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-OpenConnect-Server"><span class="nav-number">1.</span> <span class="nav-text">什么是 OpenConnect Server</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E9%83%A8%E7%BD%B2%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">2.</span> <span class="nav-text">如何部署服务器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%80%E5%A7%8B%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="nav-number">2.1.</span> <span class="nav-text">开始前的准备工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#OpenConnect-Server-%E7%9A%84%E5%AE%89%E8%A3%85"><span class="nav-number">2.2.</span> <span class="nav-text">OpenConnect Server 的安装</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E6%93%8D%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">用户操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E7%94%A8%E6%88%B7"><span class="nav-number">3.1.</span> <span class="nav-text">添加用户</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E7%94%A8%E6%88%B7"><span class="nav-number">3.2.</span> <span class="nav-text">删除用户</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E5%AF%86%E7%A0%81"><span class="nav-number">3.3.</span> <span class="nav-text">修改密码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E7%BA%A7%E4%BD%BF%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">高级使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-number">4.1.</span> <span class="nav-text">环境变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E8%BF%90%E8%A1%8C%E8%8C%83%E4%BE%8B"><span class="nav-number">4.2.</span> <span class="nav-text">一些运行范例</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2015/02/12/deploy-openconnect-server-with-docker/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="通过 Docker 部署 OpenConnect 服务器 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          通过 Docker 部署 OpenConnect 服务器
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2015-02-12 10:15:43 / 修改时间：19:35:55" itemprop="dateCreated datePublished" datetime="2015-02-12T10:15:43+08:00">2015-02-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/server/" itemprop="url" rel="index"><span itemprop="name">Server</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2015/02/12/deploy-openconnect-server-with-docker/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2015/02/12/deploy-openconnect-server-with-docker/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="什么是-OpenConnect-Server"><a href="#什么是-OpenConnect-Server" class="headerlink" title="什么是 OpenConnect Server"></a>什么是 OpenConnect Server</h2><p><a target="_blank" rel="noopener" href="http://www.infradead.org/ocserv/">OpenConnect server (ocserv)</a> 是一个基于 SSL 的 VPN 服务器。它是基于 OpenConnect SSL VPN 协议实现的，同时（实验性质）兼容使用 <a target="_blank" rel="noopener" href="http://www.cisco.com/c/en/us/support/security/anyconnect-vpn-client/tsd-products-support-series-home.html">Cisco AnyConnect SSL VPN</a> 协议的客户端。</p>
+<span id="more"></span>
+
+<h2 id="如何部署服务器"><a href="#如何部署服务器" class="headerlink" title="如何部署服务器"></a>如何部署服务器</h2><p>考虑到架设 OpenConnect Server 对于大多数用户来说比较困难，所以我制作了一个 Docker 镜像。以下所有教程都是基于该 Docker 镜像的。如果你不知道什么是 Docker，请先访问 Docker 的网站了解相关信息。如果你对镜像文件不放心，可以在以下地址找到该镜像的原始 Dockerfile 和相关信息：<a target="_blank" rel="noopener" href="https://registry.hub.docker.com/u/tommylau/ocserv/">Docker Hub</a>，<a target="_blank" rel="noopener" href="https://github.com/TommyLau/docker-ocserv">GitHub</a></p>
+<h3 id="开始前的准备工作"><a href="#开始前的准备工作" class="headerlink" title="开始前的准备工作"></a>开始前的准备工作</h3><ul>
+<li>知道并了解 <a target="_blank" rel="noopener" href="https://www.docker.com/">Docker</a> 的运行原理和机制</li>
+<li>掌握基本的服务器架设能力，熟悉 Linux 命令，并且在服务器上成功部署了 Docker</li>
+<li>如果你使用的是 VPS 的话，请联系 ISP 确认是否支持 TUN 设备</li>
+</ul>
+<h3 id="OpenConnect-Server-的安装"><a href="#OpenConnect-Server-的安装" class="headerlink" title="OpenConnect Server 的安装"></a>OpenConnect Server 的安装</h3><p>一条如此简单的命令，就可以把 OpenConnect Server (ocserv) 安装到你的服务器了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull tommylau/ocserv</span><br></pre></td></tr></table></figure>
+
+<p>使用下面的命令，就可以马上运行 ocserv 来体验了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name ocserv --privileged -p 443:443 -p 443:443/udp -d tommylau/ocserv</span><br></pre></td></tr></table></figure>
+
+<p>上述命令会创建并运行一个新的 container，同时会添加一个用户名和密码均为 <code>test</code> 的用户。如果你只需要临时使用一下，不关心安全问题的话，那么看到这里就可以结束了。如果你需要更多的设置，请继续阅读。</p>
+<h2 id="用户操作"><a href="#用户操作" class="headerlink" title="用户操作"></a>用户操作</h2><p>所有的用户操作必须在实例运行的时候才可以进行。如果你的 Docker 实例名不是 <code>ocserv</code> 的话，请根据实际情况自行调整。</p>
+<h3 id="添加用户"><a href="#添加用户" class="headerlink" title="添加用户"></a>添加用户</h3><p>假如说，你想创建一个名为 <code>tommy</code> 的用户，使用如下命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker <span class="built_in">exec</span> -ti ocserv ocpasswd -c /etc/ocserv/ocpasswd tommy</span><br><span class="line">Enter password:</span><br><span class="line">Re-enter password:</span><br></pre></td></tr></table></figure>
+
+<p>当提示输入密码的时候，输入两次密码，便可创建该用户。</p>
+<h3 id="删除用户"><a href="#删除用户" class="headerlink" title="删除用户"></a>删除用户</h3><p>删除用户与添加用户类似，唯一的区别就是在用户名前面增加 <code>-d</code> 参数</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker <span class="built_in">exec</span> -ti ocserv ocpasswd -c /etc/ocserv/ocpasswd -d <span class="built_in">test</span></span><br></pre></td></tr></table></figure>
+
+<p>如果你在创建实例的时候，没有使用环境变量 <code>NO_TEST_USER</code>，那么上述命令将帮你删除默认的 <code>test</code> 用户。</p>
+<h3 id="修改密码"><a href="#修改密码" class="headerlink" title="修改密码"></a>修改密码</h3><p>修改密码与添加用户的操作是完全一致的，请参考上面添加用户的章节。</p>
+<h2 id="高级使用"><a href="#高级使用" class="headerlink" title="高级使用"></a>高级使用</h2><p>这个部分会介绍一些高级的使用方法，包括通过环境变量的设置来配置不同的 CA 名称等。</p>
+<h3 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h3><p>对于 <code>tommylau/ocserv</code> 这个 Docker 镜像来说，所有的环境变量都是可选的，也就意味着你拥有一个开箱即用的产品，而不用输入任何参数。当然，如果你是一个定制狂或者有强迫症，那么下面就是为你准备的。</p>
+<p><code>CA_CN</code>，这是用于生成 CA(Certificate Authority) 证书的名称 (common name)。</p>
+<p><code>CA_ORG</code>，这是用于生成 CA 证书的组织名称 (organization name)。</p>
+<p><code>CA_DAYS</code>，这是用于生成 CA 证书的有效期。</p>
+<p><code>SRV_CN</code>，这是用于生成服务器证书的名称 (common name)。</p>
+<p><code>SRV_ORG</code>，这是用于生成服务器证书的组织名称 (organization name)。</p>
+<p><code>SRV_DAYS</code>，这是用于生成服务器证书的有效期。</p>
+<p><code>NO_TEST_USER</code>，当这个变量设置为非空时，将不会创建 <code>test</code> 用户。你必须要手动添加你自己的用户，并设置密码。默认情况下，系统会自动创建用户名为 <code>test</code>，密码也为 <code>test</code> 的用户。</p>
+<p>上述变量的默认值：</p>
+<table>
+<thead>
+<tr>
+<th align="center">变量</th>
+<th align="center">默认值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>CA_CN</strong></td>
+<td align="center">VPN CA</td>
+</tr>
+<tr>
+<td align="center"><strong>CA_ORG</strong></td>
+<td align="center">Big Corp</td>
+</tr>
+<tr>
+<td align="center"><strong>CA_DAYS</strong></td>
+<td align="center">9999</td>
+</tr>
+<tr>
+<td align="center"><strong>SRV_CN</strong></td>
+<td align="center"><a target="_blank" rel="noopener" href="http://www.example.com/">www.example.com</a></td>
+</tr>
+<tr>
+<td align="center"><strong>SRV_ORG</strong></td>
+<td align="center">My Company</td>
+</tr>
+<tr>
+<td align="center"><strong>SRV_DAYS</strong></td>
+<td align="center">9999</td>
+</tr>
+</tbody></table>
+<h3 id="一些运行范例"><a href="#一些运行范例" class="headerlink" title="一些运行范例"></a>一些运行范例</h3><p>使用开箱即用的方式，用户名和密码均为 <code>test</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name ocserv --privileged -p 443:443 -p 443:443/udp -d tommylau/ocserv</span><br></pre></td></tr></table></figure>
+
+<p>创建服务器名为 <code>my.test.com</code>，组织为 <code>My Test</code>，有效期为 <code>365</code> 天的实例</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name ocserv --privileged -p 443:443 -p 443:443/udp -e SRV_CN=my.test.com -e SRV_ORG=<span class="string">&quot;My Test&quot;</span> -e SRV_DAYS=365 -d tommylau/ocserv</span><br></pre></td></tr></table></figure>
+
+<p>创建一个签发机构为 <code>My CA</code>，签发组织为 <code>My Corp</code>，有效期为 <code>3650</code> 天的实例</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name ocserv --privileged -p 443:443 -p 443:443/udp -e CA_CN=<span class="string">&quot;My CA&quot;</span> -e CA_ORG=<span class="string">&quot;My Corp&quot;</span> -e CA_DAYS=3650 -d tommylau/ocserv</span><br></pre></td></tr></table></figure>
+
+<p>一个包含 CA 和服务器证书的，完全定制化的实例</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name ocserv --privileged -p 443:443 -p 443:443/udp -e CA_CN=<span class="string">&quot;My CA&quot;</span> -e CA_ORG=<span class="string">&quot;My Corp&quot;</span> -e CA_DAYS=3650 -e SRV_CN=my.test.com -e SRV_ORG=<span class="string">&quot;My Test&quot;</span> -e SRV_DAYS=365 -d tommylau/ocserv</span><br></pre></td></tr></table></figure>
+
+<p>如上述的完全定制化的实例，但是不创建 <code>test</code> 用户</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name ocserv --privileged -p 443:443 -p 443:443/udp -e CA_CN=<span class="string">&quot;My CA&quot;</span> -e CA_ORG=<span class="string">&quot;My Corp&quot;</span> -e CA_DAYS=3650 -e SRV_CN=my.test.com -e SRV_ORG=<span class="string">&quot;My Test&quot;</span> -e SRV_DAYS=365 -e NO_TEST_USER=1 -v /some/path/to/ocpasswd:/etc/ocserv/ocpasswd -d tommylau/ocserv</span><br></pre></td></tr></table></figure>
+
+<p>**警告：**ocserv 在启动的时候需要 ocpasswd 文件，如果你设置了 <code>NO_TEST_USER=1</code>，ocpasswd 文件将不会被创建，进而导致到服务器启动后立即停止。你必须要像上面示例中那样，使用 Docker 的 <code>-v</code> 挂在参数，指定一个 ocpasswd 文件到 <code>/etc/ocserv/ocpasswd</code>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/docker/" rel="tag"># Docker</a>
+              <a href="/tags/network/" rel="tag"># Network</a>
+              <a href="/tags/openconnect/" rel="tag"># OpenConnect</a>
+              <a href="/tags/vpn/" rel="tag"># VPN</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2015/02/05/use-http-proxy-through-socks5-by-using-privoxy/" rel="prev" title="用 Privoxy 将 SOCKS5 转换成 HTTP 代理">
+                  <i class="fa fa-angle-left"></i> 用 Privoxy 将 SOCKS5 转换成 HTTP 代理
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2015/02/13/run-and-debug-php-website-with-docker-part-1/" rel="next" title="用 Docker 来运行和调试 PHP 网站（一）">
+                  用 Docker 来运行和调试 PHP 网站（一） <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

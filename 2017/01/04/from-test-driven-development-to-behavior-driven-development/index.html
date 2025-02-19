@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="此文为「Enrico」同学的原创投稿，非 Tommy 出品。本文原作者之观点不代表本人及本网站的任何观点，仅代表其个人或组织，特此声明。  自从 2015 年 10 月十八届五中全会决定全面放开二胎，一对夫妇可以生育两个孩子。身边不少头胎生了女孩的夫妻积极响应国家号召，生下了第二胎，而且大部分人二胎生的都是男孩，凑得个好字，儿女双全。 但是，有人的地方就有江湖，有江湖的地方就有竞争。许多头胎">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从踢弟弟到逼弟弟">
+<meta property="og:url" content="https://tommy.net.cn/2017/01/04/from-test-driven-development-to-behavior-driven-development/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="此文为「Enrico」同学的原创投稿，非 Tommy 出品。本文原作者之观点不代表本人及本网站的任何观点，仅代表其个人或组织，特此声明。  自从 2015 年 10 月十八届五中全会决定全面放开二胎，一对夫妇可以生育两个孩子。身边不少头胎生了女孩的夫妻积极响应国家号召，生下了第二胎，而且大部分人二胎生的都是男孩，凑得个好字，儿女双全。 但是，有人的地方就有江湖，有江湖的地方就有竞争。许多头胎">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2017/01/04/from-test-driven-development-to-behavior-driven-development/tdd_bdd.jpg">
+<meta property="og:image" content="https://tommy.net.cn/2017/01/04/from-test-driven-development-to-behavior-driven-development/tuski.jpg">
+<meta property="og:image" content="https://tommy.net.cn/2017/01/04/from-test-driven-development-to-behavior-driven-development/wechat.jpg">
+<meta property="og:image" content="https://tommy.net.cn/2017/01/04/from-test-driven-development-to-behavior-driven-development/html_img.jpg">
+<meta property="og:image" content="https://tommy.net.cn/2017/01/04/from-test-driven-development-to-behavior-driven-development/sakuragi.jpg">
+<meta property="article:published_time" content="2017-01-04T03:13:35.000Z">
+<meta property="article:modified_time" content="2025-02-19T05:47:01.088Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Development">
+<meta property="article:tag" content="BDD">
+<meta property="article:tag" content="Behave">
+<meta property="article:tag" content="Behavior-Driven">
+<meta property="article:tag" content="Cucumber">
+<meta property="article:tag" content="Enrico">
+<meta property="article:tag" content="Gherkin">
+<meta property="article:tag" content="JBehave">
+<meta property="article:tag" content="Markdown">
+<meta property="article:tag" content="TDD">
+<meta property="article:tag" content="Test">
+<meta property="article:tag" content="Test-Driven">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2017/01/04/from-test-driven-development-to-behavior-driven-development/tdd_bdd.jpg">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2017/01/04/from-test-driven-development-to-behavior-driven-development/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2017/01/04/from-test-driven-development-to-behavior-driven-development/","path":"2017/01/04/from-test-driven-development-to-behavior-driven-development/","title":"从踢弟弟到逼弟弟"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>从踢弟弟到逼弟弟 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%8F%E6%8D%B7%E5%BC%80%E5%8F%91%E5%B7%A5%E7%A8%8B%E5%B8%88"><span class="nav-number">1.</span> <span class="nav-text">敏捷开发工程师</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B8%A2%E5%BC%9F%E5%BC%9F-TDD-Test-Driven-Development"><span class="nav-number">2.</span> <span class="nav-text">踢弟弟 (TDD Test-Driven Development)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%BC%E5%BC%9F%E5%BC%9F-BDD-Behavior-Driven-Development"><span class="nav-number">3.</span> <span class="nav-text">逼弟弟 (BDD Behavior-Driven Development)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%BC%E5%BC%9F%E5%BC%9F%E7%9A%84%E9%9C%80%E6%B1%82%E7%A0%94%E8%AE%A8%E4%BC%9A-Specification-Workshops"><span class="nav-number">3.1.</span> <span class="nav-text">逼弟弟的需求研讨会 (Specification Workshops)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%BC%E5%BC%9F%E5%BC%9F%E7%9A%84%E7%94%B1%E5%A4%96%E8%80%8C%E5%86%85%E7%9A%84%E5%BC%80%E5%8F%91%E6%A8%A1%E5%BC%8F-Outside-In-Development"><span class="nav-number">3.2.</span> <span class="nav-text">逼弟弟的由外而内的开发模式 (Outside-In Development)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%BC%E5%BC%9F%E5%BC%9F%E7%9A%84%E4%B8%8D%E8%B6%B3"><span class="nav-number">4.</span> <span class="nav-text">逼弟弟的不足</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%84%E4%B8%80"><span class="nav-number">5.</span> <span class="nav-text">附一</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%84%E4%BA%8C"><span class="nav-number">6.</span> <span class="nav-text">附二</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2017/01/04/from-test-driven-development-to-behavior-driven-development/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="从踢弟弟到逼弟弟 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          从踢弟弟到逼弟弟
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-01-04 11:13:35" itemprop="dateCreated datePublished" datetime="2017-01-04T11:13:35+08:00">2017-01-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-02-19 13:47:01" itemprop="dateModified" datetime="2025-02-19T13:47:01+08:00">2025-02-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/friend/" itemprop="url" rel="index"><span itemprop="name">Friend</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/01/04/from-test-driven-development-to-behavior-driven-development/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/01/04/from-test-driven-development-to-behavior-driven-development/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><img src="/2017/01/04/from-test-driven-development-to-behavior-driven-development/tdd_bdd.jpg" class="">
+
+<blockquote>
+<p>此文为「<strong>Enrico</strong>」同学的原创投稿，非 Tommy 出品。本文原作者之观点不代表本人及本网站的任何观点，仅代表其个人或组织，特此声明。</p>
+</blockquote>
+<p>自从 2015 年 10 月十八届五中全会决定全面放开二胎，一对夫妇可以生育两个孩子。身边不少头胎生了女孩的夫妻积极响应国家号召，生下了第二胎，而且大部分人二胎生的都是男孩，凑得个好字，儿女双全。</p>
+<p>但是，有人的地方就有江湖，有江湖的地方就有竞争。许多头胎的孩子，本来颠颠高高兴兴，万千宠爱在一身。突然一天，爸爸妈妈告诉他们，要当哥哥／姐姐了，懵懂的他们还不知道是什么回事。直到弟弟／妹妹降生，全家人注意力迅速转移，哥哥／姐姐们才知道歌里唱的「由来只有新人笑，有谁听到旧人哭」是什么意思。小小年纪开始了体会怨憎会、求不得之苦。</p>
+<span id="more"></span>
+
+<p>若是二胎是弟弟，自己是女儿身，而又生在那重男轻女之家，那苦真叫作苦过弟弟。老大心理上如不能适应，则有可能对弟弟下手，各种踢弟弟。然而小孩动手不知轻重，踢弟弟容易有伤痕，被大人发现了那可是胆汁送黄莲，苦上加苦。于是，扭曲的小孩另寻方法，改为心理上摧残弟弟，从踢弟弟转为逼弟弟。</p>
+<p>国外就有一些小孩，早早就从踢弟弟转为逼弟弟。他们就是</p>
+<h2 id="敏捷开发工程师"><a href="#敏捷开发工程师" class="headerlink" title="敏捷开发工程师"></a>敏捷开发工程师</h2><p>他们搞了个<a target="_blank" rel="noopener" href="http://agilemanifesto.org/">敏捷宣言</a></p>
+<blockquote>
+<p>Individuals and interactions over processes and tools</p>
+<p>Working software over comprehensive documentation</p>
+<p>Customer collaboration over contract negotiation</p>
+<p>Responding to change over following a plan</p>
+<p>That is, while there is value in the items on the right, we value the items on the left more.</p>
+</blockquote>
+<p>简单来说是加强沟通，忙尽快出能工作的软件。</p>
+<p>目的是为了摆脱过去那种大型项目开发的中因为因循繁琐的流程、维护大量的文档所造成的低效率，从而适应项目小型化，拥抱需求变化，营造一个欢乐开发的海洋。</p>
+<p>为了实现其中的第二点，尽快提供工作的软件 (Working software)，有些小孩又搞了一个敏捷实践，叫做</p>
+<h2 id="踢弟弟-TDD-Test-Driven-Development"><a href="#踢弟弟-TDD-Test-Driven-Development" class="headerlink" title="踢弟弟 (TDD Test-Driven Development)"></a>踢弟弟 (TDD Test-Driven Development)</h2><p>他搞了<a target="_blank" rel="noopener" href="https://www.agilealliance.org/glossary/tdd/">几个原则</a></p>
+<blockquote>
+<p>write a “single” unit test describing an aspect of the program</p>
+<p>run the test, which should fail because the program lacks that feature</p>
+<p>write “just enough” code, the simplest possible, to make the test pass</p>
+<p>“refactor” the code until it conforms to the simplicity criteria</p>
+<p>repeat, “accumulating” unit tests over time</p>
+</blockquote>
+<p>概括来说，是先写一小段某个功能的测试代码，测试失败，再写实现代码，测试成功，再迭代下一个功能。</p>
+<p>这对于单元测试与开发是很有用的一种实践。因为踢弟弟是要求在写代码之前就要想好怎么测，测什么，这解决了可测性低的问题。另外，踢弟弟还可以提高代码的测试覆盖率，令 bug 在编码阶段就能被发现。减少上线后发现问题，修复问题的指数级增长成本。</p>
+<p>然而，踢弟弟也有它的不足。</p>
+<ul>
+<li><p>它解决的是代码级的验证，但是测试代码与需求的符合问题解决得不是很好，非技术人员、客户看不懂代码，无法评审测试是否符合需求。</p>
+</li>
+<li><p>测试代码可能写得太大或者太小，令开发人员效率下降。这与测试代码与功能对应不起来有很大关系。</p>
+</li>
+</ul>
+<p>于是，又有一些小孩扩展了踢弟弟，提出了</p>
+<h2 id="逼弟弟-BDD-Behavior-Driven-Development"><a href="#逼弟弟-BDD-Behavior-Driven-Development" class="headerlink" title="逼弟弟 (BDD Behavior-Driven Development)"></a>逼弟弟 (BDD Behavior-Driven Development)</h2><p>他们发现，如果将自然语言按照一些简单语法组织起来，代码将会非常容易解释与处理。使用这种方法可以让非技术人员、客户可以参与到需求的确认与验收当中。</p>
+<p>我们看一下两个例子</p>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Scenario: </span>Refunded items <span class="keyword">should </span><span class="keyword">be </span>returned to stock</span><br><span class="line">  Given a customer <span class="keyword">bought </span>a <span class="keyword">black </span><span class="keyword">sweater </span>from me</span><br><span class="line">    <span class="keyword">And </span>I have three <span class="keyword">black </span><span class="keyword">sweaters </span>left in stock.</span><br><span class="line">  When he returns the <span class="keyword">sweater </span>for a refund</span><br><span class="line">  Then I <span class="keyword">should </span>have four <span class="keyword">black </span><span class="keyword">sweaters </span>in stock.</span><br><span class="line"></span><br><span class="line">场景：微信聊天</span><br><span class="line">  假如 手机安装了微信</span><br><span class="line">    当 用户打开微信</span><br><span class="line">  那么 手机会出现用户的微信聊天界面</span><br></pre></td></tr></table></figure>
+
+<p>以上就是逼弟弟使用的叫做 <a target="_blank" rel="noopener" href="https://github.com/cucumber/cucumber/wiki/Gherkin">Gherkin</a> 的语言，它的理念是使用自然语言来描述功能，而且强调的是使用例子来说明需求功能。是不是跟敏捷开发中的用户故事 (User Story) 很像？嗯，因为它们都是一个妈生的。</p>
+<p>其实只要我们回顾一下敏捷宣言，就会发现，逼弟弟干的事就是解决个体之间互动与客户协作这两个问题。</p>
+<h3 id="逼弟弟的需求研讨会-Specification-Workshops"><a href="#逼弟弟的需求研讨会-Specification-Workshops" class="headerlink" title="逼弟弟的需求研讨会 (Specification Workshops)"></a>逼弟弟的需求研讨会 (Specification Workshops)</h3><p>那么，我们使用这种语言，把需求一个个用例子列出来，客户／产品、开发、测试三方一起讨论与确认。</p>
+<h3 id="逼弟弟的由外而内的开发模式-Outside-In-Development"><a href="#逼弟弟的由外而内的开发模式-Outside-In-Development" class="headerlink" title="逼弟弟的由外而内的开发模式 (Outside-In Development)"></a>逼弟弟的由外而内的开发模式 (Outside-In Development)</h3><p>然后，开发人员使用 BDD 工具 (<a target="_blank" rel="noopener" href="http://jbehave.org/">JBehave</a>, <a target="_blank" rel="noopener" href="https://cucumber.io/">Cucumber</a>, <a target="_blank" rel="noopener" href="http://pythonhosted.org/behave/">Behave</a>) 去运行、实现测试脚本。再一点点编写实现功能代码，走到所有的功能都运行通过。</p>
+<p>由于开发的过程是从最接近用户的 UI 界面开始，再想到内部设计，因此它称为由外而内的开发模式。如果再加上由内而外的过程，嗯，《开发人员的自我修养》就等着你来写了，你叫史坦尼斯拉夫斯基对吧？</p>
+<p>回到 Gherkin 语言，我们上面提到它需要遵循一定的简单语法：</p>
+<ul>
+<li><strong>Scenario</strong> (场景)，说明功能的例子</li>
+<li><strong>Given</strong> (假如)，构造测试的环境条件</li>
+<li><strong>When</strong> (当)，给予的输入，可以是用户，也可以是外部系统，也可以是系统本身定时／条件触发的</li>
+<li><strong>Then</strong> (那么)，系统的输出，或者说行为</li>
+</ul>
+<p>若干个 Given, When, Then 构成一个 Scenario，若干个 Scenario 构成一个 Feature，若干个 Feature 最终构成一个系统的完整功能需求。</p>
+<h2 id="逼弟弟的不足"><a href="#逼弟弟的不足" class="headerlink" title="逼弟弟的不足"></a>逼弟弟的不足</h2><p>由于自然语言的天生缺陷，光用文字总会有一些歧义会产生。例如</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">冬天能穿多少就穿多少</span><br><span class="line">夏天能穿多少就穿多少</span><br></pre></td></tr></table></figure>
+
+<p>Gherkin 语言不能完全解决自然语言的歧义问题，如果有图片，那会很有帮助。然而，现有的 Gherkin 语言与BDD工具并不支持插入图片。</p>
+<img src="/2017/01/04/from-test-driven-development-to-behavior-driven-development/tuski.jpg" class="" title="碰壁">
+
+<p>那你问我资不资瓷，我当然资瓷啊。你们啊，要努力提高姿势水平。国外那 Stack Overflow，水平不知道比你们高到哪里去，我跟他们谈笑风生。</p>
+<p>支持的办法就是将 Gherkin 语言与 Markdown 语法 crossover，用 Markdown 标签来插入图片。就像这样：</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">    场景： 微信聊天</span><br><span class="line">    假如 手机安装了微信</span><br><span class="line">      当 用户打开微信</span><br><span class="line">    那么 手机会出现用户的微信聊天界面</span><br><span class="line">!<span class="selector-attr">[微信聊天界面]</span>(wechat.jpg)</span><br></pre></td></tr></table></figure>
+
+<p>但是由于 Markdown 不支持图片尺寸定义，图片不能缩放，效果可能就会变成</p>
+<img src="/2017/01/04/from-test-driven-development-to-behavior-driven-development/wechat.jpg" class="" title="Markdown 图像">
+
+<p>图片会显得很大，一页都显示不完，体验很差。</p>
+<p>有人提出使用</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">!<span class="selector-attr">[微信聊天界面]</span>(wechat.jpg =<span class="number">320</span>x)</span><br></pre></td></tr></table></figure>
+
+<p>这种办法，可惜的是，不是所有工具／网站都支持。</p>
+<p>又有人提出另外写一个 CSS 文件来解决这个问题，但是 Stack Overflow 上很多人表示，另外维护一个文件很不友好。而且，在逼弟弟这个事情上，让非技术人员去写 CSS 更加不切实际。因此，我暂时推荐的解决办法是在 Markdown 中使用 HTML 标签 <code>&lt;img&gt;</code>。</p>
+<p>就像这样</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">场景： 在搜索框搜索目的地</span><br><span class="line">假如 用户在手机上登录了手机助手</span><br><span class="line">  当 用户在手机助手上选择导航</span><br><span class="line">那么 手机助手进入导航页面</span><br><span class="line">#&lt;<span class="selector-tag">img</span> <span class="attribute">src</span>=<span class="string">&quot;./Main.jpg&quot;</span> width=<span class="string">&quot;240&quot;</span>&gt;</span><br></pre></td></tr></table></figure>
+
+<p>效果就会是这样</p>
+<img src="/2017/01/04/from-test-driven-development-to-behavior-driven-development/html_img.jpg" class="" title="HTML 图像">
+
+<p>这里有个 tricky 的地方，就是 HTML 标签前面要用井号注释起来，这样写的好的 Markdown 文件，只要将后缀名从 <code>.md</code> 改为 <code>.feature</code>，就可以使用各种 BDD 工具运行解释，不影响运行啦。</p>
+<img src="/2017/01/04/from-test-driven-development-to-behavior-driven-development/sakuragi.jpg" class="" title="天才">
+
+<h2 id="附一"><a href="#附一" class="headerlink" title="附一"></a>附一</h2><p>使用 Markdown 编辑工具 MacDown 查看插入图片的效果</p>
+<center>
+<iframe frameborder="0" width="640" height="498" src="https://v.qq.com/iframe/player.html?vid=s0358i60d8t&tiny=0&auto=0" allowfullscreen></iframe>
+</center>
+
+<h2 id="附二"><a href="#附二" class="headerlink" title="附二"></a>附二</h2><p>使用 Python BDD 工具 Behave 运行插入了图片的 Feature 文件的效果</p>
+<center>
+<iframe frameborder="0" width="640" height="498" src="https://v.qq.com/iframe/player.html?vid=y0358xp065i&tiny=0&auto=0" allowfullscreen></iframe>
+</center>
+
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/development/" rel="tag"># Development</a>
+              <a href="/tags/bdd/" rel="tag"># BDD</a>
+              <a href="/tags/behave/" rel="tag"># Behave</a>
+              <a href="/tags/behavior-driven/" rel="tag"># Behavior-Driven</a>
+              <a href="/tags/cucumber/" rel="tag"># Cucumber</a>
+              <a href="/tags/enrico/" rel="tag"># Enrico</a>
+              <a href="/tags/gherkin/" rel="tag"># Gherkin</a>
+              <a href="/tags/jbehave/" rel="tag"># JBehave</a>
+              <a href="/tags/markdown/" rel="tag"># Markdown</a>
+              <a href="/tags/tdd/" rel="tag"># TDD</a>
+              <a href="/tags/test/" rel="tag"># Test</a>
+              <a href="/tags/test-driven/" rel="tag"># Test-Driven</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/11/15/never-sleep-without-a-dream/" rel="prev" title="不发梦会死星人">
+                  <i class="fa fa-angle-left"></i> 不发梦会死星人
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/01/06/install-windows-under-ubuntu-and-kvm/" rel="next" title="在 Ubuntu 的 KVM 中安装 Windows 系统">
+                  在 Ubuntu 的 KVM 中安装 Windows 系统 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

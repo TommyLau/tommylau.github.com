@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="杯具是如何开始的由于使用 Atlassian 产品的缘故，一直在服务器上跑着一个 PostgreSQL。之前在配置服务的时候，直接用的是 latest 标签的镜像，然后手贱运行了 docker pull postgres 升级了 Docker 镜像。然后……然后……服务器就挂了，跑不起来了（懵逼脸）。看了一下，原来最新的官方 PostgreSQL 已经是 9.5 了，而我当时 pull 下来的 l">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用 Docker 把 PostgreSQL 数据库从 9.4 升级到 9.5">
+<meta property="og:url" content="https://tommy.net.cn/2016/08/15/upgrade-postgresql-version-from-9-4-to-9-5-in-docker/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="杯具是如何开始的由于使用 Atlassian 产品的缘故，一直在服务器上跑着一个 PostgreSQL。之前在配置服务的时候，直接用的是 latest 标签的镜像，然后手贱运行了 docker pull postgres 升级了 Docker 镜像。然后……然后……服务器就挂了，跑不起来了（懵逼脸）。看了一下，原来最新的官方 PostgreSQL 已经是 9.5 了，而我当时 pull 下来的 l">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2016-08-15T13:08:41.000Z">
+<meta property="article:modified_time" content="2025-02-19T05:47:01.040Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="PostgreSQL">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2016/08/15/upgrade-postgresql-version-from-9-4-to-9-5-in-docker/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2016/08/15/upgrade-postgresql-version-from-9-4-to-9-5-in-docker/","path":"2016/08/15/upgrade-postgresql-version-from-9-4-to-9-5-in-docker/","title":"用 Docker 把 PostgreSQL 数据库从 9.4 升级到 9.5"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>用 Docker 把 PostgreSQL 数据库从 9.4 升级到 9.5 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%AF%E5%85%B7%E6%98%AF%E5%A6%82%E4%BD%95%E5%BC%80%E5%A7%8B%E7%9A%84"><span class="nav-number">1.</span> <span class="nav-text">杯具是如何开始的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="nav-number">2.</span> <span class="nav-text">准备工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%87%E7%BA%A7%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">3.</span> <span class="nav-text">升级数据库</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2016/08/15/upgrade-postgresql-version-from-9-4-to-9-5-in-docker/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="用 Docker 把 PostgreSQL 数据库从 9.4 升级到 9.5 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          用 Docker 把 PostgreSQL 数据库从 9.4 升级到 9.5
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-08-15 21:08:41" itemprop="dateCreated datePublished" datetime="2016-08-15T21:08:41+08:00">2016-08-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-02-19 13:47:01" itemprop="dateModified" datetime="2025-02-19T13:47:01+08:00">2025-02-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/server/" itemprop="url" rel="index"><span itemprop="name">Server</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2016/08/15/upgrade-postgresql-version-from-9-4-to-9-5-in-docker/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/08/15/upgrade-postgresql-version-from-9-4-to-9-5-in-docker/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.7k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="杯具是如何开始的"><a href="#杯具是如何开始的" class="headerlink" title="杯具是如何开始的"></a>杯具是如何开始的</h2><p>由于使用 Atlassian 产品的缘故，一直在服务器上跑着一个 PostgreSQL。之前在配置服务的时候，直接用的是 <code>latest</code> 标签的镜像，然后手贱运行了 <code>docker pull postgres</code> 升级了 Docker 镜像。然后……然后……服务器就挂了，跑不起来了（懵逼脸）。看了一下，原来最新的官方 PostgreSQL 已经是 9.5 了，而我当时 pull 下来的 <code>latest</code> 实际上是 9.4。这个事情教育我们，生产环境的镜像最好使用版本号 tag 而不要偷懒使用 latest。</p>
+<p>既然杯具已经发生了，那么该解决的问题还是要解决的。看了一下，PostgreSQL 官方的升级建议是使用 <a target="_blank" rel="noopener" href="https://www.postgresql.org/docs/9.5/static/pgupgrade.html">pg_upgrade</a> 来处理新旧数据库，但是有个棘手的问题，就是必须同时有 9.4 和 9.5 两个版本的 PostgreSQL，否则无法升级数据库。</p>
+<span id="more"></span>
+
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>因为我是使用 <code>-v</code> 来映射目录的，所以不用 <code>--volumes-from</code> 的方式来加载 Volume。因此，简单处理一下目录，把所有的 containers 都先 stop 掉，然后把待升级的数据库目录改个名，同时新建一个同名目录用于保存升级后的数据。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mv</span> postgres postgres_old</span><br><span class="line"><span class="built_in">mkdir</span> postgres</span><br><span class="line"><span class="built_in">chown</span> 999.999 postgres</span><br><span class="line"><span class="built_in">chmod</span> 700 postgres</span><br></pre></td></tr></table></figure>
+
+<p>其中用户 <code>999.999</code> 对应的是 container 里面的用户 <code>postgres:postgres</code>。</p>
+<p>接下来就是用新版本的 PostgreSQL 来初始化数据库，以便后续数据库升级：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line">$ docker run --name=<span class="string">&quot;postgres_new&quot;</span> -v /path/to/postgres:/var/lib/postgresql/data -ti --<span class="built_in">rm</span> postgres:9.5</span><br><span class="line">The files belonging to this database system will be owned by user <span class="string">&quot;postgres&quot;</span>.</span><br><span class="line">This user must also own the server process.</span><br><span class="line"></span><br><span class="line">The database cluster will be initialized with locale <span class="string">&quot;en_US.utf8&quot;</span>.</span><br><span class="line">The default database encoding has accordingly been <span class="built_in">set</span> to <span class="string">&quot;UTF8&quot;</span>.</span><br><span class="line">The default text search configuration will be <span class="built_in">set</span> to <span class="string">&quot;english&quot;</span>.</span><br><span class="line"></span><br><span class="line">Data page checksums are disabled.</span><br><span class="line"></span><br><span class="line">fixing permissions on existing directory /var/lib/postgresql/data ... ok</span><br><span class="line">creating subdirectories ... ok</span><br><span class="line">selecting default max_connections ... 100</span><br><span class="line">selecting default shared_buffers ... 128MB</span><br><span class="line">selecting dynamic shared memory implementation ... posix</span><br><span class="line">creating configuration files ... ok</span><br><span class="line">creating template1 database <span class="keyword">in</span> /var/lib/postgresql/data/base/1 ... ok</span><br><span class="line">initializing pg_authid ... ok</span><br><span class="line">initializing dependencies ... ok</span><br><span class="line">creating system views ... ok</span><br><span class="line">loading system objects<span class="string">&#x27; descriptions ... ok</span></span><br><span class="line"><span class="string">creating collations ... ok</span></span><br><span class="line"><span class="string">creating conversions ... ok</span></span><br><span class="line"><span class="string">creating dictionaries ... ok</span></span><br><span class="line"><span class="string">setting privileges on built-in objects ... ok</span></span><br><span class="line"><span class="string">creating information schema ... ok</span></span><br><span class="line"><span class="string">loading PL/pgSQL server-side language ... ok</span></span><br><span class="line"><span class="string">vacuuming database template1 ... ok</span></span><br><span class="line"><span class="string">copying template1 to template0 ... ok</span></span><br><span class="line"><span class="string">copying template1 to postgres ... ok</span></span><br><span class="line"><span class="string">syncing data to disk ... ok</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">WARNING: enabling &quot;trust&quot; authentication for local connections</span></span><br><span class="line"><span class="string">You can change this by editing pg_hba.conf or using the option -A, or</span></span><br><span class="line"><span class="string">--auth-local and --auth-host, the next time you run initdb.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Success. You can now start the database server using:</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    pg_ctl -D /var/lib/postgresql/data -l logfile start</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">****************************************************</span></span><br><span class="line"><span class="string">WARNING: No password has been set for the database.</span></span><br><span class="line"><span class="string">         This will allow anyone with access to the</span></span><br><span class="line"><span class="string">         Postgres port to access your database. In</span></span><br><span class="line"><span class="string">         Docker&#x27;</span>s default configuration, this is</span><br><span class="line">         effectively any other container on the same</span><br><span class="line">         system.</span><br><span class="line"></span><br><span class="line">         Use <span class="string">&quot;-e POSTGRES_PASSWORD=password&quot;</span> to <span class="built_in">set</span></span><br><span class="line">         it <span class="keyword">in</span> <span class="string">&quot;docker run&quot;</span>.</span><br><span class="line">****************************************************</span><br><span class="line">waiting <span class="keyword">for</span> server to start....LOG:  database system was shut down at 2016-08-14 15:49:36 UTC</span><br><span class="line">LOG:  MultiXact member wraparound protections are now enabled</span><br><span class="line">LOG:  database system is ready to accept connections</span><br><span class="line">LOG:  autovacuum launcher started</span><br><span class="line"> <span class="keyword">done</span></span><br><span class="line">server started</span><br><span class="line">ALTER ROLE</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*</span><br><span class="line"></span><br><span class="line">LOG:  received fast shutdown request</span><br><span class="line">LOG:  aborting any active transactions</span><br><span class="line">waiting <span class="keyword">for</span> server to shut down...LOG:  autovacuum launcher shutting down</span><br><span class="line">.LOG:  shutting down</span><br><span class="line">LOG:  database system is shut down</span><br><span class="line"> <span class="keyword">done</span></span><br><span class="line">server stopped</span><br><span class="line"></span><br><span class="line">PostgreSQL init process complete; ready <span class="keyword">for</span> start up.</span><br><span class="line"></span><br><span class="line">LOG:  database system was shut down at 2016-08-14 15:49:40 UTC</span><br><span class="line">LOG:  MultiXact member wraparound protections are now enabled</span><br><span class="line">LOG:  database system is ready to accept connections</span><br><span class="line">LOG:  autovacuum launcher started</span><br><span class="line">^C</span><br><span class="line">LOG:  received fast shutdown request</span><br><span class="line">LOG:  aborting any active transactions</span><br><span class="line">LOG:  autovacuum launcher shutting down</span><br><span class="line">LOG:  shutting down</span><br><span class="line">LOG:  database system is shut down</span><br></pre></td></tr></table></figure>
+
+<p>这样，我们就得到了一个新的 9.5 版本的初始化数据库。</p>
+<h2 id="升级数据库"><a href="#升级数据库" class="headerlink" title="升级数据库"></a>升级数据库</h2><p>首先从待升级的 container 获得 9.4 版本 PostgreSQL 的运行文件和共享文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker <span class="built_in">cp</span> postgres_old:/usr/lib/postgresql/9.4 .</span><br><span class="line">docker <span class="built_in">cp</span> postgres_old:/usr/share/postgresql/9.4 9.4s</span><br></pre></td></tr></table></figure>
+
+<p>然后创建一个临时的 container 来升级数据库</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker run --name=<span class="string">&quot;tmp&quot;</span> -v $(<span class="built_in">pwd</span>)/9.4:/usr/lib/postgresql/9.4 -v $(<span class="built_in">pwd</span>)/9.4s:/usr/share/postgresql/9.4 -v /path/to/postgres:/data/new -v /path/to/postgres_old:/data/old -ti --<span class="built_in">rm</span> postgres:9.5 bash</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>/path/to/postgres</code> 是新数据库的路径</li>
+<li><code>/path/to/postgres_old</code> 是 9.4 版本的旧数据库的路径</li>
+</ul>
+<p>在 container 中运行 <code>su - postgres</code> 把用户切换成 <code>postgres</code>，然后运行如下命令来升级数据库：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> /tmp</span><br><span class="line">$ /usr/lib/postgresql/9.5/bin/pg_upgrade -b /usr/lib/postgresql/9.4/bin -B /usr/lib/postgresql/9.5/bin -d /data/old -D /data/new</span><br><span class="line">Performing Consistency Checks</span><br><span class="line">-----------------------------</span><br><span class="line">Checking cluster versions                                   ok</span><br><span class="line">Checking database user is the install user                  ok</span><br><span class="line">Checking database connection settings                       ok</span><br><span class="line">Checking <span class="keyword">for</span> prepared transactions                          ok</span><br><span class="line">Checking <span class="keyword">for</span> reg* system OID user data types                ok</span><br><span class="line">Checking <span class="keyword">for</span> contrib/isn with bigint-passing mismatch       ok</span><br><span class="line">Creating dump of global objects                             ok</span><br><span class="line">Creating dump of database schemas</span><br><span class="line">                                                            ok</span><br><span class="line">Checking <span class="keyword">for</span> presence of required libraries                 ok</span><br><span class="line">Checking database user is the install user                  ok</span><br><span class="line">Checking <span class="keyword">for</span> prepared transactions                          ok</span><br><span class="line"></span><br><span class="line">If pg_upgrade fails after this point, you must re-initdb the</span><br><span class="line">new cluster before continuing.</span><br><span class="line"></span><br><span class="line">Performing Upgrade</span><br><span class="line">------------------</span><br><span class="line">Analyzing all rows <span class="keyword">in</span> the new cluster                       ok</span><br><span class="line">Freezing all rows on the new cluster                        ok</span><br><span class="line">Deleting files from new pg_clog                             ok</span><br><span class="line">Copying old pg_clog to new server                           ok</span><br><span class="line">Setting next transaction ID and epoch <span class="keyword">for</span> new cluster       ok</span><br><span class="line">Deleting files from new pg_multixact/offsets                ok</span><br><span class="line">Copying old pg_multixact/offsets to new server              ok</span><br><span class="line">Deleting files from new pg_multixact/members                ok</span><br><span class="line">Copying old pg_multixact/members to new server              ok</span><br><span class="line">Setting next multixact ID and offset <span class="keyword">for</span> new cluster        ok</span><br><span class="line">Resetting WAL archives                                      ok</span><br><span class="line">Setting frozenxid and minmxid counters <span class="keyword">in</span> new cluster       ok</span><br><span class="line">Restoring global objects <span class="keyword">in</span> the new cluster                 ok</span><br><span class="line">Restoring database schemas <span class="keyword">in</span> the new cluster</span><br><span class="line">                                                            ok</span><br><span class="line">Copying user relation files</span><br><span class="line">                                                            ok</span><br><span class="line">Setting next OID <span class="keyword">for</span> new cluster                            ok</span><br><span class="line">Sync data directory to disk                                 ok</span><br><span class="line">Creating script to analyze new cluster                      ok</span><br><span class="line">Creating script to delete old cluster                       ok</span><br><span class="line"></span><br><span class="line">Upgrade Complete</span><br><span class="line">----------------</span><br><span class="line">Optimizer statistics are not transferred by pg_upgrade so,</span><br><span class="line">once you start the new server, consider running:</span><br><span class="line">    ./analyze_new_cluster.sh</span><br><span class="line"></span><br><span class="line">Running this script will delete the old cluster<span class="string">&#x27;s data files:</span></span><br><span class="line"><span class="string">    ./delete_old_cluster.sh</span></span><br></pre></td></tr></table></figure>
+
+<p>好了，经过上述几步，数据库就升级完毕了，接下来重启各种服务，完美！</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/docker/" rel="tag"># Docker</a>
+              <a href="/tags/postgresql/" rel="tag"># PostgreSQL</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/07/26/enable-ocsp-stapling/" rel="prev" title="开启 OCSP Stapling">
+                  <i class="fa fa-angle-left"></i> 开启 OCSP Stapling
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/08/16/enable-automatic-excerpt/" rel="next" title="开启自动摘要">
+                  开启自动摘要 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

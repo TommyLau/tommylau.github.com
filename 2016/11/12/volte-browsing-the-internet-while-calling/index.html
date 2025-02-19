@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="没有 VoLTE 的 4G 时代今天要跟大家聊的是一个叫 VoLTE 的东西。虽然看似很技术，但是相信我，这是一篇科普文，而绝对不是一篇技术屌丝文。 就好像文章标题所说的一样，VoLTE 可以帮助我们实现一边通话一边上网的诉求。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VoLTE，一边电话一边上网">
+<meta property="og:url" content="https://tommy.net.cn/2016/11/12/volte-browsing-the-internet-while-calling/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="没有 VoLTE 的 4G 时代今天要跟大家聊的是一个叫 VoLTE 的东西。虽然看似很技术，但是相信我，这是一篇科普文，而绝对不是一篇技术屌丝文。 就好像文章标题所说的一样，VoLTE 可以帮助我们实现一边通话一边上网的诉求。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2016/11/12/volte-browsing-the-internet-while-calling/volte.jpg">
+<meta property="og:image" content="https://tommy.net.cn/2016/11/12/volte-browsing-the-internet-while-calling/cm_volte.gif">
+<meta property="og:image" content="https://tommy.net.cn/2016/11/12/volte-browsing-the-internet-while-calling/ktvolte.png">
+<meta property="og:image" content="https://tommy.net.cn/2016/11/12/volte-browsing-the-internet-while-calling/setting.png">
+<meta property="og:image" content="https://tommy.net.cn/2016/11/12/volte-browsing-the-internet-while-calling/10086.png">
+<meta property="article:published_time" content="2016-11-12T06:57:06.000Z">
+<meta property="article:modified_time" content="2025-02-19T05:47:01.076Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Network">
+<meta property="article:tag" content="Carrier">
+<meta property="article:tag" content="China Mobile">
+<meta property="article:tag" content="China Unicom">
+<meta property="article:tag" content="LTE">
+<meta property="article:tag" content="Mobile">
+<meta property="article:tag" content="Technology">
+<meta property="article:tag" content="VoIP">
+<meta property="article:tag" content="VoLTE">
+<meta property="article:tag" content="Wireless">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2016/11/12/volte-browsing-the-internet-while-calling/volte.jpg">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2016/11/12/volte-browsing-the-internet-while-calling/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2016/11/12/volte-browsing-the-internet-while-calling/","path":"2016/11/12/volte-browsing-the-internet-while-calling/","title":"VoLTE，一边电话一边上网"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>VoLTE，一边电话一边上网 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B2%A1%E6%9C%89-VoLTE-%E7%9A%84-4G-%E6%97%B6%E4%BB%A3"><span class="nav-number">1.</span> <span class="nav-text">没有 VoLTE 的 4G 时代</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-LTE"><span class="nav-number">2.</span> <span class="nav-text">什么是 LTE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-VoLTE"><span class="nav-number">3.</span> <span class="nav-text">什么是 VoLTE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%8E%E4%B9%88%E7%8E%A9-VoLTE"><span class="nav-number">4.</span> <span class="nav-text">怎么玩 VoLTE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%80%E5%90%8E"><span class="nav-number">5.</span> <span class="nav-text">最后</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2016/11/12/volte-browsing-the-internet-while-calling/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="VoLTE，一边电话一边上网 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          VoLTE，一边电话一边上网
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-11-12 14:57:06" itemprop="dateCreated datePublished" datetime="2016-11-12T14:57:06+08:00">2016-11-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-02-19 13:47:01" itemprop="dateModified" datetime="2025-02-19T13:47:01+08:00">2025-02-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/life/" itemprop="url" rel="index"><span itemprop="name">Life</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2016/11/12/volte-browsing-the-internet-while-calling/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/11/12/volte-browsing-the-internet-while-calling/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><img src="/2016/11/12/volte-browsing-the-internet-while-calling/volte.jpg" class="">
+
+<h2 id="没有-VoLTE-的-4G-时代"><a href="#没有-VoLTE-的-4G-时代" class="headerlink" title="没有 VoLTE 的 4G 时代"></a>没有 VoLTE 的 4G 时代</h2><p>今天要跟大家聊的是一个叫 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Voice_over_LTE">VoLTE</a> 的东西。虽然看似很技术，但是相信我，这是一篇科普文，而绝对不是一篇技术屌丝文。</p>
+<p>就好像文章标题所说的一样，VoLTE 可以帮助我们实现一边通话一边上网的诉求。</p>
+<span id="more"></span>
+
+<p>作为一个 20 多年的中国移动全球通用户，我已经被中国移动的号码深深地绑架了。因为捆绑了太多的业务，实在无法更换号码。</p>
+<p>这里要吐槽一下，在中国为什么所有互联网和非互联网相关的服务行业都要手机号码呢？你们就不能用邮箱么？不知道邮箱大家很少更换，而手机号码是随着时间变化会变更的吗？</p>
+<p>还有一个想吐槽的是，从 09 年就开始说要做的携号转网，到现在也没有见到任何落地的迹象。人家美帝都实现了几个世纪了，技术上根本毫无难度。如果可以携号转网，我早就使用中国联通的服务了，毕竟中国移动的 3G 慢到不要不要的，就算是 4G 也就是联通 3G 的水准而已。</p>
+<p>跑题了，回来说说我们在没有 VoLTE 的 4G 时代，是怎样一种体验？你有没有过下面的经历（限中国移动用户）：</p>
+<ul>
+<li>正在用移动网络访问网站，然后卡死好久，突然 4G 信号消失，然后一个电话来了，网络断开了</li>
+<li>通话过程中，想要查看一下微信的信息，发现提示：<strong>无法连接服务器</strong></li>
+<li>正在导航，电话来了，切回导航发现走错路了，导航再也无法重新规划路线了，因为没有网络</li>
+<li>通话结束后，信号一直停留在 2G 网络，长时间无法恢复 4G，往往需要手动重启或者飞行模式一下，才能恢复正常</li>
+<li>明明上网速度很快的地方，接打电话却断断续续，信号差，频繁断线</li>
+</ul>
+<p>如果你经历过上面的任何一种，那么启用 VoLTE 后，你将再也不用忍受这种痛苦了。</p>
+<h2 id="什么是-LTE"><a href="#什么是-LTE" class="headerlink" title="什么是 LTE"></a>什么是 LTE</h2><p>开始正题之前，还是例行的科普时间。（啪啪啪，拍黑板）「各位同学请认真听讲！」</p>
+<p>介绍 VoLTE 之前，我们先介绍一下什么是 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/LTE_%28telecommunication%29">LTE</a>。LTE 的全称是 <strong>Long-Term Evolution</strong>，是第四代的高速无线网络标准，通常被各大运营商宣传为 4G 网络。</p>
+<p>在国外，比如美国，运营商直接宣传的就是 LTE，所以用 AT&amp;T 等网络的手机显示的都是 LTE 标志。而国内的运营商为了减少不必要的宣传成本，则统一使用 4G 作为手机显示的标志。</p>
+<p>所以，简单粗暴的理解就是 4G &#x3D; LTE，LTE &#x3D; 4G 就可以了。</p>
+<h2 id="什么是-VoLTE"><a href="#什么是-VoLTE" class="headerlink" title="什么是 VoLTE"></a>什么是 VoLTE</h2><p>VoLTE 的全称是 <strong>Voice over LTE</strong>，其实也很好理解，就是在 LTE 上传输的语音。</p>
+<p>在 VoLTE 之前，语音（Voice）是通过无线频谱来进行传播的，所以对于运营商来说，要想在一定区域内支持更多的并发通话的话，就需要更大的频谱带宽资源。</p>
+<p>而使用 VoLTE，实际上所有的语音走的都是 IP 网络。对于运营商来说，他们可以在现有频谱资源上，最大限度的复用带宽，同时提供高质量和清晰的语音通话，而其边际成本近乎为 0。</p>
+<p>既然 VoLTE 这么好，为什么不早早就用起来呢？主要是由于 VoLTE 是基于 IP 网络的，所以通话的延时是一个比较大的挑战，这里就需要用到 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Quality_of_service">QoS (Quality of service)</a> 等技术来进行线路优化。但这些优化需要持续长时间的进行，不可能一蹴而就，所以很难一下子在短期内全面开放 VoLTE 服务。</p>
+<p>回想一下好几年前我们用的 IP 长途电话功能，在电话号码之前加拨 12593，就可以以更便宜的资费来拨打国内长途。这种技术叫做 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Voice_over_IP">VoIP (Voice over IP)</a>，其基本原理与 VoLTE 是一样的。想想那个时候 IP 电话动辄 1、2 秒的延时和卡顿，你就知道 VoLTE 也面临着同样的挑战。</p>
+<p>这也是为什么好多有钱人，宁愿花贵价钱直接打长途，也不愿意使用 IP 电话，因为延时和卡顿会让人很不舒服。但是随着时间的推移和网络基础设施的演进，现在这些以前的问题都已经不是瓶颈，也是时候打开 VoLTE 的篇章了。</p>
+<h2 id="怎么玩-VoLTE"><a href="#怎么玩-VoLTE" class="headerlink" title="怎么玩 VoLTE"></a>怎么玩 VoLTE</h2><p>好了，废话说了好多，终于可以说说怎么玩 VoLTE 了。据说现在中国联通在试点城市的网络，只要手机在网络上注册，就自动开启了 VoLTE 功能，无需额外设置。因为我现在基本上不用联通的手机打电话，所以没有试验过，因此主要围绕着中国移动来说。</p>
+<p>准备工作，首先我们需要具备以下几个条件才可以玩 VoLTE：</p>
+<ol>
+<li>一个支持 4G (LTE) 网络的手机，比如说 iPhone 6 以后的机型</li>
+<li>运营商配置文件的版本不低于 23.2， iOS 10.1.1 为 26.0</li>
+<li>你已经开通 4G 网络和相关的服务</li>
+<li>你所在的区域已经开通 VoLTE 服务</li>
+<li>你还必须是全球通用户才能提前享受到这项服务</li>
+</ol>
+<p>大家可以通过<a target="_blank" rel="noopener" href="http://www.10086.cn/volte/index/#fugai">这个地址</a>实时地查询中国移动 VoLTE 的覆盖情况，也可以参考下图看自己所在区域是否支持 VoLTE：</p>
+<img src="/2016/11/12/volte-browsing-the-internet-while-calling/cm_volte.gif" class="">
+
+<p>当条件都符合的情况下，发送短信「<strong>KTVOLTE</strong>」到「<strong>10086</strong>」开通 VoLTE 服务：</p>
+<img src="/2016/11/12/volte-browsing-the-internet-while-calling/ktvolte.png" class="">
+
+<p>最后一步就是在手机上开启 VoLTE 功能了。进入「<strong>设置</strong>」-&gt;「<strong>蜂窝移动网络</strong>」-&gt;「<strong>蜂窝移动数据选项</strong>」-&gt;「<strong>启用4G</strong>」，选择「<strong>语音与数据</strong>」。</p>
+<img src="/2016/11/12/volte-browsing-the-internet-while-calling/setting.png" class="">
+
+<p>可以看到，在我将「<strong>仅数据（Data Only）</strong>」调整为「<strong>语音与数据（Voice &amp; Data）</strong>」后，4G 信号会消失一下。这时候手机正在重新注册网络，在网络重新注册后会再次出现 4G 信号。我们可以拨打中国移动的 10086 号码来验证下：</p>
+<img src="/2016/11/12/volte-browsing-the-internet-while-calling/10086.png" class="">
+
+<p>可以看到，以前拨打 10086，4G 信号标志会消失，而现在就算在拨打电话的状况下，4G 信号也不会消失了。经过测试，在打电话的时候也可以正常导航与刷微信了，就连通话质量都感觉变好了（其实完全是心理作用，实际情况是否如此，表示不得而知）。</p>
+<p>从此以后再也不用担心打游戏和导航的时候来电话了。</p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><blockquote>
+<p>声明一下：这绝对不是一篇中国移动的软文，本人也没有收取中国移动的任何好处，只是职业病的原因喜欢追新技术而已。</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/network/" rel="tag"># Network</a>
+              <a href="/tags/carrier/" rel="tag"># Carrier</a>
+              <a href="/tags/china-mobile/" rel="tag"># China Mobile</a>
+              <a href="/tags/china-unicom/" rel="tag"># China Unicom</a>
+              <a href="/tags/lte/" rel="tag"># LTE</a>
+              <a href="/tags/mobile/" rel="tag"># Mobile</a>
+              <a href="/tags/technology/" rel="tag"># Technology</a>
+              <a href="/tags/voip/" rel="tag"># VoIP</a>
+              <a href="/tags/volte/" rel="tag"># VoLTE</a>
+              <a href="/tags/wireless/" rel="tag"># Wireless</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/11/07/persistence-is-the-key-for-startup/" rel="prev" title="创业维「坚」">
+                  <i class="fa fa-angle-left"></i> 创业维「坚」
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/11/13/ifttt/" rel="next" title="如果这样了，那就那样吧">
+                  如果这样了，那就那样吧 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

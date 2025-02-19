@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前段时间写了一篇名为《是时候该学 Swift 了》的文章，强力安利了一下 Swift。也许很多人，尤其是老程序员们，可能并不是很认同这个观点，觉得 Swift 还是无法与传统的 C、C++、Java 之类的抗衡。不过没关系，我们今天不是继续安利 Swift，我们今天是来安利 Node.js 的。 其实本文的英文，在我的想法中应该是：”The next big thing: Node.js”，然">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node.js 下一波大浪潮">
+<meta property="og:url" content="https://tommy.net.cn/2016/10/18/the-next-big-thing-node-js/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="前段时间写了一篇名为《是时候该学 Swift 了》的文章，强力安利了一下 Swift。也许很多人，尤其是老程序员们，可能并不是很认同这个观点，觉得 Swift 还是无法与传统的 C、C++、Java 之类的抗衡。不过没关系，我们今天不是继续安利 Swift，我们今天是来安利 Node.js 的。 其实本文的英文，在我的想法中应该是：”The next big thing: Node.js”，然">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2016/10/18/the-next-big-thing-node-js/node_js_development.jpg">
+<meta property="og:image" content="https://tommy.net.cn/2016/10/18/the-next-big-thing-node-js/schedule.png">
+<meta property="article:published_time" content="2016-10-18T10:52:45.000Z">
+<meta property="article:modified_time" content="2016-10-18T11:40:55.000Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Node.js">
+<meta property="article:tag" content="ECMAScript">
+<meta property="article:tag" content="JavaScript">
+<meta property="article:tag" content="LTS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2016/10/18/the-next-big-thing-node-js/node_js_development.jpg">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2016/10/18/the-next-big-thing-node-js/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2016/10/18/the-next-big-thing-node-js/","path":"2016/10/18/the-next-big-thing-node-js/","title":"Node.js 下一波大浪潮"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Node.js 下一波大浪潮 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E6%96%B0%E8%AE%A4%E8%AF%86-Node-js"><span class="nav-number">1.</span> <span class="nav-text">重新认识 Node.js</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E8%AF%B4%E8%AF%B4%E7%89%88%E6%9C%AC"><span class="nav-number">2.</span> <span class="nav-text">先说说版本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ECMAScript-6"><span class="nav-number">3.</span> <span class="nav-text">ECMAScript 6</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%82%E6%AD%A5%E5%92%8C-Callback-Hell"><span class="nav-number">4.</span> <span class="nav-text">异步和 Callback Hell</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0-Node-js-%E7%9A%84%E5%BC%95%E6%93%8E"><span class="nav-number">5.</span> <span class="nav-text">实现 Node.js 的引擎</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E5%A5%97%E5%B7%A5%E5%85%B7"><span class="nav-number">6.</span> <span class="nav-text">配套工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Next-Big-Thing"><span class="nav-number">7.</span> <span class="nav-text">Next Big Thing?</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2016/10/18/the-next-big-thing-node-js/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Node.js 下一波大浪潮 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Node.js 下一波大浪潮
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2016-10-18 18:52:45 / 修改时间：19:40:55" itemprop="dateCreated datePublished" datetime="2016-10-18T18:52:45+08:00">2016-10-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/opinion/" itemprop="url" rel="index"><span itemprop="name">Opinion</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2016/10/18/the-next-big-thing-node-js/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/10/18/the-next-big-thing-node-js/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><img src="/2016/10/18/the-next-big-thing-node-js/node_js_development.jpg" class="" title="Node.js Development">
+
+<p>前段时间写了一篇名为《<a href="../../../../2016/10/02/time-to-learn-swift">是时候该学 Swift 了</a>》的文章，强力安利了一下 Swift。也许很多人，尤其是老程序员们，可能并不是很认同这个观点，觉得 Swift 还是无法与传统的 C、C++、Java 之类的抗衡。不过没关系，我们今天不是继续安利 Swift，我们今天是来安利 <a target="_blank" rel="noopener" href="https://nodejs.org/">Node.js</a> 的。</p>
+<p>其实本文的英文，在我的想法中应该是：”The next big thing: Node.js”，然而，好像很难翻译成中文的样子，于是乎就接地气一点的，把中文名写成了《Node.js 下一波大浪潮》。</p>
+<span id="more"></span>
+
+<p>为什么要在今天这个时间点来安利呢？因为，据说今天是 <a target="_blank" rel="noopener" href="https://github.com/nodejs/LTS#lts-schedule">Node.js v6 要准备 LTS 的日子了</a>。</p>
+<img src="/2016/10/18/the-next-big-thing-node-js/schedule.png" class="" title="LTS Schedule">
+
+<p>按照计划来看的话，2016 年 10 月 18 日，也就是今天应该 Node.js v6 就会成为 LTS(Long-term Support) 版本了。考虑到时区的问题，官网现在并没有更新。当然，也不排除跳票的可能性，现时最新版本的 Node.js 是 <code>v6.8.1</code>。</p>
+<h2 id="重新认识-Node-js"><a href="#重新认识-Node-js" class="headerlink" title="重新认识 Node.js"></a>重新认识 Node.js</h2><p>其实早年的时候，我对 Node.js 的印象并不是很好。混乱的版本发布，乱七八糟的调用，太过于灵活的语法，还有社区的分裂等。当然，我自己平常并不经常使用 JavaScript 作为主要的编程语言可能也是问题之一，毕竟不少人觉得 JavaScript 是世界上最好用的语言。而且坊间也时有传闻，不少原来用 Node.js 搭建的网站，也逐渐地使用其它语言重写了。</p>
+<p>重新关注 Node.js 是在大概 8 月份的时候。因为做项目的原因，想要寻找一种又快速效率又高，又可以复用前端工程师的方法。于是乎在 <a target="_blank" rel="noopener" href="https://twitter.com/reducm">JAS</a> 同学的「布道」下，开始重新了解起 Node.js。</p>
+<h2 id="先说说版本"><a href="#先说说版本" class="headerlink" title="先说说版本"></a>先说说版本</h2><p>让我重新考虑 Node.js 的一个主要原因是版本，也许说出来很多人不信，但，这是真的。</p>
+<p>Node 社区闹过分裂，现在好了。Node.js 跟 io.js 又重新合并到一起了。然后，把之前混乱的版本号终于统一起来了。</p>
+<p>而且，最最重要的是，他们有了 LTS 版本了！！！这意味着什么？意味着，你再也不会出现昨天编写的代码，明后天部署到服务器发现，TMD 语法不兼容了，NPM 包不行了，版本太旧了，然后你就要花很多的时间重新梳理代码，重新处理依赖关系等。</p>
+<p>而 JavaScript 的粉丝们，大多年轻充满热情，又非常热衷于新东西。这也导致到他们很少考虑长期商业使用的情况，但对于企业来说，程序能长期稳定的运行才是最重要的。</p>
+<p>早期的时候因为不稳定，运维人员往往还要做很多监控手段，一旦发现服务器挂了，就要赶紧重启相关的服务，也是让人觉得很痛苦的。当然，为了服务器可以长期稳定地运行，现在还是需要做这些工作的。</p>
+<h2 id="ECMAScript-6"><a href="#ECMAScript-6" class="headerlink" title="ECMAScript 6"></a>ECMAScript 6</h2><p>也许大部分人对于 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/ECMAScript">ECMAScript</a> 这个名字很陌生，然而它才是 JavaScript 真正的名字。JavaScript 实际上是当年 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Netscape">Netscape</a> 为了借着 Java 这个热点炒作自己而起的名字，它最早在 Netscape 发布的时候叫做 LiveScript。就我个人而言，我觉得其实 LiveScript 反而还好听一点。</p>
+<p>那为什么叫 ECMAScript 呢？因为 1996 年的时候 Netscape 把 JavaScript 递交到了 <a target="_blank" rel="noopener" href="http://www.ecma-international.org/">ECMA International</a> 以便对其进行标准化。而且标准化过后的名字就是 <strong>ECMAScript</strong> 了。然而这个名字太傻了，别说普罗大众，连攻城狮们都嫌弃，所以除了在很正式的会议和标准化文档中，大家还是习惯使用 JavaScript 这个名字来指代。</p>
+<p>而 <a target="_blank" rel="noopener" href="http://es6-features.org/#Constants">ECMAScript 6 (ES6)</a> 实际上是 2015 年已经完成了标准化的 ECMAScript 的第六个修正版，一般大家简称为 ES6。</p>
+<p>而这个 ES6 就厉害了，引入了超级讨好的语法糖、解构、let 和 const 等新特性。简单来说，很多的语法都得到了简化，使得开发速度得以提升。最重要的是，JavaScript 引入了「类」，变成了真正意义上的面向对象语言。还有「模块」特性的引入，使代码变得更加简洁和可维护。当然，还有更多语法相关的改善，但本文的重点不是介绍 JavaScript ES6，就不展开了介绍了。</p>
+<p>总之，ES6 很未来，很先进，很好用，很流弊，这样。</p>
+<h2 id="异步和-Callback-Hell"><a href="#异步和-Callback-Hell" class="headerlink" title="异步和 Callback Hell"></a>异步和 Callback Hell</h2><p>Node.js 的效率高是出了名的，这个就不需要单独再拿篇幅来写了。但是这种高性能是建筑在异步处理这一实现之上的。类似于 Nginx，所有的处理都需要用到回调（Callback），否则就会造成堵塞（Blocking），甚至比用传统的 Apache 更慢。</p>
+<p>当然，有利有弊，让人又爱又恨的 Node.js，最要命的一点就是其 Callback Hell，它会让代码的可读性大大降低。于是乎，后来大家就开始使用 <a target="_blank" rel="noopener" href="https://www.promisejs.org/">Promise</a> 来处理异步调用了。现在 ES6 可以使用生成器（Generators）来解决这个问题，再也不用担心 Callback Hell 的问题了。更好的方式是使用 Babel 在 ES6 实现 <strong>await</strong> 和 <strong>async</strong> 功能，这样可以进一步地提升开发效率和代码可读性。写代码感觉就像是编写同步代码一样，让研发人员专注在功能和逻辑的开发上，而不是操心如何处理一层又一层的回调。</p>
+<p>举个 Callback Hell 的例子，像下面这样的代码，当你要理解逻辑的时候，就会变得异常的痛苦：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">a</span>(<span class="keyword">function</span> (<span class="params">resultsFromA</span>) &#123;</span><br><span class="line">  <span class="title function_">b</span>(resultsFromA, <span class="keyword">function</span> (<span class="params">resultsFromB</span>) &#123;</span><br><span class="line">    <span class="title function_">c</span>(resultsFromA, <span class="keyword">function</span> (<span class="params">resultsFromC</span>) &#123;</span><br><span class="line">      <span class="title function_">d</span>(resultsFromA, <span class="keyword">function</span> (<span class="params">resultsFromD</span>) &#123;</span><br><span class="line">        <span class="title function_">e</span>(resultsFromA, <span class="keyword">function</span> (<span class="params">resultsFromE</span>) &#123;</span><br><span class="line">          <span class="title function_">f</span>(resultsFromA, <span class="keyword">function</span> (<span class="params">resultsFromF</span>) &#123;</span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(resultsFromF);</span><br><span class="line">          &#125;)</span><br><span class="line">        &#125;)</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="实现-Node-js-的引擎"><a href="#实现-Node-js-的引擎" class="headerlink" title="实现 Node.js 的引擎"></a>实现 Node.js 的引擎</h2><p>现在的 Node 基本上都是基于 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/V8_%28JavaScript_engine%29">Google Chrome V8 引擎</a>实现的。可以说，如果 Google 没有开源 V8 引擎，就不可能有 Node.js 的春天。包括知名的 <a target="_blank" rel="noopener" href="https://www.mongodb.com/">MongoDB</a> 也离不开 V8 引擎的支持。</p>
+<p>然后，随着 Microsoft 最近越来越开放，Google Chrome V8 的竞争对手也来了。那就是 Chakra，微软最新一代浏览器 Edge 的御用 JavaScript 处理引擎，据说在某些特定情况下，其处理效率远远超过 V8 引擎。而且 <a target="_blank" rel="noopener" href="https://github.com/Microsoft/ChakraCore">Chakra 源代码</a>可以直接在 GitHub 上找到。Node.js 官方的代码仓库，也能找到<a target="_blank" rel="noopener" href="https://github.com/nodejs/node-chakracore">基于 ChakraCore 的 Node.js</a>。</p>
+<p>不得不说，未来这个世界，真的是越来越开放，越来越合作共赢了。这也意味着，在将来 Node.js 将获得更好的跨平台支持。随着微软的进入，也许将来 Node.js 不仅仅在服务端和浏览器端有所建树，说不定 PC 端也能用 JavaScript 来开发了。还有原来的 <a target="_blank" rel="noopener" href="http://phonegap.com/">PhoneGap</a>，现在也成了 Apache 基金会旗下的 <a target="_blank" rel="noopener" href="https://cordova.apache.org/">Cordova</a>，在性能不是主要需求的情况下，我们又怎么能知道 JavaScript 是否也会横扫移动端呢？</p>
+<h2 id="配套工具"><a href="#配套工具" class="headerlink" title="配套工具"></a>配套工具</h2><p>第一个要介绍的就是 <a target="_blank" rel="noopener" href="http://mean.io/">MEAN 大杂烩</a>，这个是一个合集，包括了：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.mongodb.com/">MongoDB</a></li>
+<li><a target="_blank" rel="noopener" href="https://expressjs.com/">Express.js</a></li>
+<li><a target="_blank" rel="noopener" href="https://angularjs.org/">AngularJS</a></li>
+<li><a target="_blank" rel="noopener" href="https://nodejs.org/">Node.js</a></li>
+</ul>
+<p>基本上就是你开发一个 Web 应用的所有方面都覆盖到了，这就跟我们 2000 年左右流行的 LAMP(Linux + Apache + MySQL + PHP) 一样。基本上就是一个开箱即用的全家桶，如果想省事的话，直接用全家桶吧。</p>
+<p>除了全家桶，其实还有很多的框架可以选择，比如：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://koajs.com/">Koa</a></li>
+<li><a target="_blank" rel="noopener" href="http://restify.com/">restify</a></li>
+<li><a target="_blank" rel="noopener" href="http://hapijs.com/">hapi</a></li>
+<li><a target="_blank" rel="noopener" href="http://sailsjs.org/">Sails.js</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.meteor.com/">Meteor</a></li>
+</ul>
+<p>基本上从 Web 到 API 到轻量应用全部都覆盖到了，剩下的就是你的 Idea 和动手能力了。</p>
+<p>而且测试也有很多不错的框架可以使用，比如：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://mochajs.org/">Mocha</a></li>
+<li><a target="_blank" rel="noopener" href="http://chaijs.com/">Chai</a></li>
+<li><a target="_blank" rel="noopener" href="http://sinonjs.org/">Sinon.js</a></li>
+<li><a target="_blank" rel="noopener" href="http://zombie.js.org/">Zombie.js</a></li>
+</ul>
+<p>当然，还有其他很多不错的框架，并未能一一列举，简而言之，就是整个社区来讲，现在比较成熟了，而且可以选择的框架也很丰富，用别人造好的轮子，可以快速地实现产品原型。</p>
+<h2 id="Next-Big-Thing"><a href="#Next-Big-Thing" class="headerlink" title="Next Big Thing?"></a>Next Big Thing?</h2><p>没有入坑的小伙伴，可以考虑入坑了。新版的 Node.js 虽然真的很吸引人，但我个人感觉这还是一个坑。为什么说是坑呢？因为不管什么语言到了一定的程度，总是会有各种各样的坑是规避不了的。但社会总是会进步的，IT 业也是一样。你今天让工程师用 MFC 去写一个 Windows 的应用程序，我估计大部分人更情愿用 C#，毕竟两者的效率相差实在是太大了。</p>
+<p>工具除了好玩之外，根本还是要从解决实际生产中的问题为出发点。之前我不愿意尝试 Node.js，是因为我觉得它更像是一个极客的玩具而不是一个生产力工具。今天我们也许该尝试一下，看看 Node.js 对于我们是个惊喜还是有惊无喜。说不定，Node.js 真的就是下一个 Big Thing 呢？期待……</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/node-js/" rel="tag"># Node.js</a>
+              <a href="/tags/ecmascript/" rel="tag"># ECMAScript</a>
+              <a href="/tags/javascript/" rel="tag"># JavaScript</a>
+              <a href="/tags/lts/" rel="tag"># LTS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/10/18/convert-dds-texture-to-png-format/" rel="prev" title="将 DDS 格式的贴图转换成 PNG 格式">
+                  <i class="fa fa-angle-left"></i> 将 DDS 格式的贴图转换成 PNG 格式
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/10/24/chicken-s-first-vr-experience/" rel="next" title="胆小鬼的 VR 初体验">
+                  胆小鬼的 VR 初体验 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

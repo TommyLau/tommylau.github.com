@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="缘起作为一个 IT 苦力的我，由于常年受白嫖怪朋友们的厚(qi)爱(fu)，时常需要帮友人重装系统，配置网络，设置路由器，组装 NAS 什么的。毕竟学通信工程的人，不就是修电脑、修手机和修网络的吗？😂 理论上来讲，很多东西装好，配置好，应该就不会有任何问题了。一开始，我也是这样以为的，然而很多时候往往事与愿违。今天不是张三的电脑出问题了，就是明天李四的 NAS 挂了。 作为一个懒人，现场支持什">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用 Nebula 创建私人局域网">
+<meta property="og:url" content="https://tommy.net.cn/2021/09/12/build-your-own-sd-lan-by-nebula/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="缘起作为一个 IT 苦力的我，由于常年受白嫖怪朋友们的厚(qi)爱(fu)，时常需要帮友人重装系统，配置网络，设置路由器，组装 NAS 什么的。毕竟学通信工程的人，不就是修电脑、修手机和修网络的吗？😂 理论上来讲，很多东西装好，配置好，应该就不会有任何问题了。一开始，我也是这样以为的，然而很多时候往往事与愿违。今天不是张三的电脑出问题了，就是明天李四的 NAS 挂了。 作为一个懒人，现场支持什">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2021/09/12/build-your-own-sd-lan-by-nebula/nebula.jpg">
+<meta property="article:published_time" content="2021-09-11T18:11:28.000Z">
+<meta property="article:modified_time" content="2021-09-11T19:24:10.000Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Network">
+<meta property="article:tag" content="VPN">
+<meta property="article:tag" content="NAS">
+<meta property="article:tag" content="Router">
+<meta property="article:tag" content="IP">
+<meta property="article:tag" content="IPv4">
+<meta property="article:tag" content="IPv6">
+<meta property="article:tag" content="LAN">
+<meta property="article:tag" content="Mesh">
+<meta property="article:tag" content="NAT">
+<meta property="article:tag" content="Nebula">
+<meta property="article:tag" content="SD-LAN">
+<meta property="article:tag" content="SDN">
+<meta property="article:tag" content="UDP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2021/09/12/build-your-own-sd-lan-by-nebula/nebula.jpg">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2021/09/12/build-your-own-sd-lan-by-nebula/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2021/09/12/build-your-own-sd-lan-by-nebula/","path":"2021/09/12/build-your-own-sd-lan-by-nebula/","title":"用 Nebula 创建私人局域网"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>用 Nebula 创建私人局域网 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%98%E8%B5%B7"><span class="nav-number">1.</span> <span class="nav-text">缘起</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9C%80%E6%B1%82"><span class="nav-number">2.</span> <span class="nav-text">需求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%A5%E5%85%B7%E5%AF%B9%E6%AF%94"><span class="nav-number">3.</span> <span class="nav-text">工具对比</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Nebula"><span class="nav-number">4.</span> <span class="nav-text">Nebula</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD"><span class="nav-number">5.</span> <span class="nav-text">下载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA-CA-%E8%AF%81%E4%B9%A6"><span class="nav-number">6.</span> <span class="nav-text">创建 CA 证书</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E5%AF%86%E9%92%A5%E4%B8%8E%E8%AF%81%E4%B9%A6"><span class="nav-number">7.</span> <span class="nav-text">创建密钥与证书</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-Nebula"><span class="nav-number">8.</span> <span class="nav-text">配置 Nebula</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-Lighthouse"><span class="nav-number">8.1.</span> <span class="nav-text">配置 Lighthouse</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E8%8A%82%E7%82%B9"><span class="nav-number">8.2.</span> <span class="nav-text">配置节点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%98%B2%E7%81%AB%E5%A2%99%E9%85%8D%E7%BD%AE"><span class="nav-number">8.3.</span> <span class="nav-text">防火墙配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E5%AE%83%E9%85%8D%E7%BD%AE"><span class="nav-number">8.4.</span> <span class="nav-text">其它配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C-Nebula"><span class="nav-number">9.</span> <span class="nav-text">运行 Nebula</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C-Lighthouse"><span class="nav-number">9.1.</span> <span class="nav-text">运行 Lighthouse</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E8%8A%82%E7%82%B9"><span class="nav-number">9.2.</span> <span class="nav-text">运行节点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81"><span class="nav-number">9.3.</span> <span class="nav-text">验证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96"><span class="nav-number">10.</span> <span class="nav-text">其他</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%84%E4%BB%B6"><span class="nav-number">11.</span> <span class="nav-text">附件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#config-lh-yaml"><span class="nav-number">11.1.</span> <span class="nav-text">config-lh.yaml</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#config-yaml"><span class="nav-number">11.2.</span> <span class="nav-text">config.yaml</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2021/09/12/build-your-own-sd-lan-by-nebula/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="用 Nebula 创建私人局域网 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          用 Nebula 创建私人局域网
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2021-09-12 02:11:28 / 修改时间：03:24:10" itemprop="dateCreated datePublished" datetime="2021-09-12T02:11:28+08:00">2021-09-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/network/" itemprop="url" rel="index"><span itemprop="name">Network</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/09/12/build-your-own-sd-lan-by-nebula/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/09/12/build-your-own-sd-lan-by-nebula/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>9.5k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>9 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><img src="/2021/09/12/build-your-own-sd-lan-by-nebula/nebula.jpg"></p>
+<h2 id="缘起"><a href="#缘起" class="headerlink" title="缘起"></a>缘起</h2><p>作为一个 IT 苦力的我，由于常年受<del>白嫖怪</del>朋友们的厚(qi)爱(fu)，时常需要帮友人重装系统，配置网络，设置路由器，组装 NAS 什么的。毕竟学通信工程的人，不就是修电脑、修手机和修网络的吗？😂</p>
+<p>理论上来讲，很多东西装好，配置好，应该就不会有任何问题了。一开始，我也是这样以为的，然而很多时候往往事与愿违。今天不是张三的电脑出问题了，就是明天李四的 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Network-attached_storage">NAS</a> 挂了。</p>
+<p>作为一个懒人，现场支持什么的，那是肯定不可能的，毕竟咱这工时费也不低不是（可惜从来没收过）。再者说来，朋友们碰到的大多数问题其实都不大需要现场支持这么严重，除非是系统级别的灾难。</p>
+<span id="more"></span>
+
+<p>然而，我又一次天真了。同一个问题，我自己可能几分钟就解决了，而跟好友打电话、视频、语音等各种沟通，可能要花上数小时。别问我为什么不用<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Remote_Desktop_Protocol">远程桌面（RDP）</a>、<a target="_blank" rel="noopener" href="https://www.teamviewer.cn/">TeamViewer</a>、QQ 远程协助类的工具。绝大多数人的网络都在 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Network_address_translation">NAT</a> 后面，很多还是好几级的 NAT，根本就连不上。在 macOS 系统下，是无法使用 QQ 远程协助的，因为根本没有这个功能。TeamViewer 要付费，这个也就没什么好聊的啦，参考第一段第一句话。🤦‍♂️</p>
+<p>比较稳定能用的网络连接工具也就是 ZeroTier 了，但是要跟对方讲怎么安装，怎么加入网络也是个吃力不讨好的事儿。而且可能就一个小问题，还要安装一个额外的软件，也是得不偿失。再者，ZeroTier 中继的速度非常慢，而且就算连上了，还是得用屏幕共享的方式解决问题，也并不怎么优雅。更不要说像 NAS 这类的 Linux 系统了，我该如何跟小白解释 SSH，证书还有 Terminal 了 。</p>
+<p>如果在路由器级别就能实现互联互通，解决掉<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Dynamic_DNS">动态域名</a>和 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/NAT_traversal">NAT 打洞</a>的问题，那么就可以把远程协助的工作变成一个局域网内的远程管理，这样就非常美好了。起码不用让对方去查看自己的公网 IP，不用做 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Universal_Plug_and_Play">UPnP 映射</a>，下载工具什么的。其实这种方式也非常适合有多个办公地点的小伙伴，或者是那种多 sites 办公的群体。还有一个应用场景，就是有自己 NAS 的小伙伴，可以在外面安全地访问家里存放的私人数据。</p>
+<h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>在思考过可能的使用场景后，整理需求如下：</p>
+<ol>
+<li>能实现多个地点的局域网化（<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Software-defined_networking">SD-LAN</a>），比如北京、上海、广州和深圳办公室的互联</li>
+<li>在外可以实现远程访问公司或者家里 NAS 上存储的数据</li>
+<li>客户端支持主流操作系统 macOS、Windows、Linux 以及手机 iOS、Android 应用</li>
+<li>实现端对端加密，且支持现代加密技术，以保证数据传输的安全性</li>
+<li>可以运行在路由器上，实现不同路由器下子网间的互联互通</li>
+<li>新加入网络的设备不改变现有网络拓扑结构，无需修改现有配置</li>
+</ol>
+<p>可选需求：</p>
+<ol>
+<li>配置简单、方便，有图形化界面，或者类似工具</li>
+<li>去中心节点化，尽可能多的容灾方案</li>
+<li>最好是开源代码，而非商业代码，以便于代码审查</li>
+</ol>
+<h2 id="工具对比"><a href="#工具对比" class="headerlink" title="工具对比"></a>工具对比</h2><p>在做了一大轮的功课以后，我分别尝试了以下这些工具：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.cisco.com/c/en/us/support/security/anyconnect-secure-mobility-client-v4-x/model.html">Cisco AnyConnect</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.defined.net/">Nebula</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.wireguard.com/">WireGuard</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zerotier.com/">ZeroTier</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/fatedier/frp">frp</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/ntop/n2n">n2n</a></li>
+<li><a target="_blank" rel="noopener" href="https://ngrok.com/">ngrok</a></li>
+</ul>
+<p>总体来讲，ZeroTier 的体验是最好的，虽然中继服务器经常连不上，或者很慢，但是可以通过自建 <a target="_blank" rel="noopener" href="https://docs.zerotier.com/zerotier/manual/">moon</a> 的方式进行中转。基本上所有类型的 NAT 都可以打通，对于不能打通的可以使用中继服务器进行中转。但使用中继的时候，带宽受限于中转服务器的带宽。相对来说，新手上手难度比较低，但是商业公司，中心服务器，数据安全可能是个问题。</p>
+<p>WireGuard 是一个已经加入到 <a target="_blank" rel="noopener" href="https://www.kernel.org/">Linux 内核</a>里面的协议，配置也不复杂，实测传输速度也很不错。默认不支持在 NAT 网络下打洞，不过网上已经有人通过 <a target="_blank" rel="noopener" href="https://coredns.io/">CoreDNS</a> 的 Plugin <a target="_blank" rel="noopener" href="https://www.jordanwhited.com/posts/wireguard-endpoint-discovery-nat-traversal/">实现了 WireGuard 的打洞</a>，但还要编译代码什么的比较啰嗦。同时，配置起来也比较麻烦，每个节点（Node）需要单独配置公私钥，多个节点之间必须每两两进行配置。也就是说如果 2 个服务器就要配置 2 个节点信息，3 个需要配置 6 个，如果站点多的话，自己算吧……</p>
+<p>Cisco AnyConnect 属于商用软件，Server &#x2F; Client 模式，同时还需要占用 443&#x2F;TCP 端口，属于比较传统的产品。虽然有 <a target="_blank" rel="noopener" href="https://ocserv.gitlab.io/www/">ocserv</a>，但是配置也很麻烦，客户端强依赖于 Cisco，并不适用于现有需求，直接劝退吧。</p>
+<p>frp，也需要服务器中转，受限于服务器带宽。有朋友说现在有 <code>xtcp</code> 模式可以支持直连打洞，但本人并没有试验过。n2n，ngrok 什么的在 Linux 服务器上配置过，对于终端用户来说，还是不那么理想。</p>
+<p>而 Nebula，从 2020 年开始关注以来，一直没有真正部署过。主要是文档太少，官方开发速度缓慢，一些该有的核心功能还不完善。比如刚开始的时候，他们没有 iOS 和 Android 的客户端。再有就是必须要自己有一个公网 IP 的服务器做 Lighthouse，同时还不支持数据中转。一些复杂的 NAT 网络无法穿透，不支持 IPv6 等等。</p>
+<p>但是他们最近发布了 1.4.0 的版本，突然之间就变得真香了。对于我来说，最重要的一点，就是支持 IPv6 了。也就是说，在有 IPv6 支持的情况下，完全不需要关心 NAT 类型了，可以直接建立连接。再有就是手机客户端官方也开源了，同时 iOS 上也可以正常使用了。这就意味着只用一个软件，我就可以把已知的网络通过路由器全部连通的同时，还可以用手机直接访问内网 NAS 上的数据。</p>
+<h2 id="Nebula"><a href="#Nebula" class="headerlink" title="Nebula"></a>Nebula</h2><p>首先说说，什么是 Nebula？其官方介绍如下：</p>
+<blockquote>
+<p>Nebula is a scalable overlay networking tool with a focus on performance, simplicity and security. It lets you seamlessly connect computers anywhere in the world. Nebula is portable, and runs on Linux, OSX, Windows, iOS, and Android. It can be used to connect a small number of computers, but is also able to connect tens of thousands of computers.</p>
+</blockquote>
+<p>简单来说，<a target="_blank" rel="noopener" href="https://github.com/slackhq/nebula/">Nebula</a> 是由 <a target="_blank" rel="noopener" href="https://slack.com/">slack</a> 开源的一款专注于性能、易用性和安全性的 P2P 网络通信工具。可以运行在 Linux、macOS、Windows、iOS 和 Android 等设备上，使得用户可以无缝连接任何一台网络设备。</p>
+<p>Nebula 的底层使用了 <a target="_blank" rel="noopener" href="https://noiseprotocol.org/">Noise Protocol Framework</a> 协议以实现<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Software-defined_networking">SDN（Software Defined Network）</a> 双向认证的 P2P 网络。可以使用 AES 或者 CHACHAPOLY 加密算法，以保证数据传输的安全性。</p>
+<h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p>首先去 Nebula 的 GitHub Release 页面下载最新的 Nebula：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/slackhq/nebula/releases">https://github.com/slackhq/nebula/releases</a></p>
+<p>当前最新的版本为 Nebula 1.4.0，已经支持 IPv6 了，针不戳。</p>
+<p>下载自己对应平台的版本就可以了，因为我要跑在 MTK 的路由器上（红米 AC2100，Newifi-D2 等），官方没有 mipsle-softfloat 的架构，所以就自己编译了一个版本，可以在下面的地址下载：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/TommyLau/nebula/releases">https://github.com/TommyLau/nebula/releases</a></p>
+<p>同时，因为朋友需要在 Windows 32 位系统下面使用，所以顺便也编译了一个 x86 的版本。有需要的小伙伴，同样可以在上面的链接里面找到对应的下载。</p>
+<p>下面是 iOS 和 Android 的版本：</p>
+<p><a target="_blank" rel="noopener" href="https://apps.apple.com/us/app/mobile-nebula/id1509587936">https://apps.apple.com/us/app/mobile-nebula/id1509587936</a><br><a target="_blank" rel="noopener" href="https://play.google.com/store/apps/details?id=net.defined.mobile_nebula">https://play.google.com/store/apps/details?id=net.defined.mobile_nebula</a></p>
+<p>需要注意的是，iOS 版本在中国区是没有上架的，Android 版本好像也只有 Google Play 上才有，这个大家自己想办法解决吧。</p>
+<p>解包 Nebula 以后主要有 2 个文件，<code>nebula</code> 和 <code>nebula-cert</code>。</p>
+<h2 id="创建-CA-证书"><a href="#创建-CA-证书" class="headerlink" title="创建 CA 证书"></a>创建 CA 证书</h2><p>创建证书，好比使用其他工具一样，一如既往的简单。只需要输入如下的内容便可以生成我们需要的 CA 证书了。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./nebula-cert ca -name &quot;Myorganization, Inc&quot;</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>&quot;Myorganization, Inc&quot;</code> 为这个 Nebula 网络的证书名，可以改成任意方便记忆的名字。</p>
+<p>程序执行完毕后，会在当前目录下生成 <code>ca.key</code>（私钥）和 <code>ca.crt</code>（证书）两个文件。</p>
+<blockquote>
+<p> <code>ca.key</code> 用于签名所有的 Nebula 节点，因此格外重要，请务必妥善保管。又因为其重要性，建议仅在签名时使用，并作单独存放，不要放到 Lighthouse 或者任何一个 Nebula 节点上。</p>
+</blockquote>
+<h2 id="创建密钥与证书"><a href="#创建密钥与证书" class="headerlink" title="创建密钥与证书"></a>创建密钥与证书</h2><p>假设我们现在要配置 3 个主机，分别是 <code>lighthouse</code>、<code>router</code> 和 <code>laptop</code>。我们可以直接使用刚才说的 3 个名字，也可以用域名的方式来命名，都是可以的。</p>
+<p>同时我们需要提前规划好网络定义，比如：<code>192.168.100.0/24</code>。这个网络要跟我们现在已有的网络地址区分开，比如 <code>192.168.1.0/24</code> 等。因为 Nebula 是 Overlay Network，它必须基于现有网络的基础之上，如果 IP 地址冲突的话，就无法正常工作了。</p>
+<p>我们可以通过下面的命令，来生成不同的证书：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">./nebula-cert sign -name &quot;lighthouse&quot; -ip &quot;192.168.100.1/24&quot;</span><br><span class="line">./nebula-cert sign -name &quot;router&quot; -ip &quot;192.168.100.11/24&quot; -subnets &quot;172.16.1.0/24&quot; -groups &quot;router,servers&quot;</span><br><span class="line">./nebula-cert sign -name &quot;laptop&quot; -ip &quot;192.168.100.100/24&quot; -groups &quot;laptop,ssh&quot;</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ul>
+<li>-name，就是这个节点的名字，可以任意填写，也可以用域名的方式填写</li>
+<li>-ip，指定 Nebula 分配给该节点的 IP 地址，需要手动指定，且不能与已分配的 IP 地址冲突</li>
+<li>-subnets，指定当前节点的非 Nebula 路由，以便其它节点能访问当前节点的子网  </li>
+<li>-group，指定该节点所在的组，方便 Nebula 进行防火墙规则配置</li>
+</ul>
+<p>在上面的例子中，我们创建了 3 个不同的节点。<code>lighthouse</code> 需要部署在有公网 IP 的服务器上，用于连通各个不同的节点。<code>router</code> 部署在家里的路由器上，以方便访问 NAS 或者智能家居等设备。<code>laptop</code> 相当于一个笔记本，用于在任何地方接入这个私有网络。类似的，我们也可以增加 <code>phone</code>、<code>pad</code> 等设备，其它证书的生成方式与 <code>laptop</code> 类似，使用不同的名称就可以了。</p>
+<h2 id="配置-Nebula"><a href="#配置-Nebula" class="headerlink" title="配置 Nebula"></a>配置 Nebula</h2><p>对于 Nebula 来说，每一个节点都需要一个单独的配置文件。我们可以下载官方的配置文件作为参考模板：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/slackhq/nebula/blob/master/examples/config.yml">https://github.com/slackhq/nebula/blob/master/examples/config.yml</a></p>
+<p>我们把这个文件复制成两份，分别是 <code>config-lh.yaml</code> 和 <code>config.yaml</code>，分别对应 <code>lighthouse</code> 和其它主机。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cp config.yml config-lh.yaml</span><br><span class="line">cp config.yml config.yaml</span><br></pre></td></tr></table></figure>
+
+<h3 id="配置-Lighthouse"><a href="#配置-Lighthouse" class="headerlink" title="配置 Lighthouse"></a>配置 Lighthouse</h3><p>在 Lighthouse 节点上，最重要的是要确认 <code>am_lighthouse: true</code> 为开启状态。</p>
+<p>一般来说，Lighthouse 节点不需要指定静态路由 <code>static_host_map</code>，因为所有的节点都会跟 Lighthouse 进行通信。就算我个人使用了多 Lighthouse 的配置，其实也不需要设置静态路由，除非是需要在 Lighthouse 之间进行通信。</p>
+<p>另外，为了更好的组网，IPv6 当然是必不可少的啦！在官方的配置文件中，默认使用 IPv4 方式：<code>host: 0.0.0.0</code>，这里我们需要手动修改为：<code>host: &quot;[::]&quot;</code> 来同时监听 IPv4 和 IPv6 的数据。</p>
+<p>修改过的参数配置如下：</p>
+<figure class="highlight yaml"><figcaption><span>config-lh.yaml</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">static_host_map:</span></span><br><span class="line"></span><br><span class="line"><span class="attr">lighthouse:</span></span><br><span class="line">  <span class="attr">am_lighthouse:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="attr">listen:</span></span><br><span class="line">  <span class="attr">host:</span> <span class="string">&quot;[::]&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>除此之外，配置文件里面还有子网相关的配置，因为我使用了与官方参考配置相同的子网： <code>192.168.100.0/24</code>，所以不需要做额外地修改。如果你配置了不同的子网和 IP 的话，请相应地做出调整。</p>
+<h3 id="配置节点"><a href="#配置节点" class="headerlink" title="配置节点"></a>配置节点</h3><p>配置节点与配置 Lighthouse 类似，唯一不同的是，需要在 <code>static_host_map</code> 中指定 Lighthouse 的公网 IP 和端口。这里使用 IP 或者域名的方式都可以，个人建议使用域名，这样可以减少更换 Lighthouse 服务器以后，需要逐个节点修改配置的麻烦。</p>
+<p><code>static_host_map</code> 前面的部分是 Lighthouse 在 Nebula 网络中的 IP 地址（参考本文证书部分），后面是公网服务器的域名或者 IP，以及其对应的端口。</p>
+<p> <code>am_lighthouse</code> 必须要设置为 <code>false</code>，同时 <code>hosts</code>  里面必须要指定 Lighthouse 的 Nebula IP。</p>
+<p> 同样的，为了打开 IPv6，host -&gt; listen 还是要调整下。同时这里有个坑，就是在 NAT 后面的网络，一定要把 <code>port</code> 设置为 0，以使用动态端口，不然各种连不上。其实我觉得除了 Lighthouse 以外，其它的节点都应该将端口设置为 0，以减少不必要的麻烦。</p>
+<figure class="highlight yaml"><figcaption><span>config.yaml</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">static_host_map:</span></span><br><span class="line">  <span class="attr">&quot;192.168.100.1&quot;:</span> [<span class="string">&quot;your.domain.tld:4242&quot;</span>]</span><br><span class="line"></span><br><span class="line"><span class="attr">lighthouse:</span></span><br><span class="line">  <span class="attr">am_lighthouse:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">interval:</span> <span class="number">60</span></span><br><span class="line">  <span class="attr">hosts:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;192.168.100.1&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">listen:</span></span><br><span class="line">  <span class="attr">host:</span> <span class="string">&quot;[::]&quot;</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">0</span></span><br></pre></td></tr></table></figure>
+
+<p>配置到这里，基本上就算是完成了。但是我们之前有一个 <code>router</code> 节点，为的就是能远程访问局域网的内容，所以这个时候我们还需要多配置一个 <code>unsafe_routes</code>。需要注意的是，如果要访问 <code>router</code> 节点背后的网络，我们需要在每个需要访问该网络的节点上，增加如下配置：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">tun:</span></span><br><span class="line">  <span class="attr">unsafe_routes:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">route:</span> <span class="number">172.16</span><span class="number">.1</span><span class="number">.0</span><span class="string">/24</span></span><br><span class="line">      <span class="attr">via:</span> <span class="number">192.168</span><span class="number">.100</span><span class="number">.11</span></span><br></pre></td></tr></table></figure>
+
+<p>这里的 <code>172.16.1.0/24</code> 就是路由器对应的局域网（LAN）的网段，而 <code>192.168.100.11</code> 就是我们之前配置的 <code>router</code> 节点所对应的 Nebula 网络中的 IP。我们只需要把这个配置文件复制到 <code>laptop</code> 节点中，并配合相应的证书，就可以实现远程访问家庭网络的目的。</p>
+<blockquote>
+<p>需要注意的是，对于 <code>router</code> 节点本身，不能添加这条路由规则，否额会导致路由冲突而组网失败。</p>
+</blockquote>
+<h3 id="防火墙配置"><a href="#防火墙配置" class="headerlink" title="防火墙配置"></a>防火墙配置</h3><p>官方默认的防火墙配置如下：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">firewall:</span></span><br><span class="line">  <span class="attr">outbound:</span></span><br><span class="line">    <span class="comment"># Allow all outbound traffic from this node</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">proto:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">host:</span> <span class="string">any</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">inbound:</span></span><br><span class="line">    <span class="comment"># Allow icmp between any nebula hosts</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">proto:</span> <span class="string">icmp</span></span><br><span class="line">      <span class="attr">host:</span> <span class="string">any</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># Allow tcp/443 from any host with BOTH laptop and home group</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">443</span></span><br><span class="line">      <span class="attr">proto:</span> <span class="string">tcp</span></span><br><span class="line">      <span class="attr">groups:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">laptop</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">home</span></span><br></pre></td></tr></table></figure>
+
+<p>大概就是，使用这个配置的节点，对外访问 Nebula 网络无任何限制。Nebula 网络中的其它节点，只能通过 ICMP 协议 PING 当前节点。属于 <code>laptop</code> 和 <code>home</code> 组的其它节点，可以访问当前节点的 443&#x2F;TCP 端口。</p>
+<p>大家刚开始配置的时候，我个人建议先不要设置防火墙规则，先让服务跑起来然后再说。毕竟绝大多数情况下，大家一开始的时候，网络都是各种不通，别说防火墙了。所以我们可以修改成如下的样子：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">firewall:</span></span><br><span class="line">  <span class="attr">outbound:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">proto:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">host:</span> <span class="string">any</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">inbound:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">proto:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">host:</span> <span class="string">any</span></span><br></pre></td></tr></table></figure>
+
+<p>允许各个节点之间自由通信。</p>
+<h3 id="其它配置"><a href="#其它配置" class="headerlink" title="其它配置"></a>其它配置</h3><p>因为要在路由器上使用，且对于安全没有过度的痴迷，这里我将加密算法指定为 <code>chachapoly</code>。毕竟 <code>aes</code> 算法虽好，但是如果没有硬件指令集支持的话，还是很难过的。尤其是路由器这种嵌入式处理器，老旧一点的大多没有 AES 指令集，实测很多连带宽都无法跑满。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">cipher:</span> <span class="string">chachapoly</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>需要注意的是，各个节点之间必须使用相同的加密方式，也就是说要么全部用 <code>aes</code>，要么全部用 <code>chachapoly</code>，并不能混合使用。</p>
+</blockquote>
+<h2 id="运行-Nebula"><a href="#运行-Nebula" class="headerlink" title="运行 Nebula"></a>运行 Nebula</h2><h3 id="运行-Lighthouse"><a href="#运行-Lighthouse" class="headerlink" title="运行 Lighthouse"></a>运行 Lighthouse</h3><p>下载服务器对应的 Nebula 二进制可执行文件，然后把 <code>ca.crt</code>、<code>lighthouse.key</code>、<code>lighthouse.crt</code> 还有 <code>config-lh.yaml</code> 上传到服务器。</p>
+<p>创建 <code>/etc/nebula</code> 目录：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir /etc/nebula</span><br></pre></td></tr></table></figure>
+
+<p>将配置文件移动到指定目录：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mv config-lh.yaml /etc/nebula/config.yaml</span><br><span class="line">mv ca.crt /etc/nebula/ca.crt</span><br><span class="line">mv lighthouse.crt /etc/nebula/host.crt</span><br><span class="line">mv lighthouse.key /etc/nebula/host.key</span><br></pre></td></tr></table></figure>
+
+<p>运行 Nebula</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./nebula -config /etc/nebula/config.yaml</span><br></pre></td></tr></table></figure>
+
+<h3 id="运行节点"><a href="#运行节点" class="headerlink" title="运行节点"></a>运行节点</h3><p>类似 Lighthouse，同样的把相关的文件复制到需要运行的主机上，主要是 <code>ca.crt</code>、<code>config.yaml</code> 和对应节点的两个证书文件，比如：<code>router.key</code>、<code>router.crt</code>。</p>
+<p>同样的，创建 <code>/etc/nebula</code> 目录：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir /etc/nebula</span><br></pre></td></tr></table></figure>
+
+<p>将配置文件移动到指定目录：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mv config.yaml /etc/nebula/config.yaml</span><br><span class="line">mv ca.crt /etc/nebula/ca.crt</span><br><span class="line">mv router.crt /etc/nebula/host.crt</span><br><span class="line">mv router.key /etc/nebula/host.key</span><br></pre></td></tr></table></figure>
+
+<p>运行 Nebula</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./nebula -config /etc/nebula/config.yaml</span><br></pre></td></tr></table></figure>
+
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>在任何一个非 Lighthouse 的节点上，应该可以 ping 通 Lighthouse：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping 192.168.100.1</span><br></pre></td></tr></table></figure>
+
+<p>如果能 ping 通则表示 Nebula 网络建立成功。</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>不同于其它的组网程序，Nebula 的 Lighthouse 是不负责数据的中转的，也就是说所有的数据都是 P2P 的，如果能连上就能连上，连不上就……连不上。😅</p>
+<p>所以如果大家能 ping 通 Lighthouse，但是两个节点之间无法互通的话，大概率就是 NAT 穿透的问题。</p>
+<p>这也是为什么我觉得 IPv6 很重要的原因，因为只要双方有 IPv6，除非防火墙配置有问题，否则就不可能出现连不上的情况。哪怕是在手机热点的辣鸡 Symmetric NAT 下，也能有效连通。</p>
+<p>用 Nebula 的好处就是，只要网络规划合理，添加新的节点非常容易。只需要用 CA 签名一个新的证书就可以了，现存的节点都不需要修改。而且节点跟节点之间都是直连，如果 CPU 够用的话，基本上都可以在任意两个节点之间跑满带宽。</p>
+<p>除了「真香」，我还能说什么呢？😊</p>
+<h2 id="附件"><a href="#附件" class="headerlink" title="附件"></a>附件</h2><p>最后，提供 <code>lighthouse</code> 和 <code>laptop</code> 的完整配置文件，供大家参考。</p>
+<h3 id="config-lh-yaml"><a href="#config-lh-yaml" class="headerlink" title="config-lh.yaml"></a>config-lh.yaml</h3><figure class="highlight yaml"><figcaption><span>config-lh.yaml</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">pki:</span></span><br><span class="line">  <span class="attr">ca:</span> <span class="string">/etc/nebula/ca.crt</span></span><br><span class="line">  <span class="attr">cert:</span> <span class="string">/etc/nebula/host.crt</span></span><br><span class="line">  <span class="attr">key:</span> <span class="string">/etc/nebula/host.key</span></span><br><span class="line"></span><br><span class="line"><span class="attr">static_host_map:</span></span><br><span class="line"></span><br><span class="line"><span class="attr">lighthouse:</span></span><br><span class="line">  <span class="attr">am_lighthouse:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">interval:</span> <span class="number">60</span></span><br><span class="line">  <span class="attr">hosts:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;192.168.100.1&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">listen:</span></span><br><span class="line">  <span class="attr">host:</span> <span class="string">&quot;[::]&quot;</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">4242</span></span><br><span class="line"></span><br><span class="line"><span class="attr">punchy:</span></span><br><span class="line">  <span class="attr">punch:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="attr">cipher:</span> <span class="string">chachapoly</span></span><br><span class="line"></span><br><span class="line"><span class="attr">tun:</span></span><br><span class="line">  <span class="attr">disabled:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">dev:</span> <span class="string">nebula1</span></span><br><span class="line">  <span class="attr">drop_local_broadcast:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">drop_multicast:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">tx_queue:</span> <span class="number">500</span></span><br><span class="line">  <span class="attr">mtu:</span> <span class="number">1300</span></span><br><span class="line"></span><br><span class="line"><span class="attr">logging:</span></span><br><span class="line">  <span class="attr">level:</span> <span class="string">info</span></span><br><span class="line">  <span class="attr">format:</span> <span class="string">text</span></span><br><span class="line"></span><br><span class="line"><span class="attr">firewall:</span></span><br><span class="line">  <span class="attr">conntrack:</span></span><br><span class="line">    <span class="attr">tcp_timeout:</span> <span class="string">12m</span></span><br><span class="line">    <span class="attr">udp_timeout:</span> <span class="string">3m</span></span><br><span class="line">    <span class="attr">default_timeout:</span> <span class="string">10m</span></span><br><span class="line">    <span class="attr">max_connections:</span> <span class="number">100000</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">outbound:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">proto:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">host:</span> <span class="string">any</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">inbound:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">proto:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">host:</span> <span class="string">any</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="config-yaml"><a href="#config-yaml" class="headerlink" title="config.yaml"></a>config.yaml</h3><figure class="highlight yaml"><figcaption><span>config.yaml</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">pki:</span></span><br><span class="line">  <span class="attr">ca:</span> <span class="string">/etc/nebula/ca.crt</span></span><br><span class="line">  <span class="attr">cert:</span> <span class="string">/etc/nebula/host.crt</span></span><br><span class="line">  <span class="attr">key:</span> <span class="string">/etc/nebula/host.key</span></span><br><span class="line"></span><br><span class="line"><span class="attr">static_host_map:</span></span><br><span class="line">  <span class="attr">&quot;192.168.100.1&quot;:</span> [<span class="string">&quot;your.domain.tld:4242&quot;</span>]</span><br><span class="line"></span><br><span class="line"><span class="attr">lighthouse:</span></span><br><span class="line">  <span class="attr">am_lighthouse:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">interval:</span> <span class="number">60</span></span><br><span class="line">  <span class="attr">hosts:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;192.168.100.1&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">listen:</span></span><br><span class="line">  <span class="attr">host:</span> <span class="string">&quot;[::]&quot;</span></span><br><span class="line">  <span class="attr">port:</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="attr">punchy:</span></span><br><span class="line">  <span class="attr">punch:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="attr">cipher:</span> <span class="string">chachapoly</span></span><br><span class="line"></span><br><span class="line"><span class="attr">tun:</span></span><br><span class="line">  <span class="attr">disabled:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">dev:</span> <span class="string">nebula1</span></span><br><span class="line">  <span class="attr">drop_local_broadcast:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">drop_multicast:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">tx_queue:</span> <span class="number">500</span></span><br><span class="line">  <span class="attr">mtu:</span> <span class="number">1300</span></span><br><span class="line">  <span class="attr">unsafe_routes:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">route:</span> <span class="number">172.16</span><span class="number">.1</span><span class="number">.0</span><span class="string">/24</span></span><br><span class="line">      <span class="attr">via:</span> <span class="number">192.168</span><span class="number">.100</span><span class="number">.11</span></span><br><span class="line"></span><br><span class="line"><span class="attr">logging:</span></span><br><span class="line">  <span class="attr">level:</span> <span class="string">info</span></span><br><span class="line">  <span class="attr">format:</span> <span class="string">text</span></span><br><span class="line"></span><br><span class="line"><span class="attr">firewall:</span></span><br><span class="line">  <span class="attr">conntrack:</span></span><br><span class="line">    <span class="attr">tcp_timeout:</span> <span class="string">12m</span></span><br><span class="line">    <span class="attr">udp_timeout:</span> <span class="string">3m</span></span><br><span class="line">    <span class="attr">default_timeout:</span> <span class="string">10m</span></span><br><span class="line">    <span class="attr">max_connections:</span> <span class="number">100000</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">outbound:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">proto:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">host:</span> <span class="string">any</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">inbound:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">proto:</span> <span class="string">any</span></span><br><span class="line">      <span class="attr">host:</span> <span class="string">any</span></span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/network/" rel="tag"># Network</a>
+              <a href="/tags/vpn/" rel="tag"># VPN</a>
+              <a href="/tags/nas/" rel="tag"># NAS</a>
+              <a href="/tags/router/" rel="tag"># Router</a>
+              <a href="/tags/ip/" rel="tag"># IP</a>
+              <a href="/tags/ipv4/" rel="tag"># IPv4</a>
+              <a href="/tags/ipv6/" rel="tag"># IPv6</a>
+              <a href="/tags/lan/" rel="tag"># LAN</a>
+              <a href="/tags/mesh/" rel="tag"># Mesh</a>
+              <a href="/tags/nat/" rel="tag"># NAT</a>
+              <a href="/tags/nebula/" rel="tag"># Nebula</a>
+              <a href="/tags/sd-lan/" rel="tag"># SD-LAN</a>
+              <a href="/tags/sdn/" rel="tag"># SDN</a>
+              <a href="/tags/udp/" rel="tag"># UDP</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2021/05/15/danshari/" rel="prev" title="断舍离">
+                  <i class="fa fa-angle-left"></i> 断舍离
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2021/10/25/why-japanese/" rel="next" title="学日语的意义……">
+                  学日语的意义…… <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

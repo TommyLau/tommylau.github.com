@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="为什么要折腾 KVM 虚拟机最近因为公司的事情，没有太多时间进行写作，就用一篇技术类的文章来凑数吧。 事情是这样的，我们公司有一个小东西是基于嵌入式的系统开发的，不属于 Android 也不属于 iOS 平台。嗯，这意味着什么呢？这意味着开发这个小东西的语言是 C 语言，而不是 Java, Objective-C 抑或是 Swift。所以我们需要一个 Cross Compiler，也就是俗称的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在 Ubuntu 的 KVM 中安装 Windows 系统">
+<meta property="og:url" content="https://tommy.net.cn/2017/01/06/install-windows-under-ubuntu-and-kvm/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="为什么要折腾 KVM 虚拟机最近因为公司的事情，没有太多时间进行写作，就用一篇技术类的文章来凑数吧。 事情是这样的，我们公司有一个小东西是基于嵌入式的系统开发的，不属于 Android 也不属于 iOS 平台。嗯，这意味着什么呢？这意味着开发这个小东西的语言是 C 语言，而不是 Java, Objective-C 抑或是 Swift。所以我们需要一个 Cross Compiler，也就是俗称的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2017/01/06/install-windows-under-ubuntu-and-kvm/virtualization.png">
+<meta property="og:image" content="https://tommy.net.cn/2017/01/06/install-windows-under-ubuntu-and-kvm/kvm_w10.jpg">
+<meta property="article:published_time" content="2017-01-06T15:44:43.000Z">
+<meta property="article:modified_time" content="2017-01-06T16:01:09.000Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Windows">
+<meta property="article:tag" content="Ubuntu">
+<meta property="article:tag" content="KVM">
+<meta property="article:tag" content="QEMU">
+<meta property="article:tag" content="Ubuntu 16.04">
+<meta property="article:tag" content="VM">
+<meta property="article:tag" content="Virtio">
+<meta property="article:tag" content="Virtualization">
+<meta property="article:tag" content="Windows 10">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2017/01/06/install-windows-under-ubuntu-and-kvm/virtualization.png">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2017/01/06/install-windows-under-ubuntu-and-kvm/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2017/01/06/install-windows-under-ubuntu-and-kvm/","path":"2017/01/06/install-windows-under-ubuntu-and-kvm/","title":"在 Ubuntu 的 KVM 中安装 Windows 系统"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>在 Ubuntu 的 KVM 中安装 Windows 系统 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%8A%98%E8%85%BE-KVM-%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">1.</span> <span class="nav-text">为什么要折腾 KVM 虚拟机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%95%A5%E6%98%AF-KVM"><span class="nav-number">2.</span> <span class="nav-text">啥是 KVM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-KVM"><span class="nav-number">3.</span> <span class="nav-text">安装 KVM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E8%99%9A%E6%8B%9F%E4%B8%BB%E6%9C%BA"><span class="nav-number">4.</span> <span class="nav-text">创建虚拟主机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-Windows-10"><span class="nav-number">5.</span> <span class="nav-text">安装 Windows 10</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2017/01/06/install-windows-under-ubuntu-and-kvm/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="在 Ubuntu 的 KVM 中安装 Windows 系统 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          在 Ubuntu 的 KVM 中安装 Windows 系统
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-01-06 23:44:43" itemprop="dateCreated datePublished" datetime="2017-01-06T23:44:43+08:00">2017-01-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2017-01-07 00:01:09" itemprop="dateModified" datetime="2017-01-07T00:01:09+08:00">2017-01-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/server/" itemprop="url" rel="index"><span itemprop="name">Server</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/01/06/install-windows-under-ubuntu-and-kvm/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/01/06/install-windows-under-ubuntu-and-kvm/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><img src="/2017/01/06/install-windows-under-ubuntu-and-kvm/virtualization.png" class="" title="Virtualization">
+
+<h2 id="为什么要折腾-KVM-虚拟机"><a href="#为什么要折腾-KVM-虚拟机" class="headerlink" title="为什么要折腾 KVM 虚拟机"></a>为什么要折腾 KVM 虚拟机</h2><p>最近因为公司的事情，没有太多时间进行写作，就用一篇技术类的文章来凑数吧。</p>
+<p>事情是这样的，我们公司有一个小东西是基于嵌入式的系统开发的，不属于 Android 也不属于 iOS 平台。嗯，这意味着什么呢？这意味着开发这个小东西的语言是 C 语言，而不是 Java, Objective-C 抑或是 Swift。所以我们需要一个 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cross_compiler">Cross Compiler</a>，也就是俗称的交叉编译环境来编译这个代码。</p>
+<span id="more"></span>
+
+<blockquote>
+<p>其实 Xcode 编译出来的 iOS App 也属于交叉编译的范畴。</p>
+</blockquote>
+<p>然鹅，这个交叉编译环境竟然只有 Windows 平台的！其实，好像除了 GCC 之外，好用的交叉编译环境都是 Windows 下面的。估计很多玩嵌入式的同学应该都知道，现在业内用得比较多的也就是 <a target="_blank" rel="noopener" href="https://www.keil.com/">Keil</a> 和 <a target="_blank" rel="noopener" href="https://www.iar.com/">IAR</a> 系列了。而及其不幸的是，两者都是 Windows 特供的，没有 macOS 或 Linux 版本。</p>
+<p>为什么 Windows 会让我这么得不爽呢？因为平常为了更好的提高工作效率（其实是为了公司的逼格够高），除了不得不使用的行业应用软件必须要跑在 Windows 下的时候，我们只用 Mac 不用 Windows。所以，我们基本上没有闲置和富裕的 Windows 主机，不！是压根就没有，没有什么「基本没有」一说。</p>
+<p>而在服务器端，更不要跟我说什么 Windows Server 云云的。作为一个 macOS 和 Ubuntu 的脑残用户，我是不可能在 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Bare_metal">Bare metal</a> 上跑一个 Windows Server 的。服务器我们只跑 Linux，别的没兴趣。</p>
+<p>那么问题来了，我们有一套自动化编译系统，也就是大家所熟知的 CI 体系 (Continuous integration)，用的是 <a target="_blank" rel="noopener" href="https://www.atlassian.com/">Atlassian</a> 的全家桶：Bitbucket、Bamboo、JIRA 还有 Confluence 什么的，全部跑在 Linux 平台的 Docker 虚拟化容器中。</p>
+<p>现在我们想把这个小东西也自动化编译器来，以便更好地把人力释放出来，也方便未来跟踪和管理每一次 Release 的内容。而第一个要解决的问题就是：我们没有 Windows 的服务器。</p>
+<p>既然现在虚拟化这么流行，那么我们就利用现有的 Ubuntu 服务器虚拟化一个 Windows 好啦，走起！</p>
+<h2 id="啥是-KVM"><a href="#啥是-KVM" class="headerlink" title="啥是 KVM"></a>啥是 KVM</h2><p>KVM 的全称是：<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Kernel-based_Virtual_Machine">Kernel-based Virtual Machine</a>，简单一句话概括，就是一个基于 Linux 内核的虚拟化管理系统。</p>
+<p>从 Linux 内核 2.6.20 版本开始就已经集成了该功能。简单理解 Docker 是在应用层的虚拟化，而 KVM 是在系统层的虚拟化。</p>
+<p>区别就是，Docker 虚拟化的内容，必须跟 Host 主机共享内核，也就意味着只能跑 Linux 类系统。</p>
+<p>而 KVM 是整个主机虚拟，所以可以安装不同的操作系统，而不局限于 Linux 本身。等我过段时间抽风的时候，看看能不能在 Ubuntu 上虚拟化个 macOS 出来。这样就不用单独再弄个 Mac 主机来自动化编译 iOS App 了。</p>
+<h2 id="安装-KVM"><a href="#安装-KVM" class="headerlink" title="安装 KVM"></a>安装 KVM</h2><p>我这里使用的是 Ubuntu 16.04 LTS 版本，考虑长期使用和稳定性，基本上只选 LTS 版本，其他版本差别也不太大，参考着做就好了。</p>
+<p>首先是安装 KVM 相关的包文件，因为我的服务器都是命令行，没有安装 X 桌面，所以我加了 <code>--no-install-recommends</code> 参数。不然的话它会安装 <code>virt-viewer</code> 之类的包，而它们的依赖关系中又有 X11 和很多图形图像库，而这些都用不上。但是如果你开启了桌面系统，那么也可以不加该参数。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get install --no-install-recommends qemu-kvm qemu-utils libvirt-bin virtinst cpu-checker</span><br></pre></td></tr></table></figure>
+
+<p>让我们来验证一下是不是一切 OK</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ kvm-ok</span><br><span class="line">INFO: /dev/kvm exists</span><br><span class="line">KVM acceleration can be used</span><br></pre></td></tr></table></figure>
+
+<p>很好，一切顺利，我们再来弄个桥接网络。其实这个也不是必须的，看你的使用场景。</p>
+<p>KVM 会自己创建一个 virbr0 的桥接网络，但是这个是一个 NAT 的网络，没有办法跟局域网内的其他主机进行通信，所以还是别偷懒，自己建一个桥接网络吧。</p>
+<p>参考配置如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cat</span> /etc/network/interfaces</span><br><span class="line"><span class="comment"># This file describes the network interfaces available on your system</span></span><br><span class="line"><span class="comment"># and how to activate them. For more information, see interfaces(5).</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">source</span> /etc/network/interfaces.d/*</span><br><span class="line"></span><br><span class="line"><span class="comment"># The loopback network interface</span></span><br><span class="line">auto lo</span><br><span class="line">iface lo inet loopback</span><br><span class="line"></span><br><span class="line"><span class="comment"># The bridged network interface</span></span><br><span class="line">auto br0</span><br><span class="line">iface br0 inet static</span><br><span class="line">    address 1.2.3.4</span><br><span class="line">    netmask 255.255.255.0</span><br><span class="line">    gateway 1.2.3.1</span><br><span class="line">    dns-nameservers 1.2.3.1</span><br><span class="line">    bridge_ports enp9s0</span><br><span class="line">    bridge_stop off</span><br><span class="line">    bridge_fd 0</span><br><span class="line">    bridge_maxwait 0</span><br></pre></td></tr></table></figure>
+
+<p>重启网络，并验证一下桥接状态：</p>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ sudo systemctl restart networking</span><br><span class="line">$ sudo <span class="keyword">brctl </span><span class="keyword">show</span></span><br><span class="line"><span class="keyword"></span><span class="keyword">bridge </span>name     <span class="keyword">bridge </span>id               STP enabled     interfaces</span><br><span class="line"><span class="keyword">br0 </span>            <span class="number">8000</span>.f079593874d9       no              enp9s0</span><br><span class="line">virbr0          <span class="number">8000</span>.<span class="number">525400087</span>ef2       yes             virbr0-nic</span><br></pre></td></tr></table></figure>
+
+<p>OK，一切正常，可以开始创建虚拟主机了。</p>
+<h2 id="创建虚拟主机"><a href="#创建虚拟主机" class="headerlink" title="创建虚拟主机"></a>创建虚拟主机</h2><p>KVM 只是完成了第一步，我们还需要创建虚拟主机才可以继续往下走。</p>
+<p>在开始之前，我们要准备好几个东西：</p>
+<ul>
+<li>Windows 安装镜像</li>
+<li><a target="_blank" rel="noopener" href="https://fedoraproject.org/wiki/Windows_Virtio_Drivers">Virtio ISO 和软盘镜像</a></li>
+<li>VNC 客户端（macOS 自带）</li>
+</ul>
+<p>我这里使用的是 <a target="_blank" rel="noopener" href="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.126-2/">Virtio 0.1.126-2</a> 版本。操作系统版本是：Ubuntu 16.04.1 LTS。</p>
+<p>一切准备就绪，使用 <code>virt-install</code> 命令来帮助创建虚拟机：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">virt-install \</span><br><span class="line">--name win10 \</span><br><span class="line">--memory 2048 \</span><br><span class="line">--vcpus <span class="attribute">sockets</span>=1,cores=1,threads=2 \</span><br><span class="line"><span class="attribute">--cdrom</span>=/path/to/windows_10.iso \</span><br><span class="line"><span class="attribute">--os-variant</span>=win8.1 \</span><br><span class="line">--disk /path/<span class="keyword">to</span>/win10/win10.qcow2,<span class="attribute">bus</span>=virtio,size=40 \</span><br><span class="line">--disk /path/<span class="keyword">to</span>/virtio/virtio-win-0.1.126_amd64.vfd,<span class="attribute">device</span>=floppy \</span><br><span class="line">--network <span class="attribute">bridge</span>=br0,model=virtio \</span><br><span class="line">--graphics vnc,<span class="attribute">password</span>=Passw0rd,port=5910 \</span><br><span class="line">--hvm \</span><br><span class="line">--virt-type kvm</span><br></pre></td></tr></table></figure>
+
+<p>基本上配置信息都在上面了，虚拟信息机配置如下：</p>
+<ul>
+<li>2G 内存</li>
+<li>1 个 CPU，1 个核，2 个线程</li>
+<li>1 个 CDROM（Windows 安装光盘）</li>
+<li>40G 硬盘（系统盘）</li>
+<li>1 个软驱（Virtio 驱动）</li>
+<li>在 5910 端口开放一个 VNC 远程桌面</li>
+</ul>
+<p>如果你的命令输入的正确，应该会得到类似的反馈信息：</p>
+<figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">Starting</span></span> install...</span><br><span class="line"><span class="function"><span class="title">Creating</span></span> domain...</span><br><span class="line">Domain installation still in progress. Waiting <span class="keyword">for</span> installation to complete.</span><br></pre></td></tr></table></figure>
+
+<p>简单来说，就是虚拟机已经创建好了，但是因为没有图像界面，所以没有办法下一步了。当我们连接了 VNC 以后，就可以继续往下走了。这个提示只会出现一次，安装好系统以后，不会出现这个启动等待的情况。</p>
+<h2 id="安装-Windows-10"><a href="#安装-Windows-10" class="headerlink" title="安装 Windows 10"></a>安装 Windows 10</h2><p>虽然我们在创建虚拟机的时候，指明了使用 <code>5910</code> 端口来提供 VNC 远程桌面。但是这个端口是不能直接访问的，因为它默认绑定在 <code>127.0.0.1</code> 上，也就是只有本地才能访问。我们需要先把远程的本地端口，映射成本地的端口。</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">ssh</span> -L <span class="number">5910</span>:<span class="number">127.0.0.1:5910</span> server</span><br></pre></td></tr></table></figure>
+
+<p>然后在 macOS 下，<code>⌘ + Space</code> 呼叫出 <code>Spotlight</code>，然后输入：</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vnc:<span class="regexp">//</span><span class="number">127.0</span>.<span class="number">0.1</span>:<span class="number">5910</span></span><br></pre></td></tr></table></figure>
+
+<p>在弹出的窗口中输入密码：<code>Passw0rd</code></p>
+<p>然后就可以愉快的安装 Windows 系统了，如果不能识别硬盘，需要手动加载一下驱动，选择 A 盘和对应的 Windows 目录就可以了。同样的，如果网卡没有驱动，也是如法炮制。</p>
+<p>附安装完成的屏幕截图一张：</p>
+<img src="/2017/01/06/install-windows-under-ubuntu-and-kvm/kvm_w10.jpg" class="">
+
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.cyberciti.biz/faq/installing-kvm-on-ubuntu-16-04-lts-server/">How to install KVM on Ubuntu 16.04 LTS Headless Server</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.mojocode.com/content/getting-windows-10-install-using-qemu-and-kvm">Getting Windows 10 to Install Using qemu and kvm</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/windows/" rel="tag"># Windows</a>
+              <a href="/tags/ubuntu/" rel="tag"># Ubuntu</a>
+              <a href="/tags/kvm/" rel="tag"># KVM</a>
+              <a href="/tags/qemu/" rel="tag"># QEMU</a>
+              <a href="/tags/ubuntu-16-04/" rel="tag"># Ubuntu 16.04</a>
+              <a href="/tags/vm/" rel="tag"># VM</a>
+              <a href="/tags/virtio/" rel="tag"># Virtio</a>
+              <a href="/tags/virtualization/" rel="tag"># Virtualization</a>
+              <a href="/tags/windows-10/" rel="tag"># Windows 10</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/01/04/from-test-driven-development-to-behavior-driven-development/" rel="prev" title="从踢弟弟到逼弟弟">
+                  <i class="fa fa-angle-left"></i> 从踢弟弟到逼弟弟
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2017/01/08/now-we-can-use-adb-and-fastboot-as-standalone-tools/" rel="next" title="终于可以使用独立的 ADB 和 Fastboot 工具了">
+                  终于可以使用独立的 ADB 和 Fastboot 工具了 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="安装 MacPorts首先我们需要安装 MacPorts，按照官方的指引，下载不同版本的包，比如我下载的是 Mavericks 的。 同时，我们还需要安装 Xcode 和 Xcode Command Line Tools。Xcode 可以从 AppStore 获得，Command Line Tools 在 Xcode 安装后，从 Xcode 中安装。 启动 Xcode 并接受协议，或者在终端中接受">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在 Mac OS X 系统下交叉编译 C++11 程序">
+<meta property="og:url" content="https://tommy.net.cn/2014/10/07/cross-compiling-c-11-under-mac-os-x/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="安装 MacPorts首先我们需要安装 MacPorts，按照官方的指引，下载不同版本的包，比如我下载的是 Mavericks 的。 同时，我们还需要安装 Xcode 和 Xcode Command Line Tools。Xcode 可以从 AppStore 获得，Command Line Tools 在 Xcode 安装后，从 Xcode 中安装。 启动 Xcode 并接受协议，或者在终端中接受">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2014-10-07T13:13:28.000Z">
+<meta property="article:modified_time" content="2014-10-11T07:32:00.000Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Development">
+<meta property="article:tag" content="Mac">
+<meta property="article:tag" content="OS X">
+<meta property="article:tag" content="C++11">
+<meta property="article:tag" content="Cross-compile">
+<meta property="article:tag" content="Windows">
+<meta property="article:tag" content="MXE">
+<meta property="article:tag" content="GCC">
+<meta property="article:tag" content="MacPorts">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2014/10/07/cross-compiling-c-11-under-mac-os-x/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2014/10/07/cross-compiling-c-11-under-mac-os-x/","path":"2014/10/07/cross-compiling-c-11-under-mac-os-x/","title":"在 Mac OS X 系统下交叉编译 C++11 程序"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>在 Mac OS X 系统下交叉编译 C++11 程序 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-MacPorts"><span class="nav-number">1.</span> <span class="nav-text">安装 MacPorts</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-MXE-%E4%BE%9D%E8%B5%96%E5%BA%93"><span class="nav-number">2.</span> <span class="nav-text">安装 MXE 依赖库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-MXE"><span class="nav-number">3.</span> <span class="nav-text">安装 MXE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">如何使用</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2014/10/07/cross-compiling-c-11-under-mac-os-x/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="在 Mac OS X 系统下交叉编译 C++11 程序 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          在 Mac OS X 系统下交叉编译 C++11 程序
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2014-10-07 21:13:28" itemprop="dateCreated datePublished" datetime="2014-10-07T21:13:28+08:00">2014-10-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2014-10-11 15:32:00" itemprop="dateModified" datetime="2014-10-11T15:32:00+08:00">2014-10-11</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/development/" itemprop="url" rel="index"><span itemprop="name">Development</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2014/10/07/cross-compiling-c-11-under-mac-os-x/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2014/10/07/cross-compiling-c-11-under-mac-os-x/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.7k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="安装-MacPorts"><a href="#安装-MacPorts" class="headerlink" title="安装 MacPorts"></a>安装 MacPorts</h2><p>首先我们需要安装 MacPorts，按照<a target="_blank" rel="noopener" href="https://www.macports.org/install.php">官方的指引</a>，下载不同版本的包，比如我下载的是 Mavericks 的。</p>
+<p>同时，我们还需要安装 Xcode 和 Xcode Command Line Tools。Xcode 可以从 AppStore 获得，Command Line Tools 在 Xcode 安装后，从 Xcode 中安装。</p>
+<p>启动 Xcode 并接受协议，或者在终端中接受协议：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo xcodebuild -license</span><br></pre></td></tr></table></figure>
+
+<span id="more"></span>
+
+<p>安装后，便可以在命令行中使用 port 命令了。</p>
+<p>我使用的是订制过的 zsh，而不是系统默认的 bash，所以会提示找不到 port。这种情况下修改一下 .zshrc 配置文件便可。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim ~/.zshrc</span><br></pre></td></tr></table></figure>
+
+<p>将 export PATH 部分修改为如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$HOME</span>/bin:/usr/local/bin:<span class="variable">$PATH</span>:/opt/local/bin</span><br></pre></td></tr></table></figure>
+
+<p>主要是增加了最后的：<strong>:&#x2F;opt&#x2F;local&#x2F;bin</strong></p>
+<p>最后我们运行一下更新命令，以确保我们用的是最新版的 MacPorts：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo port selfupdate</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装-MXE-依赖库"><a href="#安装-MXE-依赖库" class="headerlink" title="安装 MXE 依赖库"></a>安装 MXE 依赖库</h2><p>为了能在 OS X 下交叉编译 Windows 下的应用，我们需要 <a target="_blank" rel="noopener" href="http://mxe.cc/">MXE</a> 的支持。而 MXE 需要依赖一些 MacPorts 的开源库。</p>
+<p>官方给出的 OS X 下的安装命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo port install autoconf automake bison cmake coreutils \</span><br><span class="line">                  flex gettext git-core glib2 gsed intltool libffi \</span><br><span class="line">                  libtool openssl p5-xml-parser pkgconfig scons \</span><br><span class="line">                  wget xz</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>：官方推荐的安装方式里面包含 git-core，但是新版本已经用 git 来管理了，如果按照上述命令安装会报错。</p>
+<p>我们可以使用如下命令来检查 repo 管理所使用的是 git-core 还是 git：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">port info repo</span><br></pre></td></tr></table></figure>
+
+<p>如果显示如下所示使用 git 作为 repo 管理的话：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">repo @1.19_1 (python)</span><br><span class="line"></span><br><span class="line">Description:          Repo is a tool that we built on top of Git. Repo helps us manage the many Git repositories, does the uploads to our revision control system , and automates parts of the Android</span><br><span class="line">                      development workflow. Repo is not meant to replace Git, only to make it easier to work with Git <span class="keyword">in</span> the context of Android.</span><br><span class="line">Homepage:             http://source.android.com/source/git-repo.html</span><br><span class="line"></span><br><span class="line">Runtime Dependencies: git</span><br><span class="line">Platforms:            darwin</span><br><span class="line">License:              Apache-2</span><br><span class="line">Maintainers:          nomaintainer@macports.org</span><br></pre></td></tr></table></figure>
+
+<p>请使用下面的命令来进行安装（去除了 git-core）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo port install autoconf automake bison cmake coreutils \</span><br><span class="line">                  flex gettext glib2 gsed intltool libffi \</span><br><span class="line">                  libtool openssl p5-xml-parser pkgconfig scons \</span><br><span class="line">                  wget xz</span><br></pre></td></tr></table></figure>
+
+<p>如果以前安装过 MacPorts，有些包过期了，可以使用下面的命令来更新升级：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo port upgrade outdated</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装-MXE"><a href="#安装-MXE" class="headerlink" title="安装 MXE"></a>安装 MXE</h2><p>首先是获得 MXE，很简单 git clone 一下就好了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/mxe/mxe.git</span><br></pre></td></tr></table></figure>
+
+<p>MXE 默认编译的 gcc 版本是 4.8.1，最新的 4.8 版本是 4.8.3，所以，我们修改一下 <strong>src&#x2F;gcc.mk</strong> 文件，讲版本号和校验修改为如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$(PKG)_VERSION  := 4.8.3</span><br><span class="line">$(PKG)_CHECKSUM := da0a2b9ec074f2bf624a34f3507f812ebb6e4dce</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意：</strong> 4.9 以后的版本编译会报错，且 4.8 系列已经支持 C++11 标准，因为 4.8.3 对我已经够用了，所以本文并不适用 4.9 系列。4.8.3 版本的编译打包时间为：5&#x2F;22&#x2F;14 11:22:00 AM</p>
+<p>设置好以后，我们就开始编译 32 位版本的交叉编译环境（i686-w64-mingw32），如果需要 64 位环境的，请使用 <strong>x86_64-w64-mingw32</strong> 来替换 <strong>i686-w64-mingw32</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make MXE_TARGETS=<span class="string">&#x27;i686-w64-mingw32&#x27;</span> gcc gmp mpfr winpthreads -j4 JOBS=4</span><br></pre></td></tr></table></figure>
+
+<p>默认情况下，gcc 是使用 win32 线程的。这样的话，我们就没有办法使用 pthreads 和其他一些 C++11 的新特性，所以我们还需要再第一次编译完成后，再进行一次编译。</p>
+<p>还是修改 <strong>src&#x2F;gcc.mk</strong> 文件，在包依赖的部分增加 winpthreads，同时打开 posix：</p>
+<p>首先是 12 行的部分，增加 winpthreads 支持，修改后类似如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(PKG)_DEPS := mingwrt w32api mingw-w64 binutils gcc-gmp gcc-mpc gcc-mpfr winpthreads</span><br></pre></td></tr></table></figure>
+
+<p>然后是 49 行，修改 threads 方式为 posix。修改前：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--enable-threads=win32</span><br></pre></td></tr></table></figure>
+
+<p>修改后：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--enable-threads=posix</span><br></pre></td></tr></table></figure>
+
+<p>接着修改 <strong>src&#x2F;binutils.mk</strong>，增加 <strong>–with-sysroot</strong> 来开启 sysroot 支持。</p>
+<p>在 38 行左右，增加如下代码作为编译的参数，注意后面可能需要连接符号 “&quot;：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--with-sysroot</span><br></pre></td></tr></table></figure>
+
+<p>再次编译 gcc：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make MXE_TARGETS=<span class="string">&#x27;i686-w64-mingw32&#x27;</span> winpthreads gcc -j4 JOBS=4</span><br></pre></td></tr></table></figure>
+
+<h2 id="如何使用"><a href="#如何使用" class="headerlink" title="如何使用"></a>如何使用</h2><p>编译成功后，在 MXE 的目录内，会出现一个 usr 目录，那里面就保存着编译好的交叉环境，你可以直接调用 <strong>usr&#x2F;bin&#x2F;i686-w64-mingw32-gcc</strong> 来启动 gcc。其他的命令也都在 <strong>usr&#x2F;bin</strong> 目录内，由前缀 <strong>i686-w64-mingw32-</strong> 开头。修改你的项目的 Makefile，调用交叉编译的 gcc 便可以直接生成 Windows 平台下的可执行程序了。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/development/" rel="tag"># Development</a>
+              <a href="/tags/mac/" rel="tag"># Mac</a>
+              <a href="/tags/os-x/" rel="tag"># OS X</a>
+              <a href="/tags/c-11/" rel="tag"># C++11</a>
+              <a href="/tags/cross-compile/" rel="tag"># Cross-compile</a>
+              <a href="/tags/windows/" rel="tag"># Windows</a>
+              <a href="/tags/mxe/" rel="tag"># MXE</a>
+              <a href="/tags/gcc/" rel="tag"># GCC</a>
+              <a href="/tags/macports/" rel="tag"># MacPorts</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2014/09/22/use-geotrust-ssl-certificate-with-nginx/" rel="prev" title="在 Nginx 中配置使用 GeoTrust 的 SSL 证书">
+                  <i class="fa fa-angle-left"></i> 在 Nginx 中配置使用 GeoTrust 的 SSL 证书
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2014/10/14/dynamic-dns-setup-under-openwrt-with-3322-org/" rel="next" title="在 OpenWrt 上使用 3322.org 的动态域名">
+                  在 OpenWrt 上使用 3322.org 的动态域名 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="之前为了读书（其实就是想买电子产品），买了一台海信 A5 Pro电子墨水屏手机。 对于原机自带的刷卡双待，拍照什么的，对于我来说都没有什么意义，最主要的还是奔着墨水屏去的。 买过 Kindle 的小伙伴应该都知道，只要是购买的正版书籍，都可以使用自定义字体进行阅读。 而 Android 版本的 Kindle 却只能使用系统和内置的字体（而且还需要单独下载），没有办法任意选择自己喜欢的字体。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="修改安卓上的 Kindle 字体">
+<meta property="og:url" content="https://tommy.net.cn/2021/02/04/change-kindle-fonts-on-android/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="之前为了读书（其实就是想买电子产品），买了一台海信 A5 Pro电子墨水屏手机。 对于原机自带的刷卡双待，拍照什么的，对于我来说都没有什么意义，最主要的还是奔着墨水屏去的。 买过 Kindle 的小伙伴应该都知道，只要是购买的正版书籍，都可以使用自定义字体进行阅读。 而 Android 版本的 Kindle 却只能使用系统和内置的字体（而且还需要单独下载），没有办法任意选择自己喜欢的字体。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2021/02/04/change-kindle-fonts-on-android/kindle_app.png">
+<meta property="og:image" content="https://tommy.net.cn/2021/02/04/change-kindle-fonts-on-android/font1.jpg">
+<meta property="og:image" content="https://tommy.net.cn/2021/02/04/change-kindle-fonts-on-android/font2.jpg">
+<meta property="og:image" content="https://tommy.net.cn/2021/02/04/change-kindle-fonts-on-android/font3.jpg">
+<meta property="og:image" content="https://tommy.net.cn/2021/02/04/change-kindle-fonts-on-android/font4.jpg">
+<meta property="article:published_time" content="2021-02-04T02:29:23.000Z">
+<meta property="article:modified_time" content="2025-02-19T05:47:01.184Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Font">
+<meta property="article:tag" content="Mobile">
+<meta property="article:tag" content="Reading">
+<meta property="article:tag" content="Kindle">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="App">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2021/02/04/change-kindle-fonts-on-android/kindle_app.png">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2021/02/04/change-kindle-fonts-on-android/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2021/02/04/change-kindle-fonts-on-android/","path":"2021/02/04/change-kindle-fonts-on-android/","title":"修改安卓上的 Kindle 字体"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>修改安卓上的 Kindle 字体 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2021/02/04/change-kindle-fonts-on-android/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="修改安卓上的 Kindle 字体 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          修改安卓上的 Kindle 字体
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2021-02-04 10:29:23" itemprop="dateCreated datePublished" datetime="2021-02-04T10:29:23+08:00">2021-02-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-02-19 13:47:01" itemprop="dateModified" datetime="2025-02-19T13:47:01+08:00">2025-02-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/software/" itemprop="url" rel="index"><span itemprop="name">Software</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2021/02/04/change-kindle-fonts-on-android/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/02/04/change-kindle-fonts-on-android/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><img src="/2021/02/04/change-kindle-fonts-on-android/kindle_app.png" alt="Kindle"></p>
+<p>之前为了读书（其实就是想买电子产品），买了一台<a target="_blank" rel="noopener" href="https://u.jd.com/ILQ6q2w">海信 A5 Pro</a>电子墨水屏手机。</p>
+<p>对于原机自带的刷卡双待，拍照什么的，对于我来说都没有什么意义，最主要的还是奔着墨水屏去的。</p>
+<p>买过 Kindle 的小伙伴应该都知道，只要是购买的正版书籍，都可以使用自定义字体进行阅读。</p>
+<p>而 Android 版本的 Kindle 却只能使用系统和内置的字体（而且还需要单独下载），没有办法任意选择自己喜欢的字体。</p>
+<span id="more"></span>
+
+<p>这个时候，我们就需要自己手动，丰衣足食，来进行字体的替换了。</p>
+<p>首先我们通过各大应用市场，下载最新版本的 Kindle 应用。</p>
+<p>接着随便下载并打开一本书，打开上方 A 形的字体设置菜单，下载额外的字体。</p>
+<p>当所有字体下载完成以后，我们可以在手机的 <code>/sdcard/Android/data/com.amazon.kindlefc/files/appexpan</code> 目录下，看到类似如下的目录：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">drwxrwx</span>--x  <span class="number">3</span> u0_a175 sdcard_rw <span class="number">3</span>.<span class="number">4</span>K <span class="number">2021</span>-<span class="number">02</span>-<span class="number">01</span> <span class="number">17</span>:<span class="number">39</span> STHeitiSC</span><br><span class="line"><span class="attribute">drwxrwx</span>--x  <span class="number">3</span> u0_a175 sdcard_rw <span class="number">3</span>.<span class="number">4</span>K <span class="number">2021</span>-<span class="number">02</span>-<span class="number">01</span> <span class="number">21</span>:<span class="number">09</span> STHeitiTC</span><br><span class="line"><span class="attribute">drwxrwx</span>--x  <span class="number">3</span> u0_a175 sdcard_rw <span class="number">3</span>.<span class="number">4</span>K <span class="number">2021</span>-<span class="number">02</span>-<span class="number">01</span> <span class="number">17</span>:<span class="number">39</span> STKaitiSC</span><br><span class="line"><span class="attribute">drwxrwx</span>--x  <span class="number">3</span> u0_a175 sdcard_rw <span class="number">3</span>.<span class="number">4</span>K <span class="number">2021</span>-<span class="number">02</span>-<span class="number">01</span> <span class="number">21</span>:<span class="number">09</span> STKaitiTC</span><br><span class="line"><span class="attribute">drwxrwx</span>--x  <span class="number">3</span> u0_a175 sdcard_rw <span class="number">3</span>.<span class="number">4</span>K <span class="number">2021</span>-<span class="number">02</span>-<span class="number">01</span> <span class="number">17</span>:<span class="number">38</span> STSongSC</span><br><span class="line"><span class="attribute">drwxrwx</span>--x  <span class="number">3</span> u0_a175 sdcard_rw <span class="number">3</span>.<span class="number">4</span>K <span class="number">2021</span>-<span class="number">02</span>-<span class="number">01</span> <span class="number">21</span>:<span class="number">09</span> STSongTC</span><br><span class="line"><span class="attribute">drwxrwx</span>--x  <span class="number">3</span> u0_a175 sdcard_rw <span class="number">3</span>.<span class="number">4</span>K <span class="number">2021</span>-<span class="number">02</span>-<span class="number">01</span> <span class="number">17</span>:<span class="number">40</span> STYuanSC</span><br><span class="line"><span class="attribute">drwxrwx</span>--x  <span class="number">3</span> u0_a175 sdcard_rw <span class="number">3</span>.<span class="number">4</span>K <span class="number">2021</span>-<span class="number">02</span>-<span class="number">01</span> <span class="number">21</span>:<span class="number">09</span> STYuanTC</span><br></pre></td></tr></table></figure>
+
+<p>以上目录分别对应为：</p>
+<ul>
+<li>黑体简体（STHeitiSC）</li>
+<li>黑体繁体（STHeitiTC）</li>
+<li>楷体简体（STKaitiSC）</li>
+<li>楷体繁体（STKaitiTC）</li>
+<li>宋体简体（STSongSC）</li>
+<li>宋体繁体（STSongTC）</li>
+<li>圆体简体（STYuanSC）</li>
+<li>圆体繁体（STYuanTC）</li>
+</ul>
+<p>其实也很简单，中间的拼音就是字体的名称，而 <code>SC</code> 表示 <code>Simplified Chinese</code> 也就是简体，<code>TC</code> 表示 <code>Traditional Chinese</code> 也就是繁体。</p>
+<p>因为<strong>楷体</strong>和<strong>黑体</strong>等字体也经常会被使用，所以这里我决定替换<strong>圆体</strong>，也就是 <code>/sdcard/Android/data/com.amazon.kindlefc/files/appexpan/STYuanSC/1/STZhongyuan.ttf</code> 文件。</p>
+<p>这里我使用的是<a target="_blank" rel="noopener" href="https://www.foundertype.com/index.php/FontInfo/index/id/198.html">方正宋刻本秀楷</a>的繁体版本。</p>
+<p>不得不说，用繁体字来看金庸的武侠小说，实在是种惬意。</p>
+<p>一不小心又暴露了自己不学无术，沉迷武侠小说的罪行。</p>
+<blockquote>
+<p>注意：对于默认是简体字的书籍，如果想要用繁体字来看的话，必须要替换 SC 结尾的字体，替换 TC 的字体没有效果（主要是在字体菜单中无法选择）。</p>
+</blockquote>
+<p>下面是更换字体前的效果：</p>
+<p><img src="/2021/02/04/change-kindle-fonts-on-android/font1.jpg"><br><img src="/2021/02/04/change-kindle-fonts-on-android/font2.jpg"></p>
+<p>下面是更换字体后的效果：</p>
+<p><img src="/2021/02/04/change-kindle-fonts-on-android/font3.jpg"><br><img src="/2021/02/04/change-kindle-fonts-on-android/font4.jpg"></p>
+<p>可以看到，虽然设置里面显示的字体是<code>圆体</code>，但实际显示的效果已经是楷体繁体了。</p>
+<p>这样就可以在手机和 Kindle 之间无缝阅读，并保持体验的一致性了。😄</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/font/" rel="tag"># Font</a>
+              <a href="/tags/mobile/" rel="tag"># Mobile</a>
+              <a href="/tags/reading/" rel="tag"># Reading</a>
+              <a href="/tags/kindle/" rel="tag"># Kindle</a>
+              <a href="/tags/android/" rel="tag"># Android</a>
+              <a href="/tags/app/" rel="tag"># App</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/09/01/upgrade-the-head-unit-of-my-2020-subaru-brz/" rel="prev" title="升级 2020 款斯巴鲁 BRZ 中控">
+                  <i class="fa fa-angle-left"></i> 升级 2020 款斯巴鲁 BRZ 中控
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2021/02/05/2021-annual-plan/" rel="next" title="2021 打脸大计">
+                  2021 打脸大计 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

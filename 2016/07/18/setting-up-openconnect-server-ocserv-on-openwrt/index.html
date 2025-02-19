@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前言以前连接回公司，经常都是使用 OpenVPN、PPTP、L2TP 什么的，感觉不是很难用，但也说不上很好用。但是因为大家都知道的原因，在 iOS 上 OpenVPN 基本上无法正常下载，这对于公司员工来说就比较麻烦了，因为并不是每个人都需要科学上网的。后来无意中发现了 OpenConnect VPN Server，感觉还不错，后来就用到公司网络上了。使用过一段时间，就考虑把家里的 OpenWr">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在 OpenWrt 上搭建 OpenConnect (ocserv) 服务器">
+<meta property="og:url" content="https://tommy.net.cn/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="前言以前连接回公司，经常都是使用 OpenVPN、PPTP、L2TP 什么的，感觉不是很难用，但也说不上很好用。但是因为大家都知道的原因，在 iOS 上 OpenVPN 基本上无法正常下载，这对于公司员工来说就比较麻烦了，因为并不是每个人都需要科学上网的。后来无意中发现了 OpenConnect VPN Server，感觉还不错，后来就用到公司网络上了。使用过一段时间，就考虑把家里的 OpenWr">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/ocserv_ddns_installed.png">
+<meta property="og:image" content="https://tommy.net.cn/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/edit_ocserv_template.png">
+<meta property="og:image" content="https://tommy.net.cn/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/dns_and_route.png">
+<meta property="og:image" content="https://tommy.net.cn/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/port_forward.png">
+<meta property="article:published_time" content="2016-07-18T04:24:39.000Z">
+<meta property="article:modified_time" content="2025-02-19T05:47:01.028Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="OpenWrt">
+<meta property="article:tag" content="OpenConnect">
+<meta property="article:tag" content="VPN">
+<meta property="article:tag" content="AnyConnect">
+<meta property="article:tag" content="Cisco">
+<meta property="article:tag" content="ocserv">
+<meta property="article:tag" content="OpenVPN">
+<meta property="article:tag" content="Server">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/ocserv_ddns_installed.png">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/","path":"2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/","title":"在 OpenWrt 上搭建 OpenConnect (ocserv) 服务器"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>在 OpenWrt 上搭建 OpenConnect (ocserv) 服务器 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E6%9C%9F%E5%87%86%E5%A4%87"><span class="nav-number">2.</span> <span class="nav-text">前期准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E5%B7%A5"><span class="nav-number">3.</span> <span class="nav-text">开工</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-ocserv-%E5%92%8C-ddns"><span class="nav-number">3.1.</span> <span class="nav-text">安装 ocserv 和 ddns</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">3.2.</span> <span class="nav-text">修改配置文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E8%B7%AF%E7%94%B1%E8%A1%A8%E3%80%81%E8%BD%AC%E5%8F%91%E8%A7%84%E5%88%99%E5%92%8C%E7%AB%AF%E5%8F%A3%E6%98%A0%E5%B0%84"><span class="nav-number">3.3.</span> <span class="nav-text">设置路由表、转发规则和端口映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8-ocserv-%E6%9C%8D%E5%8A%A1"><span class="nav-number">3.4.</span> <span class="nav-text">启动 ocserv 服务</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">4.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="在 OpenWrt 上搭建 OpenConnect (ocserv) 服务器 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          在 OpenWrt 上搭建 OpenConnect (ocserv) 服务器
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-07-18 12:24:39" itemprop="dateCreated datePublished" datetime="2016-07-18T12:24:39+08:00">2016-07-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-02-19 13:47:01" itemprop="dateModified" datetime="2025-02-19T13:47:01+08:00">2025-02-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/server/" itemprop="url" rel="index"><span itemprop="name">Server</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>15k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>14 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>以前连接回公司，经常都是使用 OpenVPN、PPTP、L2TP 什么的，感觉不是很难用，但也说不上很好用。但是因为大家都知道的原因，在 iOS 上 OpenVPN 基本上无法正常下载，这对于公司员工来说就比较麻烦了，因为并不是每个人都需要科学上网的。后来无意中发现了 <a target="_blank" rel="noopener" href="http://www.infradead.org/ocserv/">OpenConnect VPN Server</a>，感觉还不错，后来就用到公司网络上了。使用过一段时间，就考虑把家里的 OpenWrt 也装一个，这样外出的时候连回家里管理 NAS 也方便些，便有了此文。</p>
+<span id="more"></span>
+
+<h2 id="前期准备"><a href="#前期准备" class="headerlink" title="前期准备"></a>前期准备</h2><ol>
+<li>首先，你得有个刷了 OpenWrt 的路由器</li>
+<li>其次，路由器的 Flash 得大一点，我配置完后，overlay 大概使用了 3.6 MB</li>
+<li>Chaos Calmer 15.05，<strong>注意：不要使用 15.05.1，该版本配套的 ocserv 会报 bus error</strong></li>
+<li>自己配置好 DDNS 等服务器，可以参考之前写的<a href="../../../../2015/02/25/use-dnspod-as-ddns-on-openwrt">在 OpenWrt 环境下使用 DnsPod 来实现动态域名解析</a>的文章。</li>
+<li>（可选）花钱或者免费弄一个服务器 SSL&#x2F;TLS 证书</li>
+</ol>
+<h2 id="开工"><a href="#开工" class="headerlink" title="开工"></a>开工</h2><h3 id="安装-ocserv-和-ddns"><a href="#安装-ocserv-和-ddns" class="headerlink" title="安装 ocserv 和 ddns"></a>安装 ocserv 和 ddns</h3><p>我是命令行粉丝，所以大部分工作在 Terminal 下完成。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">opkg update</span><br><span class="line">opkg install luci-app-ocserv</span><br><span class="line">opkg install luci-app-ddns</span><br></pre></td></tr></table></figure>
+
+<p>安装 Web 界面的 <code>ocserv</code> 和 <code>ddns</code>，其实装 <code>ddns</code> 并不是为了真正的动态域名，而是 <code>ocserv</code> 的脚本会检测系统中是否有 <code>ddns</code>，如果有的话，<code>ocserv</code> 的配置脚本会自动把动态域名设置为 <code>true</code>，如果喜欢自己改脚本的，也可以不装 <code>ddns</code>，这样可以解决点空间。</p>
+<p>装好后的效果如下：</p>
+<img src="/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/ocserv_ddns_installed.png" class="">
+
+<h3 id="修改配置文件"><a href="#修改配置文件" class="headerlink" title="修改配置文件"></a>修改配置文件</h3><p>安装好后，系统会自动生成以下 7 个文件：</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="regexp">/etc/</span>ocserv/ca.pem</span><br><span class="line"><span class="regexp">/etc/</span>ocserv/ca-key.pem</span><br><span class="line"><span class="regexp">/etc/</span>ocserv/server-cert.pem</span><br><span class="line"><span class="regexp">/etc/</span>ocserv/server-key.pem</span><br><span class="line"><span class="regexp">/etc/</span>ocserv/ocserv.conf.template</span><br><span class="line"><span class="regexp">/etc/</span>ocserv<span class="regexp">/pki/</span>ca.tmpl</span><br><span class="line"><span class="regexp">/etc/</span>ocserv<span class="regexp">/pki/</span>server.tmpl</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>ca.pem</code> 是服务器的 CA 证书，<code>ca-key.pem</code> 是私钥，<code>server-cert.pem</code> 是服务器证书，<code>server-key.pem</code> 是服务器私钥。</p>
+<p>一般来说 CA 相关的可以不用管，如果你找了如 <a target="_blank" rel="noopener" href="https://www.startssl.com/">StartSSL</a> 签了免费的证书的话，用他们签名过的公私钥替换 <code>server-cert.pem</code> 和 <code>server-key.pem</code> 就好了。</p>
+<p>接下来修改模板文件 <code>ocserv.conf.template</code>，这个可以在命令行中用 Vim 操作，也可以在 Web 界面来操作，比如：</p>
+<img src="/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/edit_ocserv_template.png" class="">
+
+<p>因为我是使用「证书」方式来进行身份验证的，所以直接忽略系统默认的 <code>plain</code> 认证方式，如果使用该方式可以参考文章最后的参考文献。最终的配置文件如下：</p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># User authentication method. Could be set multiple times and in that case</span></span><br><span class="line"><span class="comment"># all should succeed.</span></span><br><span class="line"><span class="comment"># Options: certificate, pam.</span></span><br><span class="line">auth = <span class="string">&quot;certificate&quot;</span></span><br><span class="line"><span class="comment">#auth = &quot;pam&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The gid-min option is used by auto-select-group option, in order to</span></span><br><span class="line"><span class="comment"># select the minimum group ID.</span></span><br><span class="line"><span class="comment">#auth = &quot;pam[gid-min=1000]&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The plain option requires specifying a password file which contains</span></span><br><span class="line"><span class="comment"># entries of the following format.</span></span><br><span class="line"><span class="comment"># &quot;username:groupname:encoded-password&quot;</span></span><br><span class="line"><span class="comment"># One entry must be listed per line, and &#x27;ocpasswd&#x27; can be used</span></span><br><span class="line"><span class="comment"># to generate password entries.</span></span><br><span class="line"><span class="comment">#auth = &quot;|AUTH|&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># A banner to be displayed on clients</span></span><br><span class="line"><span class="comment">#banner = &quot;Welcome to OpenWRT&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#isolate-workers = true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># When the server has a dynamic DNS address (that may change),</span></span><br><span class="line"><span class="comment"># should set that to true to ask the client to resolve again on</span></span><br><span class="line"><span class="comment"># reconnects.</span></span><br><span class="line">listen-host-is-dyndns = |DYNDNS|</span><br><span class="line"></span><br><span class="line"><span class="comment"># Use listen-host to limit to specific IPs or to the IPs of a provided</span></span><br><span class="line"><span class="comment"># hostname.</span></span><br><span class="line"><span class="comment">#listen-host = [IP|HOSTNAME]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Limit the number of clients. Unset or set to zero for unlimited.</span></span><br><span class="line"><span class="comment">#max-clients = 1024</span></span><br><span class="line">max-clients = |MAX_CLIENTS|</span><br><span class="line"></span><br><span class="line"><span class="comment"># Limit the number of client connections to one every X milliseconds</span></span><br><span class="line"><span class="comment"># (X is the provided value). Set to zero for no limit.</span></span><br><span class="line">rate-limit-<span class="keyword">ms</span> <span class="title">= 100</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Limit the number of identical clients (i.e., users connecting</span></span><br><span class="line"><span class="comment"># multiple times). Unset or set to zero for unlimited.</span></span><br><span class="line">max-same-clients = |MAX_SAME|</span><br><span class="line"></span><br><span class="line"><span class="comment"># TCP and UDP port number</span></span><br><span class="line">tcp-port = |PORT|</span><br><span class="line">|UDP|udp-port = |PORT|</span><br><span class="line"></span><br><span class="line"><span class="comment"># Stats report time. The number of seconds after which each</span></span><br><span class="line"><span class="comment"># worker process will report its usage statistics (number of</span></span><br><span class="line"><span class="comment"># bytes transferred etc). This is useful when accounting like</span></span><br><span class="line"><span class="comment"># radius is in use.</span></span><br><span class="line"><span class="comment">#stats-report-time = 360</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Keepalive in seconds</span></span><br><span class="line">keepalive = <span class="number">32400</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Dead peer detection in seconds.</span></span><br><span class="line">dpd = |DPD|</span><br><span class="line"></span><br><span class="line"><span class="comment"># Dead peer detection for mobile clients. The needs to</span></span><br><span class="line"><span class="comment"># be much higher to prevent such clients being awaken too</span></span><br><span class="line"><span class="comment"># often by the DPD messages, and save battery.</span></span><br><span class="line"><span class="comment"># (clients that send the X-AnyConnect-Identifier-DeviceType)</span></span><br><span class="line"><span class="comment">#mobile-dpd = 1800</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># MTU discovery (DPD must be enabled)</span></span><br><span class="line">try-mtu-discovery = <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The key and the certificates of the server</span></span><br><span class="line"><span class="comment"># The key may be a file, or any URL supported by GnuTLS (e.g.,</span></span><br><span class="line"><span class="comment"># tpmkey:uuid=xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx;storage=user</span></span><br><span class="line"><span class="comment"># or pkcs11:object=my-vpn-key;object-type=private)</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># There may be multiple certificate and key pairs and each key</span></span><br><span class="line"><span class="comment"># should correspond to the preceding certificate.</span></span><br><span class="line">server-cert = /etc/ocserv/server-cert.pem</span><br><span class="line">server-key = /etc/ocserv/server-key.pem</span><br><span class="line"></span><br><span class="line"><span class="comment"># Diffie-Hellman parameters. Only needed if you require support</span></span><br><span class="line"><span class="comment"># for the DHE ciphersuites (by default this server supports ECDHE).</span></span><br><span class="line"><span class="comment"># Can be generated using:</span></span><br><span class="line"><span class="comment"># certtool --generate-dh-params --outfile /path/to/dh.pem</span></span><br><span class="line"><span class="comment">#dh-params = /path/to/dh.pem</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># If you have a certificate from a CA that provides an OCSP</span></span><br><span class="line"><span class="comment"># service you may provide a fresh OCSP status response within</span></span><br><span class="line"><span class="comment"># the TLS handshake. That will prevent the client from connecting</span></span><br><span class="line"><span class="comment"># independently on the OCSP server.</span></span><br><span class="line"><span class="comment"># You can update this response periodically using:</span></span><br><span class="line"><span class="comment"># ocsptool --ask --load-cert=your_cert --load-issuer=your_ca --outfile response</span></span><br><span class="line"><span class="comment"># Make sure that you replace the following file in an atomic way.</span></span><br><span class="line"><span class="comment">#ocsp-response = /path/to/ocsp.der</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># In case PKCS #11 or TPM keys are used the PINs should be available</span></span><br><span class="line"><span class="comment"># in files. The srk-pin-file is applicable to TPM keys only, and is the</span></span><br><span class="line"><span class="comment"># storage root key.</span></span><br><span class="line"><span class="comment">#pin-file = /path/to/pin.txt</span></span><br><span class="line"><span class="comment">#srk-pin-file = /path/to/srkpin.txt</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The Certificate Authority that will be used to verify</span></span><br><span class="line"><span class="comment"># client certificates (public keys) if certificate authentication</span></span><br><span class="line"><span class="comment"># is set.</span></span><br><span class="line">ca-cert = /etc/ocserv/ca.pem</span><br><span class="line"></span><br><span class="line"><span class="comment"># The object identifier that will be used to read the user ID in the client</span></span><br><span class="line"><span class="comment"># certificate. The object identifier should be part of the certificate&#x27;s DN</span></span><br><span class="line"><span class="comment"># Useful OIDs are:</span></span><br><span class="line"><span class="comment">#  CN = 2.5.4.3, UID = 0.9.2342.19200300.100.1.1</span></span><br><span class="line">cert-user-oid = <span class="number">2.5</span>.<span class="number">4.3</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The object identifier that will be used to read the user group in the</span></span><br><span class="line"><span class="comment"># client  certificate. The object identifier should be part of the certificate&#x27;s</span></span><br><span class="line"><span class="comment"># DN. Useful OIDs are:</span></span><br><span class="line"><span class="comment">#  OU (organizational unit) = 2.5.4.11</span></span><br><span class="line"><span class="comment">#cert-group-oid = 2.5.4.11</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The revocation list of the certificates issued by the &#x27;ca-cert&#x27; above.</span></span><br><span class="line"><span class="comment">#crl = /etc/ocserv/crl.pem</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Uncomment this to enable compression negotiation (LZS, LZ4).</span></span><br><span class="line">|COMPRESSION|compression = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># GnuTLS priority string</span></span><br><span class="line">tls-priorities = <span class="string">&quot;NORMAL:%SERVER_PRECEDENCE:%COMPAT:-VERS-SSL3.0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># To enforce perfect forward secrecy (PFS) on the main channel.</span></span><br><span class="line"><span class="comment">#tls-priorities = &quot;NORMAL:%SERVER_PRECEDENCE:%COMPAT:-VERS-SSL3.0:-RSA&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The time (in seconds) that a client is allowed to stay connected prior</span></span><br><span class="line"><span class="comment"># to authentication</span></span><br><span class="line">auth-timeout = <span class="number">40</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The time (in seconds) that a client is allowed to stay idle (no traffic)</span></span><br><span class="line"><span class="comment"># before being disconnected. Unset to disable.</span></span><br><span class="line"><span class="comment">#idle-timeout = 1200</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The time (in seconds) that a mobile client is allowed to stay idle (no</span></span><br><span class="line"><span class="comment"># traffic) before being disconnected. Unset to disable.</span></span><br><span class="line"><span class="comment">#mobile-idle-timeout = 2400</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The time (in seconds) that a client is not allowed to reconnect after</span></span><br><span class="line"><span class="comment"># a failed authentication attempt.</span></span><br><span class="line">min-reauth-time = <span class="number">360</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Banning clients in ocserv works with a point system. IP addresses</span></span><br><span class="line"><span class="comment"># that get a score over that configured number are banned for</span></span><br><span class="line"><span class="comment"># min-reauth-time seconds. By default a wrong password attempt is 10 points,</span></span><br><span class="line"><span class="comment"># a KKDCP POST is 1 point, and a connection is 1 point. Note that</span></span><br><span class="line"><span class="comment"># due to difference processes being involved the count of points</span></span><br><span class="line"><span class="comment"># will not be real-time precise.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Score banning cannot be reliably used when receiving proxied connections</span></span><br><span class="line"><span class="comment"># locally from an HTTP server (i.e., when listen-clear-file is used).</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Set to zero to disable.</span></span><br><span class="line">max-ban-score = <span class="number">50</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The time (in seconds) that all score kept for a client is reset.</span></span><br><span class="line">ban-reset-time = <span class="number">300</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># In case you&#x27;d like to change the default points.</span></span><br><span class="line"><span class="comment">#ban-points-wrong-password = 10</span></span><br><span class="line"><span class="comment">#ban-points-connection = 1</span></span><br><span class="line"><span class="comment">#ban-points-kkdcp = 1</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Cookie timeout (in seconds)</span></span><br><span class="line"><span class="comment"># which he can reconnect. That cookie will be invalided if not</span></span><br><span class="line"><span class="comment"># used within this timeout value. On a user disconnection, that</span></span><br><span class="line"><span class="comment"># cookie will also be active for this time amount prior to be</span></span><br><span class="line"><span class="comment"># invalid. That should allow a reasonable amount of time for roaming</span></span><br><span class="line"><span class="comment"># between different networks.</span></span><br><span class="line">cookie-timeout = <span class="number">300</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Whether roaming is allowed, i.e., if true a cookie is</span></span><br><span class="line"><span class="comment"># restricted to a single IP address and cannot be re-used</span></span><br><span class="line"><span class="comment"># from a different IP.</span></span><br><span class="line"><span class="keyword">deny</span>-roaming = <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ReKey time (in seconds)</span></span><br><span class="line"><span class="comment"># ocserv will ask the client to refresh keys periodically once</span></span><br><span class="line"><span class="comment"># this amount of seconds is elapsed. Set to zero to disable.</span></span><br><span class="line">rekey-time = <span class="number">172800</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ReKey method</span></span><br><span class="line"><span class="comment"># Valid options: ssl, new-tunnel</span></span><br><span class="line"><span class="comment">#  ssl: Will perform an efficient rehandshake on the channel allowing</span></span><br><span class="line"><span class="comment">#       a seamless connection during rekey.</span></span><br><span class="line"><span class="comment">#  new-tunnel: Will instruct the client to discard and re-establish the channel.</span></span><br><span class="line"><span class="comment">#       Use this option only if the connecting clients have issues with the ssl</span></span><br><span class="line"><span class="comment">#       option.</span></span><br><span class="line">rekey-method = ssl</span><br><span class="line"></span><br><span class="line"><span class="comment"># Script to call when a client connects and obtains an IP</span></span><br><span class="line"><span class="comment"># Parameters are passed on the environment.</span></span><br><span class="line"><span class="comment"># REASON, USERNAME, GROUPNAME, HOSTNAME (the hostname selected by client),</span></span><br><span class="line"><span class="comment"># DEVICE, IP_REAL (the real IP of the client), IP_LOCAL (the local IP</span></span><br><span class="line"><span class="comment"># in the P-t-P connection), IP_REMOTE (the VPN IP of the client),</span></span><br><span class="line"><span class="comment"># ID (a unique numeric ID); REASON may be &quot;connect&quot; or &quot;disconnect&quot;.</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># These scripts are not needed if you have setup an interface for all vpns+</span></span><br><span class="line"><span class="comment"># devices.</span></span><br><span class="line"><span class="comment">#connect-script = /usr/bin/ocserv-script</span></span><br><span class="line"><span class="comment">#disconnect-script = /usr/bin/ocserv-script</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># UTMP</span></span><br><span class="line">use-utmp = <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Whether to enable support for the occtl tool (i.e., either through D-BUS,</span></span><br><span class="line"><span class="comment"># or via a unix socket).</span></span><br><span class="line">use-occtl = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># socket file used for IPC with occtl. You only need to set that,</span></span><br><span class="line"><span class="comment"># if you use more than a single servers.</span></span><br><span class="line">occtl-socket-file = /var/run/occtl.socket</span><br><span class="line"></span><br><span class="line"><span class="comment"># PID file. It can be overriden in the command line.</span></span><br><span class="line">pid-file = /var/run/ocserv.pid</span><br><span class="line"></span><br><span class="line"><span class="comment"># The default server directory. Does not require any devices present.</span></span><br><span class="line">chroot-dir = /var/lib/ocserv</span><br><span class="line"></span><br><span class="line"><span class="comment"># socket file used for IPC, will be appended with .PID</span></span><br><span class="line"><span class="comment"># It must be accessible within the chroot environment (if any)</span></span><br><span class="line"><span class="comment">#socket-file = /var/run/ocserv-socket</span></span><br><span class="line">socket-file = ocserv-socket</span><br><span class="line"></span><br><span class="line"><span class="comment"># The user the worker processes will be run as. It should be</span></span><br><span class="line"><span class="comment"># unique (no other services run as this user).</span></span><br><span class="line">run-as-<span class="keyword">user</span> <span class="title">= ocserv</span></span><br><span class="line">run-as-<span class="keyword">group</span> <span class="title">= ocserv</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Set the protocol-defined priority (SO_PRIORITY) for packets to</span></span><br><span class="line"><span class="comment"># be sent. That is a number from 0 to 6 with 0 being the lowest</span></span><br><span class="line"><span class="comment"># priority. Alternatively this can be used to set the IP Type-</span></span><br><span class="line"><span class="comment"># Of-Service, by setting it to a hexadecimal number (e.g., 0x20).</span></span><br><span class="line"><span class="comment"># This can be set per user/group or globally.</span></span><br><span class="line"><span class="comment">#net-priority = 3</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Set the VPN worker process into a specific cgroup. This is Linux</span></span><br><span class="line"><span class="comment"># specific and can be set per user/group or globally.</span></span><br><span class="line"><span class="comment">#cgroup = &quot;cpuset,cpu:test&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Network settings</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The name of the tun device</span></span><br><span class="line">device = vpns</span><br><span class="line"></span><br><span class="line"><span class="comment"># Whether the generated IPs will be predictable, i.e., IP stays the</span></span><br><span class="line"><span class="comment"># same for the same user when possible.</span></span><br><span class="line">predictable-ips = |PREDICTABLE_IPS|</span><br><span class="line"></span><br><span class="line"><span class="comment"># The default domain to be advertised</span></span><br><span class="line">|ENABLE_DEFAULT_DOMAIN|default-domain = |DEFAULT_DOMAIN|</span><br><span class="line"></span><br><span class="line"><span class="comment"># The pool of addresses that leases will be given from.</span></span><br><span class="line">ipv4-network = |IPV4ADDR|</span><br><span class="line">ipv4-netmask = |NETMASK|</span><br><span class="line"></span><br><span class="line"><span class="comment"># The advertized DNS server. Use multiple lines for</span></span><br><span class="line"><span class="comment"># multiple servers.</span></span><br><span class="line"><span class="comment"># dns = fc00::4be0</span></span><br><span class="line"><span class="comment">#dns = 192.168.1.2</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The NBNS server (if any)</span></span><br><span class="line"><span class="comment">#nbns = 192.168.1.3</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The IPv6 subnet that leases will be given from.</span></span><br><span class="line">|ENABLE_IPV6|ipv6-network = |IPV6ADDR|</span><br><span class="line">|ENABLE_IPV6|ipv6-prefix = |IPV6PREFIX|</span><br><span class="line"></span><br><span class="line"><span class="comment"># The domains over which the provided DNS should be used. Use</span></span><br><span class="line"><span class="comment"># multiple lines for multiple domains.</span></span><br><span class="line"><span class="comment">#split-dns = example.com</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Prior to leasing any IP from the pool ping it to verify that</span></span><br><span class="line"><span class="comment"># it is not in use by another (unrelated to this server) host.</span></span><br><span class="line">ping-leases = <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Unset to assign the default MTU of the device</span></span><br><span class="line"><span class="comment"># mtu =</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Unset to enable bandwidth restrictions (in bytes/sec). The</span></span><br><span class="line"><span class="comment"># setting here is global, but can also be set per user or per group.</span></span><br><span class="line"><span class="comment">#rx-data-per-sec = 40000</span></span><br><span class="line"><span class="comment">#tx-data-per-sec = 40000</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The number of packets (of MTU size) that are available in</span></span><br><span class="line"><span class="comment"># the output buffer. The default is low to improve latency.</span></span><br><span class="line"><span class="comment"># Setting it higher will improve throughput.</span></span><br><span class="line"><span class="comment">#output-buffer = 10</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Routes to be forwarded to the client. If you need the</span></span><br><span class="line"><span class="comment"># client to forward routes to the server, you may use the</span></span><br><span class="line"><span class="comment"># config-per-user/group or even connect and disconnect scripts.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># To set the server as the default gateway for the client just</span></span><br><span class="line"><span class="comment"># comment out all routes from the server.</span></span><br><span class="line"><span class="comment">#route = 192.168.1.0/255.255.255.0</span></span><br><span class="line"><span class="comment">#route = 192.168.5.0/255.255.255.0</span></span><br><span class="line"><span class="comment">#route = fef4:db8:1000:1001::/64</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Configuration files that will be applied per user connection or</span></span><br><span class="line"><span class="comment"># per group. Each file name on these directories must match the username</span></span><br><span class="line"><span class="comment"># or the groupname.</span></span><br><span class="line"><span class="comment"># The options allowed in the configuration files are dns, nbns,</span></span><br><span class="line"><span class="comment">#  ipv?-network, ipv4-netmask, ipv6-prefix, rx/tx-per-sec, iroute, route,</span></span><br><span class="line"><span class="comment">#  net-priority and cgroup.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Note that the &#x27;iroute&#x27; option allows to add routes on the server</span></span><br><span class="line"><span class="comment"># based on a user or group. The syntax depends on the input accepted</span></span><br><span class="line"><span class="comment"># by the commands route-add-cmd and route-del-cmd (see below).</span></span><br><span class="line"></span><br><span class="line">config-per-<span class="keyword">user</span> <span class="title">= /etc</span>/ocserv/config-per-user/</span><br><span class="line">config-per-<span class="keyword">group</span> <span class="title">= /etc</span>/ocserv/config-per-group/</span><br><span class="line"></span><br><span class="line"><span class="comment"># When config-per-xxx is specified and there is no group or user that</span></span><br><span class="line"><span class="comment"># matches, then utilize the following configuration.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#default-user-config = /etc/ocserv/defaults/user.conf</span></span><br><span class="line"><span class="comment">#default-group-config = /etc/ocserv/defaults/group.conf</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Groups that a client is allowed to select from.</span></span><br><span class="line"><span class="comment"># A client may belong in multiple groups, and in certain use-cases</span></span><br><span class="line"><span class="comment"># it is needed to switch between them. For these cases the client can</span></span><br><span class="line"><span class="comment"># select prior to authentication. Add multiple entries for multiple groups.</span></span><br><span class="line"><span class="comment">#select-group = group1</span></span><br><span class="line"><span class="comment">#select-group = group2[My group 2]</span></span><br><span class="line"><span class="comment">#select-group = tost[The tost group]</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The name of the group that if selected it would allow to use</span></span><br><span class="line"><span class="comment"># the assigned by default group.</span></span><br><span class="line"><span class="comment">#default-select-group = DEFAULT</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Instead of specifying manually all the allowed groups, you may instruct</span></span><br><span class="line"><span class="comment"># ocserv to scan all available groups and include the full list. That</span></span><br><span class="line"><span class="comment"># option is only functional on plain authentication.</span></span><br><span class="line"><span class="comment">#auto-select-group = true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The system command to use to setup a route. %&#123;R&#125; will be replaced with the</span></span><br><span class="line"><span class="comment"># route/mask and %&#123;D&#125; with the (tun) device.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># The following example is from linux systems. %&#123;R&#125; should be something</span></span><br><span class="line"><span class="comment"># like 192.168.2.0/24</span></span><br><span class="line"></span><br><span class="line">route-add-cmd = <span class="string">&quot;/sbin/route add -net %&#123;R&#125; dev %&#123;D&#125;&quot;</span></span><br><span class="line">route-del-cmd = <span class="string">&quot;/sbin/route del -net %&#123;R&#125; dev %&#123;D&#125;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># This option allows to forward a proxy. The special strings &#x27;%&#123;U&#125;&#x27;</span></span><br><span class="line"><span class="comment"># and &#x27;%&#123;G&#125;&#x27;, if present will be replaced by the username and group name.</span></span><br><span class="line"><span class="comment">#proxy-url = http://example.com/</span></span><br><span class="line"><span class="comment">#proxy-url = http://example.com/%&#123;U&#125;/%&#123;G&#125;/hello</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># The following options are for (experimental) AnyConnect client</span></span><br><span class="line"><span class="comment"># compatibility.</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Client profile xml. A sample file exists in doc/profile.xml.</span></span><br><span class="line"><span class="comment"># This file must be accessible from inside the worker&#x27;s chroot.</span></span><br><span class="line"><span class="comment"># It is not used by the openconnect client.</span></span><br><span class="line"><span class="comment">#user-profile = profile.xml</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Binary files that may be downloaded by the CISCO client. Must</span></span><br><span class="line"><span class="comment"># be within any chroot environment.</span></span><br><span class="line"><span class="comment">#binary-files = /path/to/binaries</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Unless set to false it is required for clients to present their</span></span><br><span class="line"><span class="comment"># certificate even if they are authenticating via a previously granted</span></span><br><span class="line"><span class="comment"># cookie and complete their authentication in the same TCP connection.</span></span><br><span class="line"><span class="comment"># Legacy CISCO clients do not do that, and thus this option should be</span></span><br><span class="line"><span class="comment"># set for them.</span></span><br><span class="line">cisco-client-compat = |CISCO_COMPAT|</span><br><span class="line"></span><br><span class="line"><span class="comment">#Advanced options</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Option to allow sending arbitrary custom headers to the client after</span></span><br><span class="line"><span class="comment"># authentication and prior to VPN tunnel establishment.</span></span><br><span class="line"><span class="comment">#custom-header = &quot;X-My-Header: hi there&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>主要的改动点：</p>
+<ol>
+<li>认证方式修改为 certificate</li>
+<li>禁用 banner</li>
+<li>打开 ca-cert</li>
+<li>将 cert-user-oid 修改为 CN (2.5.4.3) 识别</li>
+</ol>
+<p>当 <code>ocserv</code> 服务启动的时候，会自动生成 <code>/var/etc/ocserv.conf</code> 文件作为最终的配置文件。</p>
+<h3 id="设置路由表、转发规则和端口映射"><a href="#设置路由表、转发规则和端口映射" class="headerlink" title="设置路由表、转发规则和端口映射"></a>设置路由表、转发规则和端口映射</h3><p>修改完配置文件以后，我们还需要设置路由表。因为我不需要 OpenWrt 代理所有流量，仅仅需要可以访问到内网，所以我只做了一个路由表，就是我的内网网段，如下图：</p>
+<img src="/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/dns_and_route.png" class="">
+
+<p>接下来修改用户自定义 firewall 文件 <code>/etc/firewall.user</code>，增加如下内容：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">iptables</span> -t nat -I POSTROUTING -s <span class="number">192.168.100.0</span>/<span class="number">24</span> -j MASQUERADE</span><br><span class="line"><span class="attribute">iptables</span> -I FORWARD -i vpns+ -s <span class="number">192.168.100.0</span>/<span class="number">24</span> -j ACCEPT</span><br><span class="line"><span class="attribute">iptables</span> -I INPUT -i vpns+ -s <span class="number">192.168.100.0</span>/<span class="number">24</span> -j ACCEPT</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>192.168.100.0/24</code> 是 <code>ocserv</code> 的网段，需要根据实际情况进行调整，记得添加防火墙规则后重启服务。</p>
+<p>最后，就是做端口映射了，<code>ocserv</code> 安装后默认使用 <code>4443</code> 端口，为了兼容 AnyConnect 客户端，需要将其映射到外网的 <code>443</code> 端口上，这个就比较简单了，如图：</p>
+<img src="/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/port_forward.png" class="">
+
+<h3 id="启动-ocserv-服务"><a href="#启动-ocserv-服务" class="headerlink" title="启动 ocserv 服务"></a>启动 ocserv 服务</h3><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="regexp">/etc/i</span>nit.d/ocserv enable</span><br><span class="line"><span class="regexp">/etc/i</span>nit.d/ocserv start</span><br></pre></td></tr></table></figure>
+
+<p>这个命令很简单，另外，也可以在 luci 中选择 <code>Enable server</code> 来打开 <code>ocserv</code> 服务。然而，在你重启后，<code>ocserv</code> 服务从来就没有自动启动过！！！所以，我们还得做些 tweaking。</p>
+<p>在 <code>/etc/rc.local</code> 文件的 <code>exit</code> 前面增加两行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/etc/init.d/ocserv restart</span><br><span class="line"><span class="built_in">sleep</span> 5</span><br></pre></td></tr></table></figure>
+
+<p>同时创建一个 <code>/root/ocservup.sh</code> 脚本，防止 <code>ocserv</code> 进程意外被杀：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line">killall -0 ocserv 2&gt; /dev/null</span><br><span class="line"><span class="keyword">if</span> [ $? != 0 ]</span><br><span class="line"><span class="keyword">then</span></span><br><span class="line">logger \&quot;<span class="variable">$0</span>: Starting ocserv ...\&quot;</span><br><span class="line">/usr/sbin/ocserv -c /var/etc/ocserv.conf</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">logger \&quot;<span class="variable">$0</span>: ocserv already running: $(pidof ocserv)\&quot;</span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+
+<p>记得执行 <code>chmod +x /root/ocservup.sh</code> 给该脚本添加可执行属性。然后把该脚本添加到 <code>crontab</code> 中：</p>
+<figure class="highlight basic"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">3 </span>*/<span class="number">2</span> * * * /root/ocservup.sh</span><br></pre></td></tr></table></figure>
+
+<p>至此，整个配置完成，可以重启试试。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ul>
+<li><a target="_blank" rel="noopener" href="http://blog.ltns.info/linux/openwrt_ocserv_vpn_client_smart_proxy/">OpenWrt路由器搭建和配置ocserv实现VPN客户端智能代理</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/openwrt/" rel="tag"># OpenWrt</a>
+              <a href="/tags/openconnect/" rel="tag"># OpenConnect</a>
+              <a href="/tags/vpn/" rel="tag"># VPN</a>
+              <a href="/tags/anyconnect/" rel="tag"># AnyConnect</a>
+              <a href="/tags/cisco/" rel="tag"># Cisco</a>
+              <a href="/tags/ocserv/" rel="tag"># ocserv</a>
+              <a href="/tags/openvpn/" rel="tag"># OpenVPN</a>
+              <a href="/tags/server/" rel="tag"># Server</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/07/17/upgrade-hexo-to-3-2-2/" rel="prev" title="将 Hexo 升级到 3.2.2 了">
+                  <i class="fa fa-angle-left"></i> 将 Hexo 升级到 3.2.2 了
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/" rel="next" title="在 Mac OS X 上创建可引导的 Ubuntu U盘">
+                  在 Mac OS X 上创建可引导的 Ubuntu U盘 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

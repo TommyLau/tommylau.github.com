@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="为什么又发神经？一个全屏快捷键引发的故事事情是这样的，某天我在用倒霉的 Microsoft Teams 开会的时候，我习惯性地使用 ^ + ⌘ + F 快捷键尝试全屏显示。 结果反复按了几次快捷键都没有反应，我就奇了怪了，为什么不行呢？以前都可以的。 结果发现 Teams 的快捷键变了，跟原来的不一样了。如下图：  是不是只有 Teams 在作妖，其它的应用呢？是不是快捷键也变了？ 于是我打开了">
+<meta property="og:type" content="article">
+<meta property="og:title" content="给带 QMK 功能的 Keychron 键盘增加 Apple 的 Globe 键">
+<meta property="og:url" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="为什么又发神经？一个全屏快捷键引发的故事事情是这样的，某天我在用倒霉的 Microsoft Teams 开会的时候，我习惯性地使用 ^ + ⌘ + F 快捷键尝试全屏显示。 结果反复按了几次快捷键都没有反应，我就奇了怪了，为什么不行呢？以前都可以的。 结果发现 Teams 的快捷键变了，跟原来的不一样了。如下图：  是不是只有 Teams 在作妖，其它的应用呢？是不是快捷键也变了？ 于是我打开了">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/apple_globe_key.jpg">
+<meta property="og:image" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/teams_fullscreen_shortcut.png">
+<meta property="og:image" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/safari_fullscreen_shortcut.png">
+<meta property="og:image" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/chrome_fullscreen_shortcut.png">
+<meta property="og:image" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/magic_keyboard_1st_gen.png">
+<meta property="og:image" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/magic_keyboard_2nd_gen.png">
+<meta property="og:image" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/magic_keyboard_3rd_gen.png">
+<meta property="og:image" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/modifier_keys.png">
+<meta property="og:image" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/hid_consumer_globe_key.png">
+<meta property="og:image" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/usevia.png">
+<meta property="og:image" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/usevia_design.png">
+<meta property="og:image" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/usevia_load.png">
+<meta property="og:image" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/usevia_globe_key.png">
+<meta property="article:published_time" content="2025-02-19T04:15:56.000Z">
+<meta property="article:modified_time" content="2025-02-19T05:44:18.000Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Software">
+<meta property="article:tag" content="Apple">
+<meta property="article:tag" content="Microsoft">
+<meta property="article:tag" content="macOS">
+<meta property="article:tag" content="Firmware">
+<meta property="article:tag" content="Hardware">
+<meta property="article:tag" content="Keyboard">
+<meta property="article:tag" content="Keychron">
+<meta property="article:tag" content="QMK">
+<meta property="article:tag" content="Teams">
+<meta property="article:tag" content="Keycode">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/apple_globe_key.jpg">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/","path":"2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/","title":"给带 QMK 功能的 Keychron 键盘增加 Apple 的 Globe 键"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>给带 QMK 功能的 Keychron 键盘增加 Apple 的 Globe 键 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%88%E5%8F%91%E7%A5%9E%E7%BB%8F%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">为什么又发神经？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E5%85%A8%E5%B1%8F%E5%BF%AB%E6%8D%B7%E9%94%AE%E5%BC%95%E5%8F%91%E7%9A%84%E6%95%85%E4%BA%8B"><span class="nav-number">1.1.</span> <span class="nav-text">一个全屏快捷键引发的故事</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E4%BF%A1%E6%BB%A1%E6%BB%A1%E7%9A%84-QMK-VIA-%E4%B9%8B%E6%97%85"><span class="nav-number">1.2.</span> <span class="nav-text">自信满满的 QMK + VIA 之旅</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A2%E7%B4%A2%E4%B9%8B%E6%97%85"><span class="nav-number">2.</span> <span class="nav-text">探索之旅</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%86%E4%BB%A3%E7%9A%84%E8%8B%B9%E6%9E%9C-Magic-Keyboard"><span class="nav-number">2.1.</span> <span class="nav-text">历代的苹果 Magic Keyboard</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%80%E5%A7%8B%E6%89%BE%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF"><span class="nav-number">2.2.</span> <span class="nav-text">开始找解题思路</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%88%E5%88%B0%E4%BA%86%E5%BF%AB%E4%B9%90%E7%BC%96%E7%A8%8B%E6%97%B6%E9%97%B4"><span class="nav-number">3.</span> <span class="nav-text">又到了快乐编程时间</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A2%9E%E5%8A%A0%E7%9B%B8%E5%AF%B9%E5%BA%94%E7%9A%84-Keycode"><span class="nav-number">3.1.</span> <span class="nav-text">增加相对应的 Keycode</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#data-constants-keycodes-keycodes-0-0-2-basic-hjson"><span class="nav-number">3.1.1.</span> <span class="nav-text">data&#x2F;constants&#x2F;keycodes&#x2F;keycodes_0.0.2_basic.hjson</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#quantum-keycodes-h"><span class="nav-number">3.1.2.</span> <span class="nav-text">quantum&#x2F;keycodes.h</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#tests-test-common-keycode-table-cpp"><span class="nav-number">3.1.3.</span> <span class="nav-text">tests&#x2F;test_common&#x2F;keycode_table.cpp</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E6%8C%89%E9%94%AE%E8%A7%A6%E5%8F%91%E9%80%BB%E8%BE%91"><span class="nav-number">3.2.</span> <span class="nav-text">修改按键触发逻辑</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#HID-Consumer-%E4%B8%8A%E6%8A%A5"><span class="nav-number">3.2.1.</span> <span class="nav-text">HID Consumer 上报</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Keychron-%E9%83%A8%E5%88%86%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.2.2.</span> <span class="nav-text">Keychron 部分的实现</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%B9%E5%AE%9A%E9%94%AE%E7%9B%98%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-number">3.3.</span> <span class="nav-text">特定键盘的配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Keymap-%E9%85%8D%E7%BD%AE"><span class="nav-number">3.3.1.</span> <span class="nav-text">Keymap 配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Makefile-%E9%85%8D%E7%BD%AE"><span class="nav-number">3.3.2.</span> <span class="nav-text">Makefile 配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#VIA-%E6%94%AF%E6%8C%81"><span class="nav-number">3.3.3.</span> <span class="nav-text">VIA 支持</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%9B%BA%E4%BB%B6"><span class="nav-number">3.4.</span> <span class="nav-text">编译固件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81-VIA-%E6%A8%A1%E5%BC%8F"><span class="nav-number">4.</span> <span class="nav-text">验证 VIA 模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BD%A9%E8%9B%8B"><span class="nav-number">5.</span> <span class="nav-text">彩蛋</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BA%90%E4%BB%A3%E7%A0%81"><span class="nav-number">5.1.</span> <span class="nav-text">源代码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="给带 QMK 功能的 Keychron 键盘增加 Apple 的 Globe 键 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          给带 QMK 功能的 Keychron 键盘增加 Apple 的 Globe 键
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2025-02-19 12:15:56 / 修改时间：13:44:18" itemprop="dateCreated datePublished" datetime="2025-02-19T12:15:56+08:00">2025-02-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/hardware/" itemprop="url" rel="index"><span itemprop="name">Hardware</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>9.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>8 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><img src="/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/apple_globe_key.jpg" alt="Apple Globe Key"></p>
+<h2 id="为什么又发神经？"><a href="#为什么又发神经？" class="headerlink" title="为什么又发神经？"></a>为什么又发神经？</h2><h3 id="一个全屏快捷键引发的故事"><a href="#一个全屏快捷键引发的故事" class="headerlink" title="一个全屏快捷键引发的故事"></a>一个全屏快捷键引发的故事</h3><p>事情是这样的，某天我在用倒霉的 Microsoft Teams 开会的时候，我习惯性地使用 <code>^ + ⌘ + F</code> 快捷键尝试全屏显示。</p>
+<p>结果反复按了几次快捷键都没有反应，我就奇了怪了，为什么不行呢？以前都可以的。</p>
+<p>结果发现 Teams 的快捷键变了，跟原来的不一样了。如下图：</p>
+<p><img src="/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/teams_fullscreen_shortcut.png"></p>
+<p>是不是只有 Teams 在作妖，其它的应用呢？是不是快捷键也变了？</p>
+<p>于是我打开了万年不用的 Safari 和 Chrome，hmm……</p>
+<span id="more"></span>
+
+<p><img src="/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/safari_fullscreen_shortcut.png"></p>
+<p><img src="/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/chrome_fullscreen_shortcut.png"></p>
+<p>buer，苹果你这么玩儿是吧？！没事儿就瞎改快捷键是吧？！</p>
+<p>行行行～～～你赢了，我改习惯还不行吗？不就是 <code>🌐︎ + F</code> 吗？</p>
+<p>盐鹅，一顿操作猛如虎，发现我这「高级」的 Keychron 货，并不是尊贵的苹果键盘，根本没有 <code>🌐︎</code> 键啊……</p>
+<h3 id="自信满满的-QMK-VIA-之旅"><a href="#自信满满的-QMK-VIA-之旅" class="headerlink" title="自信满满的 QMK + VIA 之旅"></a>自信满满的 QMK + VIA 之旅</h3><p>那怎么办？简单，咱这可是带 QMK 固件，支持 VIA 的高级货。</p>
+<p>理论上来说，简单地修改一下配置，就可以实现 <code>🌐︎</code> 键的映射。</p>
+<p>又天真了不是？！人家苹果的 <code>🌐︎</code> 键，那可是仅属于苹果的存在，「杂牌货」的 Keychron 不配。</p>
+<p>就算在 Keychron 里面配置了 <code>fn</code> 键，也无法在 macOS 上成功激活 <code>🌐︎</code> 键。</p>
+<h2 id="探索之旅"><a href="#探索之旅" class="headerlink" title="探索之旅"></a>探索之旅</h2><p>不信邪的我，开始了漫长的寻找解决方案之路……</p>
+<h3 id="历代的苹果-Magic-Keyboard"><a href="#历代的苹果-Magic-Keyboard" class="headerlink" title="历代的苹果 Magic Keyboard"></a>历代的苹果 Magic Keyboard</h3><p>寻找的过程中，发现了一些苹果键盘变化的蛛丝马迹。</p>
+<p>比如说，第一代的苹果 Magic Keyboard 是没有 <code>🌐︎</code> 键的，只有 <code>fn</code> 键。如下图：</p>
+<p><img src="/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/magic_keyboard_1st_gen.png" alt="第一代的苹果 Magic Keyboard"></p>
+<p>然后到了第二代的时候，苹果在键盘的右上角增加了一个 <code>🌐︎</code> 键和 <code>fn</code> 键共用的按键。如下图：</p>
+<p><img src="/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/magic_keyboard_2nd_gen.png" alt="第二代的苹果 Magic Keyboard"></p>
+<p>到了最新的第三代嘛，你懂的，苹果直接把 <code>🌐︎</code> 和 <code>fn</code> 键布置到了键盘的左下角，成为了新的「修饰键」（Modifier Keys）。如下图：</p>
+<p><img src="/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/magic_keyboard_3rd_gen.png" alt="第三代的苹果 Magic Keyboard"></p>
+<p>至此，恭喜 <code>fn</code> 键成功晋级为 <code>🌐︎</code> 键，并成为了 macOS 中的「修饰键」（Modifier Keys）。</p>
+<p>从此在 macOS 中，和 <code>Control</code>、<code>Option</code>、<code>Command</code> 一样，拥有了「一席之地」。</p>
+<p><img src="/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/modifier_keys.png" alt="macOS 中的「修饰键」（Modifier Keys）"></p>
+<h3 id="开始找解题思路"><a href="#开始找解题思路" class="headerlink" title="开始找解题思路"></a>开始找解题思路</h3><p>看一下 QMK 官方的 Issue 里面就有一个 <a target="_blank" rel="noopener" href="https://github.com/qmk/qmk_firmware/issues/16651">Add support for globe key (🌐︎︎) for macOS&#x2F;iPadOS&#x2F;iOS</a> 的讨论。</p>
+<p>发现并没有什么好的解决方案，然后就顺藤摸瓜，找到了 <a target="_blank" rel="noopener" href="https://gist.github.com/fauxpark/010dcf5d6377c3a71ac98ce37414c6c4">QMK Apple Fn Key</a> 这篇文章。</p>
+<p>文中提到的方法，需要修改 USB 设备的 VID 和 PID，伪装成苹果的键盘，才能在 macOS 中正常使用。</p>
+<p>个人使用来看似乎没什么问题，但是 VID 和 PID 也是要通过 USB 联盟认证的，直接修改 VID 和 PID 似乎有点不太优雅。</p>
+<p>不过在搜索的过程中，发现了一个苹果的 <a target="_blank" rel="noopener" href="https://developer.apple.com/accessories/Accessory-Design-Guidelines.pdf">Accessory Design Guidelines</a> 文档，里面提到了苹果的 <code>🌐︎</code> 键。哎嗨，这不就是我想要的吗？</p>
+<p><img src="/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/hid_consumer_globe_key.png" alt="Hid Consumer Globe Key"></p>
+<h2 id="又到了快乐编程时间"><a href="#又到了快乐编程时间" class="headerlink" title="又到了快乐编程时间"></a>又到了快乐编程时间</h2><p>经过了 N 个小时漫长的代码阅读，终于掌握了 Keychron QMK 实现的精髓。</p>
+<p>这里省略一万字的心酸历程，直接上干货。</p>
+<h3 id="增加相对应的-Keycode"><a href="#增加相对应的-Keycode" class="headerlink" title="增加相对应的 Keycode"></a>增加相对应的 Keycode</h3><h4 id="data-constants-keycodes-keycodes-0-0-2-basic-hjson"><a href="#data-constants-keycodes-keycodes-0-0-2-basic-hjson" class="headerlink" title="data/constants/keycodes/keycodes_0.0.2_basic.hjson"></a><code>data/constants/keycodes/keycodes_0.0.2_basic.hjson</code></h4><p>原始的 QMK 中，并没有 <code>KC_GLOBE</code> 这个 Keycode，所以需要我们自己增加。</p>
+<p>先修改 <code>data/constants/keycodes/keycodes_0.0.2_basic.hjson</code> 文件，增加相对应的 Keycode。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">&quot;0x00C3&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;group&quot;</span><span class="punctuation">:</span> <span class="string">&quot;media&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;key&quot;</span><span class="punctuation">:</span> <span class="string">&quot;KC_GLOBE&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;label&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Apple Globe/FN Key&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;aliases&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">        <span class="string">&quot;KC_GLOB&quot;</span></span><br><span class="line">    <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>在原文件中，<code>0x00C2</code> 是 <code>KC_LAUNCHPAD</code> 的 Keycode，所以这里我们使用 <code>0x00C3</code> 作为 <code>KC_GLOBE</code> 的 Keycode。</p>
+<p>并把 <code>KC_GLOB</code> 作为 <code>KC_GLOBE</code> 的别名。</p>
+<h4 id="quantum-keycodes-h"><a href="#quantum-keycodes-h" class="headerlink" title="quantum/keycodes.h"></a><code>quantum/keycodes.h</code></h4><p>接下来修改 <code>quantum/keycodes.h</code> 文件，在 <code>enum qk_keycode_defines</code> 中增加相对应的 Keycode。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">qk_keycode_defines</span> &#123;</span></span><br><span class="line">    ...</span><br><span class="line">    KC_GLOBE = <span class="number">0x00C3</span>, <span class="comment">// Added by Tommy for Apple&#x27;s Globe Key, 2025-02-18</span></span><br><span class="line">    ...</span><br><span class="line">    KC_GLOB    = KC_GLOBE, <span class="comment">// Added by Tommy for Apple&#x27;s Globe Key, 2025-02-18</span></span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>还记得苹果的 <a target="_blank" rel="noopener" href="https://developer.apple.com/accessories/Accessory-Design-Guidelines.pdf">Accessory Design Guidelines</a> 文档吗？</p>
+<p>其中 <code>KC_GLOBE</code> 键对应的 Usage ID 是 <code>0x029D</code>，名称是 <code>AC Keyboard Layout Select</code>，属于 <code>HID Consumer Page</code>。</p>
+<p>所以我们还需要对应的修改 <code>IS_CONSUMER_KEYCODE</code> 和 <code>CONSUMER_KEYCODE_RANGE</code> 的宏定义。</p>
+<p>把原来的 <code>KC_LAUNCHPAD</code>(0x00C2) 宏定义替换为数值更高的 <code>KC_GLOBE</code>(0x00C3)。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> IS_CONSUMER_KEYCODE(code) ((code) &gt;= KC_AUDIO_MUTE &amp;&amp; (code) &lt;= KC_GLOBE) <span class="comment">// Added by Tommy for Apple&#x27;s Globe Key, 2025-02-18</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CONSUMER_KEYCODE_RANGE              KC_AUDIO_MUTE ... KC_GLOBE <span class="comment">// Added by Tommy for Apple&#x27;s Globe Key, 2025-02-18</span></span></span><br></pre></td></tr></table></figure>
+
+<h4 id="tests-test-common-keycode-table-cpp"><a href="#tests-test-common-keycode-table-cpp" class="headerlink" title="tests/test_common/keycode_table.cpp"></a><code>tests/test_common/keycode_table.cpp</code></h4><p>修改 <code>tests/test_common/keycode_table.cpp</code> 文件，增加相对应的 Keycode。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">std::map&lt;<span class="type">uint16_t</span>, std::string&gt; KEYCODE_ID_TABLE = &#123;</span><br><span class="line">    ...</span><br><span class="line">    &#123;KC_GLOBE, <span class="string">&quot;KC_GLOBE&quot;</span>&#125;, <span class="comment">// Added by Tommy for Apple&#x27;s Globe Key, 2025-02-18</span></span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>至此，Keycode 部分的添加就算修改完成了。</p>
+<h3 id="修改按键触发逻辑"><a href="#修改按键触发逻辑" class="headerlink" title="修改按键触发逻辑"></a>修改按键触发逻辑</h3><p>按键 Keycode 的定义有了，接下来就是修改按键触发逻辑了。</p>
+<h4 id="HID-Consumer-上报"><a href="#HID-Consumer-上报" class="headerlink" title="HID Consumer 上报"></a>HID Consumer 上报</h4><p>文件：<code>tmk_core/protocol/report.h</code></p>
+<p>要使得新增的 Keycode 可用，我们需要修改 HID Consumer 相关的代码。</p>
+<p>本来我还想根据苹果的规范，自己添加映射的，但是发现已经有<a target="_blank" rel="noopener" href="https://github.com/qmk/qmk_firmware/pull/22256">好心人做好了映射</a>，如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">consumer_usages</span> &#123;</span></span><br><span class="line">    <span class="comment">// 15.16 Generic GUI Application Controls</span></span><br><span class="line">    AC_NEXT_KEYBOARD_LAYOUT_SELECT = <span class="number">0x29D</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>那我们就直接使用这个映射，来修改 <code>KEYCODE2CONSUMER</code> 函数，增加对 <code>KC_GLOBE</code> 按键的支持。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">uint16_t</span> <span class="title function_">KEYCODE2CONSUMER</span><span class="params">(<span class="type">uint8_t</span> key)</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> KC_GLOBE: <span class="comment">// Added by Tommy for Apple&#x27;s Globe Key, 2025-02-18</span></span><br><span class="line">        <span class="keyword">return</span> AC_NEXT_KEYBOARD_LAYOUT_SELECT;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Keychron-部分的实现"><a href="#Keychron-部分的实现" class="headerlink" title="Keychron 部分的实现"></a>Keychron 部分的实现</h4><p>因为我使用的是 Keychron 的键盘，所以修改的方式跟直接用 QMK 的不大一样。</p>
+<p>需要修改 <code>keychron_common.h</code> 和 <code>keychron_common.c</code> 这两个文件，来增加对 <code>KC_GLOBE</code> 按键的支持。</p>
+<p>文件：<code>keyboards/keychron/common/keychron_common.h</code></p>
+<p>这个很简单，只需要在 <code>enum</code> 的 <code>NEW_SAFE_RANGE</code> 之前增加一个新的按键定义即可。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> &#123;</span></span><br><span class="line">    ...</span><br><span class="line">    KC_APFN, <span class="comment">// Added by Tommy for Apple&#x27;s Globe Key, 2025-02-18</span></span><br><span class="line">    NEW_SAFE_RANGE,</span><br><span class="line"> &#125;;</span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是 <code>KC_APFN</code> 是我根据 Keychron 的固件代码，自己定义的一个按键。</p>
+<p>这个名字不能与之前定义的 <code>KC_GLOBE</code> 相同，因为 <code>KC_GLOBE</code> 是 QMK 的 Keycode，而 <code>KC_APFN</code> 是 Keychron 的 Keycode。</p>
+<p>这里一定要区分清楚，不要混淆了，后面在配置键盘 Keymap 的时候，还会用到这个定义。</p>
+<p>文件：<code>keyboards/keychron/common/keychron_common.c</code></p>
+<p>这个文件的修改也很简单，只需要在 <code>process_record_user</code> 函数中，增加对 <code>KC_APFN</code> 按键的判断即可。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">bool</span> <span class="title function_">process_record_keychron_common</span><span class="params">(<span class="type">uint16_t</span> keycode, <span class="type">keyrecord_t</span> *record)</span> &#123;</span><br><span class="line">    <span class="keyword">switch</span> (keycode) &#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">case</span> KC_APFN: <span class="comment">// Added by Tommy for Apple&#x27;s Globe Key, 2025-02-18</span></span><br><span class="line">            <span class="keyword">if</span> (record-&gt;event.pressed) &#123;</span><br><span class="line">                register_code(KC_GLOBE);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                unregister_code(KC_GLOBE);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>; <span class="comment">// Skip all further processing of this key</span></span><br><span class="line">         <span class="keyword">default</span>:</span><br><span class="line">             <span class="keyword">return</span> <span class="literal">true</span>; <span class="comment">// Process all other keycodes normally</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里就是把 Keychron 的 <code>KC_APFN</code> 转换为 QMK 的 <code>KC_GLOBE</code> 并通过 HID Consumer 协议发给系统。</p>
+<p>当按键按下的时候，通过 <code>register_code(KC_GLOBE);</code> 注册 <code>KC_GLOBE</code> 按键。</p>
+<p>当按键释放的时候，通过 <code>unregister_code(KC_GLOBE);</code> 注销 <code>KC_GLOBE</code> 按键。</p>
+<h3 id="特定键盘的配置"><a href="#特定键盘的配置" class="headerlink" title="特定键盘的配置"></a>特定键盘的配置</h3><p>经过上面的修改，Keychron 的键盘就可以正常使用 <code>KC_GLOBE</code> 按键了。</p>
+<p>但是对于特定的键盘，比如我现在正在使用的 K7 Max，我们还需要修改 Keymap 才能正常使用。</p>
+<h4 id="Keymap-配置"><a href="#Keymap-配置" class="headerlink" title="Keymap 配置"></a>Keymap 配置</h4><p>Keymap 的配置，根据不同的键盘是不一样的。</p>
+<p>我这里以我自己修改的 K7 Max 为例，只需把你想作为 <code>🌐︎</code> 的按键定义为 <code>KC_APFN</code> 即可。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">uint16_t</span> PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = &#123;</span><br><span class="line">    [MAC] = LAYOUT_ansi_68(</span><br><span class="line">        QK_GESC,          KC_1,     KC_2,     KC_3,     KC_4,     KC_5,     KC_6,     KC_7,     KC_8,     KC_9,     KC_0,     KC_MINS,  KC_EQL,   KC_BSPC,           KC_DEL,</span><br><span class="line">        KC_TAB,           KC_Q,     KC_W,     KC_E,     KC_R,     KC_T,     KC_Y,     KC_U,     KC_I,     KC_O,     KC_P,     KC_LBRC,  KC_RBRC,  KC_BSLS,           KC_HOME,</span><br><span class="line">        LT(FN1, KC_BSPC), KC_A,     KC_S,     KC_D,     KC_F,     KC_G,     KC_H,     KC_J,     KC_K,     KC_L,     KC_SCLN,  KC_QUOT,            KC_ENT,            KC_PGUP,</span><br><span class="line">        KC_LSFT,          KC_Z,     KC_X,     KC_C,     KC_V,     KC_B,     KC_N,     KC_M,     KC_COMM,  KC_DOT,   KC_SLSH,                      KC_RSFT,  KC_UP,   KC_PGDN,</span><br><span class="line">        KC_LCTL,          KC_LOPTN, KC_LCMMD,                               KC_SPC,                                 KC_RCMMD, KC_APFN,  MO(KCF),  KC_LEFT,  KC_DOWN, KC_RGHT),</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>像上面这样，在 <code>KC_RCMMD</code> 后面增加一个 <code>KC_APFN</code> 按键。</p>
+<p>在键盘上的位置，就是空格右边 <code>⌘</code> 键再右边的 <code>fn1</code> 键，按下去就相当于按下了 <code>🌐︎</code> 键。</p>
+<p>对于只使用 <code>🌐︎</code> 键切换输入法的朋友，看到这里就可以结束了。</p>
+<p>但是对于想要使用 <code>🌐︎</code> 键作为修饰键的朋友，请继续往下看。</p>
+<h4 id="Makefile-配置"><a href="#Makefile-配置" class="headerlink" title="Makefile 配置"></a>Makefile 配置</h4><p>文件：<code>keyboards/keychron/k7_max/ansi/rgb/keymaps/tommy/rules.mk</code></p>
+<p>默认情况下，经过上述的修改，我们就可以正常使用 <code>🌐︎</code> 键了。</p>
+<p>但这里有一个小问题，就是 QMK 默认情况下会使用不同的 USB Endpoint 来发送数据。</p>
+<p>而苹果会把不同 Endpoint 的数据认为是独立的键盘输入，从而导致 <code>🌐︎ + 其他按键</code> 无法正常工作。</p>
+<p>比如说，单独按 <code>🌐︎</code> 键，可以正常切换输入法。</p>
+<p>但是当我按下 <code>🌐︎ + F</code> 键的时候，系统会认为我分别按下了 <code>🌐︎</code> 键和 <code>F</code> 键，而不是 <code>🌐︎ + F</code> 键。</p>
+<p>所以，我们需要增加 <code>KEYBOARD_SHARED_EP = yes</code> 这个配置，让设备以 Shared Endpoint 的方式来发送数据。</p>
+<p>这样，苹果会把不同 Endpoint 的数据认为是同一个键盘输入，从而使得 <code>🌐︎ + 其他按键</code> 可以正常工作。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">KEYBOARD_SHARED_EP = yes</span><br></pre></td></tr></table></figure>
+
+<p>如果不使用 VIA 功能的话，到这里就可以结束了。</p>
+<p>但是要想临时改个按键什么的，也不能每次都编译固件吧？</p>
+<p>既然来都来了，那么……</p>
+<h4 id="VIA-支持"><a href="#VIA-支持" class="headerlink" title="VIA 支持"></a>VIA 支持</h4><p>文件：<code>keyboards/keychron/k7_max/via_json/k7_max_ansi_rgb_v1.0.json</code></p>
+<p>其实也很简单，只需要在上述文件的 <code>customKeycodes</code> 字段中，增加 <code>APFn</code> 的定义即可。如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">&quot;customKeycodes&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">  ...</span><br><span class="line">  <span class="punctuation">&#123;</span><span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Globe Key&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;title&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Apple Globe/FN Key&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;shortName&quot;</span><span class="punctuation">:</span> <span class="string">&quot;APFn&quot;</span><span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">]</span><span class="punctuation">,</span></span><br></pre></td></tr></table></figure>
+
+<p>这样我们就可以在 VIA 中看到我们自定义的 <code>APFn</code>，也就是 <code>🌐︎</code> 按键了。</p>
+<p>需要特别注意的是，我们之前编辑过的 Makefile 文件中，必须要有 <code>VIA_ENABLE = yes</code> 这个配置，否则 VIA 功能无法正常工作。</p>
+<p>不过一般默认情况下，新的 Keychron 键盘都是默认开启 VIA 功能的。</p>
+<p>综合上面的配置，Makefile 文件内容类似如下：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">VIA_ENABLE = yes</span><br><span class="line">KEYBOARD_SHARED_EP = yes</span><br></pre></td></tr></table></figure>
+
+<h3 id="编译固件"><a href="#编译固件" class="headerlink" title="编译固件"></a>编译固件</h3><p>我这里选择编译和烧录固件同时进行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make keychron/k7_max/ansi/rgb:tommy:flash</span><br></pre></td></tr></table></figure>
+
+<p>编译成功后，会输出类似如下的信息：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Linking: .build/keychron_k7_max_ansi_rgb_tommy.elf                                                  [OK]</span><br><span class="line">Creating binary load file <span class="keyword">for</span> flashing: .build/keychron_k7_max_ansi_rgb_tommy.bin                   [OK]</span><br><span class="line">Creating load file <span class="keyword">for</span> flashing: .build/keychron_k7_max_ansi_rgb_tommy.hex                          [OK]</span><br><span class="line"></span><br><span class="line">Size after:</span><br><span class="line">   text	   data	    bss	    dec	    hex	filename</span><br><span class="line">      0	  61450	      0	  61450	   f00a	keychron_k7_max_ansi_rgb_tommy.bin</span><br><span class="line"></span><br><span class="line">Copying keychron_k7_max_ansi_rgb_tommy.bin to qmk_firmware folder                                   [OK]</span><br></pre></td></tr></table></figure>
+
+<p>表示成功生成了可烧录的二进制文件 <code>keychron_k7_max_ansi_rgb_tommy.bin</code>。</p>
+<p>接下来程序会进入刷机模式，并出现类似的提示：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Flashing <span class="keyword">for</span> bootloader: stm32-dfu</span><br><span class="line">Bootloader not found. Make sure the board is <span class="keyword">in</span> bootloader mode. See https://docs.qmk.fm/<span class="comment">#/newbs_flashing</span></span><br><span class="line"> Trying again every 0.5s (Ctrl+C to cancel)...</span><br></pre></td></tr></table></figure>
+
+<p>这个时候我们需要把键盘上的开关调整到 <code>Cable</code> 模式，然后按住 <code>Esc</code> 键不放，再重新插入 USB 数据线。</p>
+<p>找到 <code>DFU</code> 模式的设备后，程序会自动进入烧录阶段，出现类似如下的信息：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">dfu-util 0.11</span><br><span class="line"></span><br><span class="line">Copyright 2005-2009 Weston Schmidt, Harald Welte and OpenMoko Inc.</span><br><span class="line">Copyright 2010-2021 Tormod Volden and Stefan Schmidt</span><br><span class="line">This program is Free Software and has ABSOLUTELY NO WARRANTY</span><br><span class="line">Please report bugs to http://sourceforge.net/p/dfu-util/tickets/</span><br><span class="line"></span><br><span class="line">Opening DFU capable USB device...</span><br><span class="line">Device ID 0483:df11</span><br><span class="line">Device DFU version 011a</span><br><span class="line">Claiming USB DFU Interface...</span><br><span class="line">Setting Alternate Interface <span class="comment">#0 ...</span></span><br><span class="line">Determining device status...</span><br><span class="line">DFU state(10) = dfuERROR, status(10) = Device<span class="string">&#x27;s firmware is corrupt. It cannot return to run-time (non-DFU) operations</span></span><br><span class="line"><span class="string">Clearing status</span></span><br><span class="line"><span class="string">Determining device status...</span></span><br><span class="line"><span class="string">DFU state(2) = dfuIDLE, status(0) = No error condition is present</span></span><br><span class="line"><span class="string">DFU mode device DFU version 011a</span></span><br><span class="line"><span class="string">Device returned transfer size 2048</span></span><br><span class="line"><span class="string">DfuSe interface name: &quot;Internal Flash  &quot;</span></span><br><span class="line"><span class="string">Downloading element to address = 0x08000000, size = 93740</span></span><br><span class="line"><span class="string">Erase   	[=========================] 100%        93740 bytes</span></span><br><span class="line"><span class="string">Erase    done.</span></span><br><span class="line"><span class="string">Download	[=========================] 100%        93740 bytes</span></span><br><span class="line"><span class="string">Download done.</span></span><br><span class="line"><span class="string">File downloaded successfully</span></span><br><span class="line"><span class="string">Submitting leave request...</span></span><br><span class="line"><span class="string">Transitioning to dfuMANIFEST state</span></span><br></pre></td></tr></table></figure>
+
+<p>当 <code>Erase</code> 和 <code>Download</code> 都完成后，程序会自动退出烧录模式，并提示固件烧录成功。</p>
+<p>键盘会自动重启，并进入正常工作模式。</p>
+<h2 id="验证-VIA-模式"><a href="#验证-VIA-模式" class="headerlink" title="验证 VIA 模式"></a>验证 VIA 模式</h2><p>使用 USB 数据线连接键盘和电脑，并把键盘开关调整到 <code>Cable</code> 模式。</p>
+<p>打开 <code>Chrome</code> 浏览器，访问 <code>https://usevia.app/</code>，会看到类似如下的界面：</p>
+<p><img src="/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/usevia.png" alt="VIA Authorize"></p>
+<p>点击 <code>Authorize</code> 按钮，选择 <code>Keychron K7 Max</code> 键盘并 <code>Connect</code>。</p>
+<p>对于第一次使用的用户，我们需要开启 <code>Show Design tab</code> 选项，否则无法看到键盘的配置界面。</p>
+<p><img src="/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/usevia_design.png" alt="VIA Design"></p>
+<p>不管以前是否有加载过配置的 json 文件，我们都需要重新加载一次，因为我们刚才修改了 json 配置文件。</p>
+<p><img src="/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/usevia_load.png"></p>
+<p>点击 <code>Load</code> 按钮，选择我们刚才修改的 <code>keyboards/keychron/k7_max/via_json/k7_max_ansi_rgb_v1.0.json</code> 文件。</p>
+<blockquote>
+<p>注意：第一次使用的用户，需要重新 <code>Authorize</code> 并 <code>Connect</code> 一次键盘才能正常使用。</p>
+</blockquote>
+<p>然后我们切换到首页，就可以看到我们刚才定义的 <code>APFn</code> 按键，并可以正常配置键位了。</p>
+<p><img src="/2025/02/19/adding-apple-globe-key-to-keychron-qmk-based-keyboard/usevia_globe_key.png" alt="VIA Globe Key"></p>
+<h2 id="彩蛋"><a href="#彩蛋" class="headerlink" title="彩蛋"></a>彩蛋</h2><p>最后，给大家分享一个 <code>🌐︎</code> 键的小彩蛋。</p>
+<p>实际上，虽然 <code>🌐︎</code> 键与 <code>fn</code> 键共用一个按键，但是它与 <code>fn</code> 键并不相同。</p>
+<p><code>🌐︎</code> 键仅用于系统快捷键，以下是目前我在新版 macOS 系统上会用到的一些快捷方式：</p>
+<ul>
+<li><code>🌐︎ + A</code>：把焦点转移到 Dock 栏，然后按应用的首字母，并输入 <code>↩︎</code> 可以快速切换到该应用。</li>
+<li><code>🌐︎ + ⇧ + A</code>：打开应用程序库（Launchpad），按字母可以快速启动应用。</li>
+<li><code>🌐︎ + D</code>：启动听写</li>
+<li><code>🌐︎ + E</code>：选择 Emoji 表情</li>
+<li><code>🌐︎ + H</code>：显示桌面</li>
+<li><code>🌐︎ + C</code>：显示控制中心</li>
+<li><code>🌐︎ + N</code>：显示通知中心</li>
+<li><code>🌐︎ + Q</code>：启动快速笔记</li>
+<li><code>🌐︎︎ + F</code>：进入全屏模式</li>
+</ul>
+<h3 id="源代码"><a href="#源代码" class="headerlink" title="源代码"></a>源代码</h3><p>不会吧，不会吧，不会吧，真的有人能坚持看到这里？</p>
+<p>好吧，既然你都看到这里了，那么……</p>
+<p>你不会真的以为我会跟你分享源代码吧？</p>
+<p>恭喜你，答对了！</p>
+<p>相关源代码已上传到 GitHub 仓库，感兴趣的朋友可以参考下面的 Commit：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/TommyLau/qmk_firmware/commit/f403c031640d618dceeeb73d140ab4bf085ac251">https://github.com/TommyLau/qmk_firmware/commit/f403c031640d618dceeeb73d140ab4bf085ac251</a></p>
+<p>Changelog 如下：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">feat: Add support for Apple Globe/FN key (KC<span class="emphasis">_GLOBE)</span></span><br><span class="line"><span class="emphasis"></span></span><br><span class="line"><span class="emphasis">- Add new keycode KC_</span>GLOBE (0x00C3) for Apple&#x27;s Globe/FN key</span><br><span class="line"><span class="bullet">-</span> Implement KC<span class="emphasis">_APFN custom keycode in Keychron common code</span></span><br><span class="line"><span class="emphasis">- Update keycode tables and ranges to include the new Globe key</span></span><br><span class="line"><span class="emphasis">- Add Globe key to VIA JSON configuration</span></span><br><span class="line"><span class="emphasis">- Modify Tommy K7 Max keymap to use the Globe key</span></span><br><span class="line"><span class="emphasis">- Map Globe key to AC_</span>NEXT<span class="emphasis">_KEYBOARD_</span>LAYOUT<span class="emphasis">_SELECT in USB HID report</span></span><br><span class="line"><span class="emphasis">- Enable shared endpoint for better macOS compatibility</span></span><br><span class="line"><span class="emphasis"></span></span><br><span class="line"><span class="emphasis">This change implements proper support for the Apple Globe/FN key,</span></span><br><span class="line"><span class="emphasis">allowing for better integration with macOS keyboard layout switching.</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/accessories/Accessory-Design-Guidelines.pdf">Accessory Design Guidelines for Apple Devices</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/qmk/qmk_firmware/issues/16651">Add support for globe key (🌐︎︎) for macOS&#x2F;iPadOS&#x2F;iOS</a></li>
+<li><a target="_blank" rel="noopener" href="https://gist.github.com/fauxpark/010dcf5d6377c3a71ac98ce37414c6c4">QMK Apple Fn Key</a></li>
+<li><a target="_blank" rel="noopener" href="https://skip.house/blog/qmk-globe-key">Adding Globe Key (🌐︎) to QMK</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/software/" rel="tag"># Software</a>
+              <a href="/tags/apple/" rel="tag"># Apple</a>
+              <a href="/tags/microsoft/" rel="tag"># Microsoft</a>
+              <a href="/tags/macos/" rel="tag"># macOS</a>
+              <a href="/tags/firmware/" rel="tag"># Firmware</a>
+              <a href="/tags/hardware/" rel="tag"># Hardware</a>
+              <a href="/tags/keyboard/" rel="tag"># Keyboard</a>
+              <a href="/tags/keychron/" rel="tag"># Keychron</a>
+              <a href="/tags/qmk/" rel="tag"># QMK</a>
+              <a href="/tags/teams/" rel="tag"># Teams</a>
+              <a href="/tags/keycode/" rel="tag"># Keycode</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/02/13/ai-industry-hype-vs-longtermism/" rel="prev" title="AI 行业的浮躁与长期主义的迷失">
+                  <i class="fa fa-angle-left"></i> AI 行业的浮躁与长期主义的迷失
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>

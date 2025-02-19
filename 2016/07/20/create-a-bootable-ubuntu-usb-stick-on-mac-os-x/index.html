@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="前言以前在遥远的使用 Windows 的年代，经常使用 UltraISO 来把 ISO 镜像写入U盘，来从U盘引导系统。换了 Mac 以后，偶尔还是会用 VMware 虚拟机来使用 UltraISO 将 ISO 镜像写入U盘。最近折腾新服务器，下载了最新的 Ubuntu 16.04 LTS 镜像，又要制作U盘了，于是乎就整理下在 Mac 下制作 Ubuntu 可引导U盘的操作步骤，方便以后查阅。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在 Mac OS X 上创建可引导的 Ubuntu U盘">
+<meta property="og:url" content="https://tommy.net.cn/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="前言以前在遥远的使用 Windows 的年代，经常使用 UltraISO 来把 ISO 镜像写入U盘，来从U盘引导系统。换了 Mac 以后，偶尔还是会用 VMware 虚拟机来使用 UltraISO 将 ISO 镜像写入U盘。最近折腾新服务器，下载了最新的 Ubuntu 16.04 LTS 镜像，又要制作U盘了，于是乎就整理下在 Mac 下制作 Ubuntu 可引导U盘的操作步骤，方便以后查阅。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/disk_utility_erase.png">
+<meta property="og:image" content="https://tommy.net.cn/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/disk_utility_erase_complete.png">
+<meta property="og:image" content="https://tommy.net.cn/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/unetbootin_select.png">
+<meta property="og:image" content="https://tommy.net.cn/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/unetbootin_in_progress.png">
+<meta property="og:image" content="https://tommy.net.cn/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/unetbootin_done.png">
+<meta property="article:published_time" content="2016-07-20T09:32:26.000Z">
+<meta property="article:modified_time" content="2025-02-19T05:47:01.032Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Mac">
+<meta property="article:tag" content="OS X">
+<meta property="article:tag" content="Ubuntu">
+<meta property="article:tag" content="UNetbootin">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/disk_utility_erase.png">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/","path":"2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/","title":"在 Mac OS X 上创建可引导的 Ubuntu U盘"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>在 Mac OS X 上创建可引导的 Ubuntu U盘 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js"></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js"></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%B6%E4%BD%9C%E5%90%AF%E5%8A%A8U%E7%9B%98"><span class="nav-number">2.</span> <span class="nav-text">制作启动U盘</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%8D%E6%AC%A1%E5%88%B6%E4%BD%9CU%E7%9B%98"><span class="nav-number">3.</span> <span class="nav-text">再次制作U盘</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">4.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">124</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">432</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="在 Mac OS X 上创建可引导的 Ubuntu U盘 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          在 Mac OS X 上创建可引导的 Ubuntu U盘
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2016-07-20 17:32:26" itemprop="dateCreated datePublished" datetime="2016-07-20T17:32:26+08:00">2016-07-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2025-02-19 13:47:01" itemprop="dateModified" datetime="2025-02-19T13:47:01+08:00">2025-02-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/server/" itemprop="url" rel="index"><span itemprop="name">Server</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>2.5k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>以前在遥远的使用 Windows 的年代，经常使用 <a target="_blank" rel="noopener" href="http://cn.ultraiso.net/">UltraISO</a> 来把 ISO 镜像写入U盘，来从U盘引导系统。换了 Mac 以后，偶尔还是会用 VMware 虚拟机来使用 UltraISO 将 ISO 镜像写入U盘。最近折腾新服务器，下载了最新的 Ubuntu 16.04 LTS 镜像，又要制作U盘了，于是乎就整理下在 Mac 下制作 Ubuntu 可引导U盘的操作步骤，方便以后查阅。</p>
+<span id="more"></span>
+
+<h2 id="制作启动U盘"><a href="#制作启动U盘" class="headerlink" title="制作启动U盘"></a>制作启动U盘</h2><p>按照官方最新的建议，是下载 <a target="_blank" rel="noopener" href="http://unetbootin.github.io/">UNetbootin</a> 来通过图形界面方式操作的，但是本着能少用一个软件就少用一个软件，少装垃圾的原则，最终选择了命令行方式。如果觉得命令行操作太麻烦的同学，直接参考文献部分使用图形化界面软件便可。</p>
+<p>首先，不用说了，下载 Ubuntu Server 16.04 LTS，然后将 ISO 转换为 IMG 格式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ hdiutil convert -format UDRW ubuntu-16.04-server-amd64.iso -o ubuntu-16.04-server-amd64.img</span><br><span class="line">Reading Driver Descriptor Map (DDM : 0)…</span><br><span class="line">Reading Ubuntu-Server 16.04 LTS amd64 (Apple_ISO : 1)…</span><br><span class="line">Reading Apple (Apple_partition_map : 2)…</span><br><span class="line">Reading Ubuntu-Server 16.04 LTS amd64 (Apple_ISO : 3)…</span><br><span class="line">...............................................................................................................................................</span><br><span class="line">Reading EFI (Apple_HFS : 4)…</span><br><span class="line">................................................................................................................................................</span><br><span class="line">Reading Ubuntu-Server 16.04 LTS amd64 (Apple_ISO : 5)…</span><br><span class="line">........................................................................................................................................................................................................</span><br><span class="line">Elapsed Time: 3.317s</span><br><span class="line">Speed: 197.4Mbytes/sec</span><br><span class="line">Savings: 0.0%</span><br><span class="line">created: /Users/tommy/Downloads/ubuntu-16.04-server-amd64.img.dmg</span><br></pre></td></tr></table></figure>
+
+<p>OS X 会自动在文件名后面增加 DMG 后缀，所以我们手动改一下名：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">mv</span> ubuntu-16.04-server-amd64.img.dmg ubuntu-16.04-server-amd64.img</span><br></pre></td></tr></table></figure>
+
+<p>运行 <code>diskutil list</code> 看看磁盘设备列表：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ diskutil list</span><br><span class="line">/dev/disk0 (internal, physical):</span><br><span class="line">   <span class="comment">#:                       TYPE NAME                    SIZE       IDENTIFIER</span></span><br><span class="line">   0:      GUID_partition_scheme                        *251.0 GB   disk0</span><br><span class="line">   1:                        EFI EFI                     209.7 MB   disk0s1</span><br><span class="line">   2:          Apple_CoreStorage Macintosh HD            250.1 GB   disk0s2</span><br><span class="line">   3:                 Apple_Boot Recovery HD             650.0 MB   disk0s3</span><br><span class="line">/dev/disk1 (internal, virtual):</span><br><span class="line">   <span class="comment">#:                       TYPE NAME                    SIZE       IDENTIFIER</span></span><br><span class="line">   0:                  Apple_HFS Macintosh HD           +249.8 GB   disk1</span><br><span class="line">                                 Logical Volume on disk0s2</span><br><span class="line">                                 B3559850-25F0-409D-A081-927AB2B16E3C</span><br><span class="line">                                 Unlocked Encrypted</span><br><span class="line">/dev/disk2 (external, physical):</span><br><span class="line">   <span class="comment">#:                       TYPE NAME                    SIZE       IDENTIFIER</span></span><br><span class="line">   0:     FDisk_partition_scheme                        *8.0 GB     disk2</span><br><span class="line">   1:             Windows_FAT_32 NUC6_WIN10              8.0 GB     disk2s4</span><br></pre></td></tr></table></figure>
+
+<p>所以，很明显，U盘是 <code>/dev/disk2</code>，先把它卸载了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ diskutil unmountDisk /dev/disk2</span><br><span class="line">Unmount of all volumes on disk2 was successful</span><br></pre></td></tr></table></figure>
+
+<p>然后就是将 IMG 文件写入U盘了，这个过程得花点时间，同时你可能还需要输入密码来获得管理员权限：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ sudo <span class="built_in">dd</span> <span class="keyword">if</span>=ubuntu-16.04-server-amd64.img of=/dev/rdisk2 bs=1m</span><br><span class="line">Password:</span><br><span class="line">655+0 records <span class="keyword">in</span></span><br><span class="line">655+0 records out</span><br><span class="line">686817280 bytes transferred <span class="keyword">in</span> 162.123944 secs (4236372 bytes/sec)</span><br></pre></td></tr></table></figure>
+
+<p>最后就是弹出U盘，收工。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ diskutil eject /dev/disk2</span><br><span class="line">Disk /dev/disk2 ejected</span><br></pre></td></tr></table></figure>
+
+<h2 id="再次制作U盘"><a href="#再次制作U盘" class="headerlink" title="再次制作U盘"></a>再次制作U盘</h2><p>在按照上述方法制作了U盘后，发现只有一个EFI启动分区，然而并不能很好的使用，所以，再次使用了官方的图形化方案，重新制作了一次U盘，囧rz</p>
+<p>先用磁盘工具把U盘重新分了下区，只留下一个 FAT32 分区，并起名为 <code>Ubuntu</code></p>
+<img src="/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/disk_utility_erase.png" class="">
+
+<img src="/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/disk_utility_erase_complete.png" class=""> 
+
+<p>然后如图所示，选择 <code>Diskimage</code> 和 Ubuntu 镜像，点 <code>OK</code></p>
+<img src="/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/unetbootin_select.png" class=""> 
+
+<img src="/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/unetbootin_in_progress.png" class=""> 
+
+<img src="/2016/07/20/create-a-bootable-ubuntu-usb-stick-on-mac-os-x/unetbootin_done.png" class=""> 
+
+<p>好了，这次终于制作完成了。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ul>
+<li><a target="_blank" rel="noopener" href="http://askubuntu.com/questions/86/how-do-i-create-an-ubuntu-live-usb-using-a-mac">How do I create an Ubuntu live USB using a Mac?</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.ubuntu.com/download/desktop/create-a-usb-stick-on-mac-osx">How to create a bootable USB stick on OS X</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/mac/" rel="tag"># Mac</a>
+              <a href="/tags/os-x/" rel="tag"># OS X</a>
+              <a href="/tags/ubuntu/" rel="tag"># Ubuntu</a>
+              <a href="/tags/unetbootin/" rel="tag"># UNetbootin</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2016/07/18/setting-up-openconnect-server-ocserv-on-openwrt/" rel="prev" title="在 OpenWrt 上搭建 OpenConnect (ocserv) 服务器">
+                  <i class="fa fa-angle-left"></i> 在 OpenWrt 上搭建 OpenConnect (ocserv) 服务器
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2016/07/24/fix-shadowsocksx-gfwlist-update-404-error/" rel="next" title="修复 ShadowsocksX GFWList 更新提示 404 错误的问题">
+                  修复 ShadowsocksX GFWList 更新提示 404 错误的问题 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">328k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:59</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js"></script>
+
+</body>
+</html>
