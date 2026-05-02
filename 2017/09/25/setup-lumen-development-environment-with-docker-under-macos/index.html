@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 8.1.1">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="就在两三天前（开始写这个文章是 9 月 8 号，确实是 2，3 天前，然而写完的时候已经是 9 月 25 号了，😂 ），Lumen 发布了 5.5 版本。傻乎乎的我就在第一时间把现有运行着 Lumen 5.4 的系统都升级到了 5.5 版本。因为很多东西变化了，升级过程中出现了不少的坑，尤其是第三方的库对于新系统的支持还非常的不好。 不过今天主要想要讨论的不是如何将 Lumen 从 5.4">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在 macOS 下用 Docker 配置 Lumen 开发环境">
+<meta property="og:url" content="https://tommy.net.cn/2017/09/25/setup-lumen-development-environment-with-docker-under-macos/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="就在两三天前（开始写这个文章是 9 月 8 号，确实是 2，3 天前，然而写完的时候已经是 9 月 25 号了，😂 ），Lumen 发布了 5.5 版本。傻乎乎的我就在第一时间把现有运行着 Lumen 5.4 的系统都升级到了 5.5 版本。因为很多东西变化了，升级过程中出现了不少的坑，尤其是第三方的库对于新系统的支持还非常的不好。 不过今天主要想要讨论的不是如何将 Lumen 从 5.4">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2017/09/25/setup-lumen-development-environment-with-docker-under-macos/lumen.png">
+<meta property="article:published_time" content="2017-09-25T07:03:54.000Z">
+<meta property="article:modified_time" content="2026-05-02T16:39:09.129Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Brew">
+<meta property="article:tag" content="Development">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="Laravel">
+<meta property="article:tag" content="Lumen">
+<meta property="article:tag" content="Lumen 5.5">
+<meta property="article:tag" content="MySQL">
+<meta property="article:tag" content="MySQL 5.7">
+<meta property="article:tag" content="Nginx">
+<meta property="article:tag" content="Nginx 1.12">
+<meta property="article:tag" content="PHP">
+<meta property="article:tag" content="PHP 7.1">
+<meta property="article:tag" content="VirtualBox">
+<meta property="article:tag" content="macOS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2017/09/25/setup-lumen-development-environment-with-docker-under-macos/lumen.png">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2017/09/25/setup-lumen-development-environment-with-docker-under-macos/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2017/09/25/setup-lumen-development-environment-with-docker-under-macos/","path":"2017/09/25/setup-lumen-development-environment-with-docker-under-macos/","title":"在 macOS 下用 Docker 配置 Lumen 开发环境"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>在 macOS 下用 Docker 配置 Lumen 开发环境 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js" defer></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js" defer></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.10.1/mermaid.min.js","integrity":"sha256-BmQmdWDS8X2OTbrwELWK366LV6escyWhHHe0XCTU/Hk="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="nav-number">1.</span> <span class="nav-text">准备工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-Docker"><span class="nav-number">1.1.</span> <span class="nav-text">安装 Docker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96-Lumen-%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.2.</span> <span class="nav-text">获取 Lumen 程序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Nginx-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">2.</span> <span class="nav-text">Nginx 配置文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-Docker-compose-%E6%96%87%E4%BB%B6"><span class="nav-number">3.</span> <span class="nav-text">配置 Docker compose 文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-Lumen-%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">4.</span> <span class="nav-text">配置 Lumen 的数据库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C-Docker-compose"><span class="nav-number">5.</span> <span class="nav-text">运行 Docker compose</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Lumen-Composer-%E5%AE%89%E8%A3%85"><span class="nav-number">6.</span> <span class="nav-text">Lumen Composer 安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">127</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">458</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://sl.tommylau.com/" title="https:&#x2F;&#x2F;sl.tommylau.com" rel="noopener" target="_blank">Project Celes</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2017/09/25/setup-lumen-development-environment-with-docker-under-macos/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="在 macOS 下用 Docker 配置 Lumen 开发环境 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          在 macOS 下用 Docker 配置 Lumen 开发环境
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-09-25 15:03:54" itemprop="dateCreated datePublished" datetime="2017-09-25T15:03:54+08:00">2017-09-25</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-05-03 00:39:09" itemprop="dateModified" datetime="2026-05-03T00:39:09+08:00">2026-05-03</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/development/" itemprop="url" rel="index"><span itemprop="name">Development</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/09/25/setup-lumen-development-environment-with-docker-under-macos/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/09/25/setup-lumen-development-environment-with-docker-under-macos/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>26k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>23 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><img src="/2017/09/25/setup-lumen-development-environment-with-docker-under-macos/lumen.png" class="" title="Lumen">
+
+<p>就在两三天前（开始写这个文章是 9 月 8 号，确实是 2，3 天前，然而写完的时候已经是 9 月 25 号了，😂 ），<a target="_blank" rel="noopener" href="https://laravel-news.com/lumen-5-5-released">Lumen 发布了 5.5 版本</a>。傻乎乎的我就在第一时间把现有运行着 Lumen 5.4 的系统都升级到了 5.5 版本。因为很多东西变化了，升级过程中出现了不少的坑，尤其是第三方的库对于新系统的支持还非常的不好。</p>
+<p>不过今天主要想要讨论的不是如何将 Lumen 从 5.4 升级到 5.5，而是介绍如何搭建 Lumen 开发环境。</p>
+<span id="more"></span>
+
+<p>之前 Madison 同学一直苦恼于如何在 macOS 下搭建基于 PHP 的 Lumen 开发环境，我就随手把配置文件给他了，也没有时间好好解释一下为什么。</p>
+<p>正好借着这次系统升级的机会，写篇文章简单介绍下，也算是给 Madison 同学一个交代了。</p>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><h3 id="安装-Docker"><a href="#安装-Docker" class="headerlink" title="安装 Docker"></a>安装 Docker</h3><p>作为一个使用 macOS 的工程师，<a target="_blank" rel="noopener" href="https://brew.sh/">Homebrew</a> 是必不可少的，没有的话自己安装吧。</p>
+<p>首先安装 Docker 相关的程序</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">brew update</span><br><span class="line">brew install docker docker-machine docker-compose</span><br></pre></td></tr></table></figure>
+
+<p>如果你没有安装过 VirtualBox 的话，你还需要先安装一个</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew cask install virtualbox</span><br></pre></td></tr></table></figure>
+
+<p>接着创建一个 Docker 虚拟机，名字用 <code>default</code> 就好，当然你也可以改成你喜欢的名字</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker-machine create default</span><br></pre></td></tr></table></figure>
+
+<p>接着就是要下载需要的 Docker 镜像了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker pull tommylau/php:7.1</span><br><span class="line">docker pull nginx:1.12-alpine</span><br><span class="line">docker pull mysql:5.7</span><br></pre></td></tr></table></figure>
+
+<p>分别对应我们需要的 <code>MySQL</code>、<code>PHP</code> 和 <code>Nginx</code>，到这里 Docker 的准备工作就算是完成了。</p>
+<h3 id="获取-Lumen-程序"><a href="#获取-Lumen-程序" class="headerlink" title="获取 Lumen 程序"></a>获取 Lumen 程序</h3><p>Lumen 官方的建议是使用命令行的方式来安装，因为我在写这篇文章的时候，官方的 Lumen 还停留在 5.4 的版本，没有 5.5 的版本，所以我就直接下载了。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/laravel/lumen/archive/v5.5.0.tar.gz">https://github.com/laravel/lumen/archive/v5.5.0.tar.gz</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar zxvf lumen-5.5.0.tar.gz</span><br></pre></td></tr></table></figure>
+
+<p>解压缩到任意目录，然后进入该目录，Lumen 的准备工作就算是完成了。</p>
+<h2 id="Nginx-配置文件"><a href="#Nginx-配置文件" class="headerlink" title="Nginx 配置文件"></a>Nginx 配置文件</h2><p>在 Lumen 目录里面创建一个名为 <code>default.conf</code> 的 Nginx 配置文件，内容如下：</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">    <span class="attribute">listen</span>       <span class="number">80</span>;</span><br><span class="line">    <span class="attribute">server_name</span>  localhost;</span><br><span class="line"></span><br><span class="line">    <span class="attribute">root</span> /var/www/public;</span><br><span class="line">    <span class="attribute">index</span> index.html index.htm index.php;</span><br><span class="line"></span><br><span class="line">    <span class="section">location</span> / &#123;</span><br><span class="line">        <span class="attribute">try_files</span> <span class="variable">$uri</span> <span class="variable">$uri</span>/ /index.php?<span class="variable">$query_string</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="section">location</span> <span class="regexp">~ \.php$</span> &#123;</span><br><span class="line">        <span class="attribute">fastcgi_pass</span>   php:<span class="number">9000</span>;</span><br><span class="line">        <span class="attribute">fastcgi_index</span>  index.php;</span><br><span class="line">        <span class="attribute">fastcgi_param</span>  SCRIPT_FILENAME  <span class="variable">$request_filename</span>;</span><br><span class="line">        <span class="attribute">include</span>        fastcgi_params;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置-Docker-compose-文件"><a href="#配置-Docker-compose-文件" class="headerlink" title="配置 Docker compose 文件"></a>配置 Docker compose 文件</h2><p>创建一个名为 <code>docker-compose.yml</code> 的文件，用于配置 <code>MySQL</code>、<code>PHP</code>、<code>Nginx</code> 服务，同时还会创建一个用于数据库的存储空间。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;3&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">mysql:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">mysql:5.7</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">data:/var/lib/mysql</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">always</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="attr">MYSQL_ROOT_PASSWORD:</span> <span class="string">Passw0rd</span></span><br><span class="line">      <span class="attr">MYSQL_DATABASE:</span> <span class="string">lumen</span></span><br><span class="line">      <span class="attr">MYSQL_USER:</span> <span class="string">lumen</span></span><br><span class="line">      <span class="attr">MYSQL_PASSWORD:</span> <span class="string">lumen</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">php:</span></span><br><span class="line">    <span class="attr">depends_on:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">mysql</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">tommylau/php:7.1</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">$PWD:/var/www</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">always</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">nginx:</span></span><br><span class="line">    <span class="attr">depends_on:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">php</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">nginx:1.12-alpine</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">80</span><span class="string">:80</span></span><br><span class="line">      <span class="bullet">-</span> <span class="number">443</span><span class="string">:443</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">$PWD:/var/www</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">$PWD/default.conf:/etc/nginx/conf.d/default.conf</span></span><br><span class="line"></span><br><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="string">data</span></span><br></pre></td></tr></table></figure>
+
+<p>其中 MySQL 的用户名、密码还有数据库的名字都是：<code>lumen</code>，数据库的文件存储名为：<code>data</code></p>
+<h2 id="配置-Lumen-的数据库"><a href="#配置-Lumen-的数据库" class="headerlink" title="配置 Lumen 的数据库"></a>配置 Lumen 的数据库</h2><p>首先先复制一份预配置的文件，并命名为 <code>.env</code>，这个文件务必要在 Lumen 的根目录。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cp</span> .env.example .<span class="built_in">env</span></span><br></pre></td></tr></table></figure>
+
+<p>然后修改 <code>.env</code> 文件的内容如下：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">APP_ENV</span>=local</span><br><span class="line"><span class="attr">APP_DEBUG</span>=<span class="literal">true</span></span><br><span class="line"><span class="attr">APP_KEY</span>=</span><br><span class="line"><span class="attr">APP_TIMEZONE</span>=UTC</span><br><span class="line"></span><br><span class="line"><span class="attr">DB_CONNECTION</span>=mysql</span><br><span class="line"><span class="attr">DB_HOST</span>=mysql</span><br><span class="line"><span class="attr">DB_PORT</span>=<span class="number">3306</span></span><br><span class="line"><span class="attr">DB_DATABASE</span>=lumen</span><br><span class="line"><span class="attr">DB_USERNAME</span>=lumen</span><br><span class="line"><span class="attr">DB_PASSWORD</span>=lumen</span><br><span class="line"></span><br><span class="line"><span class="attr">CACHE_DRIVER</span>=array</span><br><span class="line"><span class="attr">QUEUE_DRIVER</span>=array</span><br></pre></td></tr></table></figure>
+
+<h2 id="运行-Docker-compose"><a href="#运行-Docker-compose" class="headerlink" title="运行 Docker compose"></a>运行 Docker compose</h2><p>我们只需要一条简单的命令，便可以将几个服务跑起来了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br></pre></td><td class="code"><pre><span class="line">$ docker-compose up -d</span><br><span class="line">Creating network <span class="string">&quot;lumen550_default&quot;</span> with the default driver</span><br><span class="line">Creating volume <span class="string">&quot;lumen550_data&quot;</span> with default driver</span><br><span class="line">Pulling mysql (mysql:5.7)...</span><br><span class="line">5.7: Pulling from library/mysql</span><br><span class="line">ad74af05f5a2: Pull complete</span><br><span class="line">0639788facc8: Pull complete</span><br><span class="line">de70fa77eb2b: Pull complete</span><br><span class="line">724179e94999: Pull complete</span><br><span class="line">50c77fb16ba6: Pull complete</span><br><span class="line">d51f459239fb: Pull complete</span><br><span class="line">937bbdd4305a: Pull complete</span><br><span class="line">35369f9634e1: Pull complete</span><br><span class="line">f6016aab25f1: Pull complete</span><br><span class="line">5f1901e920da: Pull complete</span><br><span class="line">fdf808213c5b: Pull complete</span><br><span class="line">Digest: sha256:96edf37370df96d2a4ee1715cc5c7820a0ec6286551a927981ed50f0273d9b43</span><br><span class="line">Status: Downloaded newer image <span class="keyword">for</span> mysql:5.7</span><br><span class="line">Pulling php (tommylau/php:7.1)...</span><br><span class="line">7.1: Pulling from tommylau/php</span><br><span class="line">90f4dba627d6: Pull complete</span><br><span class="line">19ae35d04742: Pull complete</span><br><span class="line">6d34c9ec1436: Pull complete</span><br><span class="line">729ea35b870d: Pull complete</span><br><span class="line">d9a9bce03ae5: Pull complete</span><br><span class="line">14722aee56a9: Pull complete</span><br><span class="line">cddf82133cfb: Pull complete</span><br><span class="line">f947a5248e64: Pull complete</span><br><span class="line">df8066eb849b: Pull complete</span><br><span class="line">f1c3a7903b82: Pull complete</span><br><span class="line">f79a49b80174: Pull complete</span><br><span class="line">9b1090fd4e6a: Pull complete</span><br><span class="line">Digest: sha256:08c2f4a744cc1691a91b38e3dc8b59c494c68e3b2e80a8533d170949d5eb5fce</span><br><span class="line">Status: Downloaded newer image <span class="keyword">for</span> tommylau/php:7.1</span><br><span class="line">Pulling nginx (nginx:1.12-alpine)...</span><br><span class="line">1.12-alpine: Pulling from library/nginx</span><br><span class="line">019300c8a437: Pull complete</span><br><span class="line">6699c6d12419: Pull complete</span><br><span class="line">49502b430ca1: Pull complete</span><br><span class="line">9bb3a196cbc6: Pull complete</span><br><span class="line">Digest: sha256:d4656aba193a5e0df453a7e6eea3e339c2137097beb1ed06b8d76528edfc0a8a</span><br><span class="line">Status: Downloaded newer image <span class="keyword">for</span> nginx:1.12-alpine</span><br><span class="line">Creating lumen550_mysql_1 ...</span><br><span class="line">Creating lumen550_mysql_1 ... <span class="keyword">done</span></span><br><span class="line">Creating lumen550_php_1 ...</span><br><span class="line">Creating lumen550_php_1 ... <span class="keyword">done</span></span><br><span class="line">Creating lumen550_nginx_1 ...</span><br><span class="line">Creating lumen550_nginx_1 ... <span class="keyword">done</span></span><br><span class="line">Attaching to lumen550_mysql_1, lumen550_php_1, lumen550_nginx_1</span><br><span class="line">mysql_1  | Initializing database</span><br><span class="line">mysql_1  | 2017-09-08T03:31:18.235209Z 0 [Warning] TIMESTAMP with implicit DEFAULT value is deprecated. Please use --explicit_defaults_for_timestamp server option (see documentation <span class="keyword">for</span> more details).</span><br><span class="line">mysql_1  | 2017-09-08T03:31:18.495735Z 0 [Warning] InnoDB: New <span class="built_in">log</span> files created, LSN=45790</span><br><span class="line">mysql_1  | 2017-09-08T03:31:18.533504Z 0 [Warning] InnoDB: Creating foreign key constraint system tables.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:18.593576Z 0 [Warning] No existing UUID has been found, so we assume that this is the first <span class="keyword">time</span> that this server has been started. Generating a new UUID: 2d40d947-9446-11e7-9d10-0242ac120002.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:18.594961Z 0 [Warning] Gtid table is not ready to be used. Table <span class="string">&#x27;mysql.gtid_executed&#x27;</span> cannot be opened.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:18.595220Z 1 [Warning] root@localhost is created with an empty password ! Please consider switching off the --initialize-insecure option.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:18.974914Z 1 [Warning] <span class="string">&#x27;user&#x27;</span> entry <span class="string">&#x27;root@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:18.975846Z 1 [Warning] <span class="string">&#x27;user&#x27;</span> entry <span class="string">&#x27;mysql.session@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:18.975888Z 1 [Warning] <span class="string">&#x27;user&#x27;</span> entry <span class="string">&#x27;mysql.sys@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:18.977453Z 1 [Warning] <span class="string">&#x27;db&#x27;</span> entry <span class="string">&#x27;performance_schema mysql.session@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:18.977474Z 1 [Warning] <span class="string">&#x27;db&#x27;</span> entry <span class="string">&#x27;sys mysql.sys@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:18.977500Z 1 [Warning] <span class="string">&#x27;proxies_priv&#x27;</span> entry <span class="string">&#x27;@ root@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:18.977543Z 1 [Warning] <span class="string">&#x27;tables_priv&#x27;</span> entry <span class="string">&#x27;user mysql.session@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:18.977559Z 1 [Warning] <span class="string">&#x27;tables_priv&#x27;</span> entry <span class="string">&#x27;sys_config mysql.sys@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | Database initialized</span><br><span class="line">mysql_1  | Initializing certificates</span><br><span class="line">mysql_1  | Generating a 2048 bit RSA private key</span><br><span class="line">mysql_1  | ..................+++</span><br><span class="line">mysql_1  | ..............................................................................+++</span><br><span class="line">mysql_1  | unable to write <span class="string">&#x27;random state&#x27;</span></span><br><span class="line">mysql_1  | writing new private key to <span class="string">&#x27;ca-key.pem&#x27;</span></span><br><span class="line">mysql_1  | -----</span><br><span class="line">mysql_1  | Generating a 2048 bit RSA private key</span><br><span class="line">mysql_1  | ............................+++</span><br><span class="line">mysql_1  | ...........................+++</span><br><span class="line">mysql_1  | unable to write <span class="string">&#x27;random state&#x27;</span></span><br><span class="line">mysql_1  | writing new private key to <span class="string">&#x27;server-key.pem&#x27;</span></span><br><span class="line">mysql_1  | -----</span><br><span class="line">mysql_1  | Generating a 2048 bit RSA private key</span><br><span class="line">mysql_1  | ...........+++</span><br><span class="line">mysql_1  | .......................................................................................+++</span><br><span class="line">mysql_1  | unable to write <span class="string">&#x27;random state&#x27;</span></span><br><span class="line">mysql_1  | writing new private key to <span class="string">&#x27;client-key.pem&#x27;</span></span><br><span class="line">mysql_1  | -----</span><br><span class="line">mysql_1  | Certificates initialized</span><br><span class="line">mysql_1  | MySQL init process <span class="keyword">in</span> progress...</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.203861Z 0 [Warning] TIMESTAMP with implicit DEFAULT value is deprecated. Please use --explicit_defaults_for_timestamp server option (see documentation <span class="keyword">for</span> more details).</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.204753Z 0 [Note] mysqld (mysqld 5.7.19) starting as process 87 ...</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.207345Z 0 [Note] InnoDB: PUNCH HOLE support available</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.207429Z 0 [Note] InnoDB: Mutexes and rw_locks use GCC atomic builtins</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.207443Z 0 [Note] InnoDB: Uses event mutexes</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.207456Z 0 [Note] InnoDB: GCC <span class="built_in">builtin</span> __atomic_thread_fence() is used <span class="keyword">for</span> memory barrier</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.207465Z 0 [Note] InnoDB: Compressed tables use zlib 1.2.3</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.207474Z 0 [Note] InnoDB: Using Linux native AIO</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.207635Z 0 [Note] InnoDB: Number of pools: 1</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.207707Z 0 [Note] InnoDB: Using CPU crc32 instructions</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.208790Z 0 [Note] InnoDB: Initializing buffer pool, total size = 128M, instances = 1, chunk size = 128M</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.214422Z 0 [Note] InnoDB: Completed initialization of buffer pool</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.217735Z 0 [Note] InnoDB: If the mysqld execution user is authorized, page cleaner thread priority can be changed. See the man page of setpriority().</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.229522Z 0 [Note] InnoDB: Highest supported file format is Barracuda.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.236377Z 0 [Note] InnoDB: Creating shared tablespace <span class="keyword">for</span> temporary tables</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.236517Z 0 [Note] InnoDB: Setting file <span class="string">&#x27;./ibtmp1&#x27;</span> size to 12 MB. Physically writing the file full; Please <span class="built_in">wait</span> ...</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.253899Z 0 [Note] InnoDB: File <span class="string">&#x27;./ibtmp1&#x27;</span> size is now 12 MB.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.255052Z 0 [Note] InnoDB: 96 redo rollback segment(s) found. 96 redo rollback segment(s) are active.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.255095Z 0 [Note] InnoDB: 32 non-redo rollback segment(s) are active.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.255560Z 0 [Note] InnoDB: Waiting <span class="keyword">for</span> purge to start</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.305698Z 0 [Note] InnoDB: 5.7.19 started; <span class="built_in">log</span> sequence number 2539315</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.306978Z 0 [Note] Plugin <span class="string">&#x27;FEDERATED&#x27;</span> is disabled.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.310284Z 0 [Note] Found ca.pem, server-cert.pem and server-key.pem <span class="keyword">in</span> data directory. Trying to <span class="built_in">enable</span> SSL support using them.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.310489Z 0 [Warning] CA certificate ca.pem is self signed.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.310681Z 0 [Note] InnoDB: Loading buffer pool(s) from /var/lib/mysql/ib_buffer_pool</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.312210Z 0 [Note] InnoDB: Buffer pool(s) load completed at 170908  3:31:21</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.318300Z 0 [Warning] <span class="string">&#x27;user&#x27;</span> entry <span class="string">&#x27;root@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.318379Z 0 [Warning] <span class="string">&#x27;user&#x27;</span> entry <span class="string">&#x27;mysql.session@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.318405Z 0 [Warning] <span class="string">&#x27;user&#x27;</span> entry <span class="string">&#x27;mysql.sys@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.318431Z 0 [Warning] <span class="string">&#x27;db&#x27;</span> entry <span class="string">&#x27;performance_schema mysql.session@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.318445Z 0 [Warning] <span class="string">&#x27;db&#x27;</span> entry <span class="string">&#x27;sys mysql.sys@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.318461Z 0 [Warning] <span class="string">&#x27;proxies_priv&#x27;</span> entry <span class="string">&#x27;@ root@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.319426Z 0 [Warning] <span class="string">&#x27;tables_priv&#x27;</span> entry <span class="string">&#x27;user mysql.session@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.319455Z 0 [Warning] <span class="string">&#x27;tables_priv&#x27;</span> entry <span class="string">&#x27;sys_config mysql.sys@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.323252Z 0 [Note] Event Scheduler: Loaded 0 events</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.323374Z 0 [Note] mysqld: ready <span class="keyword">for</span> connections.</span><br><span class="line">mysql_1  | Version: <span class="string">&#x27;5.7.19&#x27;</span>  socket: <span class="string">&#x27;/var/run/mysqld/mysqld.sock&#x27;</span>  port: 0  MySQL Community Server (GPL)</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.323390Z 0 [Note] Executing <span class="string">&#x27;SELECT * FROM INFORMATION_SCHEMA.TABLES;&#x27;</span> to get a list of tables using the deprecated partition engine. You may use the startup option <span class="string">&#x27;--disable-partition-engine-check&#x27;</span> to skip this check.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.323398Z 0 [Note] Beginning of list of non-natively partitioned tables</span><br><span class="line">mysql_1  | 2017-09-08T03:31:21.335016Z 0 [Note] End of list of non-natively partitioned tables</span><br><span class="line">mysql_1  | Warning: Unable to load <span class="string">&#x27;/usr/share/zoneinfo/iso3166.tab&#x27;</span> as <span class="keyword">time</span> zone. Skipping it.</span><br><span class="line">mysql_1  | Warning: Unable to load <span class="string">&#x27;/usr/share/zoneinfo/leap-seconds.list&#x27;</span> as <span class="keyword">time</span> zone. Skipping it.</span><br><span class="line">mysql_1  | Warning: Unable to load <span class="string">&#x27;/usr/share/zoneinfo/zone.tab&#x27;</span> as <span class="keyword">time</span> zone. Skipping it.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.416481Z 5 [Warning] <span class="string">&#x27;user&#x27;</span> entry <span class="string">&#x27;root@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.416577Z 5 [Warning] <span class="string">&#x27;user&#x27;</span> entry <span class="string">&#x27;mysql.sys@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.416605Z 5 [Warning] <span class="string">&#x27;db&#x27;</span> entry <span class="string">&#x27;performance_schema mysql.session@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.416617Z 5 [Warning] <span class="string">&#x27;db&#x27;</span> entry <span class="string">&#x27;sys mysql.sys@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.416633Z 5 [Warning] <span class="string">&#x27;proxies_priv&#x27;</span> entry <span class="string">&#x27;@ root@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.416665Z 5 [Warning] <span class="string">&#x27;tables_priv&#x27;</span> entry <span class="string">&#x27;user mysql.session@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.416681Z 5 [Warning] <span class="string">&#x27;tables_priv&#x27;</span> entry <span class="string">&#x27;sys_config mysql.sys@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | mysql: [Warning] Using a password on the <span class="built_in">command</span> line interface can be insecure.</span><br><span class="line">mysql_1  | mysql: [Warning] Using a password on the <span class="built_in">command</span> line interface can be insecure.</span><br><span class="line">mysql_1  | mysql: [Warning] Using a password on the <span class="built_in">command</span> line interface can be insecure.</span><br><span class="line">mysql_1  | mysql: [Warning] Using a password on the <span class="built_in">command</span> line interface can be insecure.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.431887Z 9 [Warning] <span class="string">&#x27;user&#x27;</span> entry <span class="string">&#x27;root@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.431938Z 9 [Warning] <span class="string">&#x27;user&#x27;</span> entry <span class="string">&#x27;mysql.sys@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.431972Z 9 [Warning] <span class="string">&#x27;db&#x27;</span> entry <span class="string">&#x27;performance_schema mysql.session@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.431987Z 9 [Warning] <span class="string">&#x27;db&#x27;</span> entry <span class="string">&#x27;sys mysql.sys@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.432004Z 9 [Warning] <span class="string">&#x27;proxies_priv&#x27;</span> entry <span class="string">&#x27;@ root@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.432123Z 9 [Warning] <span class="string">&#x27;tables_priv&#x27;</span> entry <span class="string">&#x27;user mysql.session@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.432144Z 9 [Warning] <span class="string">&#x27;tables_priv&#x27;</span> entry <span class="string">&#x27;sys_config mysql.sys@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  |</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.434536Z 0 [Note] Giving 0 client threads a chance to die gracefully</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.434596Z 0 [Note] Shutting down slave threads</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.434614Z 0 [Note] Forcefully disconnecting 0 remaining clients</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.434630Z 0 [Note] Event Scheduler: Purging the queue. 0 events</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.434700Z 0 [Note] Binlog end</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435339Z 0 [Note] Shutting down plugin <span class="string">&#x27;ngram&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435363Z 0 [Note] Shutting down plugin <span class="string">&#x27;ARCHIVE&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435377Z 0 [Note] Shutting down plugin <span class="string">&#x27;partition&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435386Z 0 [Note] Shutting down plugin <span class="string">&#x27;BLACKHOLE&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435396Z 0 [Note] Shutting down plugin <span class="string">&#x27;MyISAM&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435409Z 0 [Note] Shutting down plugin <span class="string">&#x27;MRG_MYISAM&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435418Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_SYS_VIRTUAL&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435426Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_SYS_DATAFILES&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435434Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_SYS_TABLESPACES&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435443Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_SYS_FOREIGN_COLS&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435451Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_SYS_FOREIGN&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435459Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_SYS_FIELDS&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435468Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_SYS_COLUMNS&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435482Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_SYS_INDEXES&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435492Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_SYS_TABLESTATS&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435500Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_SYS_TABLES&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435508Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_FT_INDEX_TABLE&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435515Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_FT_INDEX_CACHE&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435523Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_FT_CONFIG&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435531Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_FT_BEING_DELETED&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435539Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_FT_DELETED&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435547Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_FT_DEFAULT_STOPWORD&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435570Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_METRICS&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435579Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_TEMP_TABLE_INFO&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435586Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_BUFFER_POOL_STATS&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435594Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_BUFFER_PAGE_LRU&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435602Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_BUFFER_PAGE&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435610Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_CMP_PER_INDEX_RESET&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435617Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_CMP_PER_INDEX&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435625Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_CMPMEM_RESET&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435633Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_CMPMEM&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435641Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_CMP_RESET&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435648Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_CMP&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435656Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_LOCK_WAITS&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435664Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_LOCKS&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435672Z 0 [Note] Shutting down plugin <span class="string">&#x27;INNODB_TRX&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435679Z 0 [Note] Shutting down plugin <span class="string">&#x27;InnoDB&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435746Z 0 [Note] InnoDB: FTS optimize thread exiting.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.435927Z 0 [Note] InnoDB: Starting shutdown...</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.537135Z 0 [Note] InnoDB: Dumping buffer pool(s) to /var/lib/mysql/ib_buffer_pool</span><br><span class="line">mysql_1  | 2017-09-08T03:31:23.537513Z 0 [Note] InnoDB: Buffer pool(s) dump completed at 170908  3:31:23</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.151481Z 0 [Note] InnoDB: Shutdown completed; <span class="built_in">log</span> sequence number 12143451</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.153272Z 0 [Note] InnoDB: Removed temporary tablespace data file: <span class="string">&quot;ibtmp1&quot;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.153318Z 0 [Note] Shutting down plugin <span class="string">&#x27;CSV&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.153341Z 0 [Note] Shutting down plugin <span class="string">&#x27;MEMORY&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.153354Z 0 [Note] Shutting down plugin <span class="string">&#x27;PERFORMANCE_SCHEMA&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.153387Z 0 [Note] Shutting down plugin <span class="string">&#x27;sha256_password&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.153402Z 0 [Note] Shutting down plugin <span class="string">&#x27;mysql_native_password&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.153632Z 0 [Note] Shutting down plugin <span class="string">&#x27;binlog&#x27;</span></span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.154298Z 0 [Note] mysqld: Shutdown complete</span><br><span class="line">mysql_1  |</span><br><span class="line">mysql_1  |</span><br><span class="line">mysql_1  | MySQL init process <span class="keyword">done</span>. Ready <span class="keyword">for</span> start up.</span><br><span class="line">mysql_1  |</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.360932Z 0 [Warning] TIMESTAMP with implicit DEFAULT value is deprecated. Please use --explicit_defaults_for_timestamp server option (see documentation <span class="keyword">for</span> more details).</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.361606Z 0 [Note] mysqld (mysqld 5.7.19) starting as process 1 ...</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.364436Z 0 [Note] InnoDB: PUNCH HOLE support available</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.364484Z 0 [Note] InnoDB: Mutexes and rw_locks use GCC atomic builtins</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.364497Z 0 [Note] InnoDB: Uses event mutexes</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.364511Z 0 [Note] InnoDB: GCC <span class="built_in">builtin</span> __atomic_thread_fence() is used <span class="keyword">for</span> memory barrier</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.364522Z 0 [Note] InnoDB: Compressed tables use zlib 1.2.3</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.364532Z 0 [Note] InnoDB: Using Linux native AIO</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.364785Z 0 [Note] InnoDB: Number of pools: 1</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.364914Z 0 [Note] InnoDB: Using CPU crc32 instructions</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.365918Z 0 [Note] InnoDB: Initializing buffer pool, total size = 128M, instances = 1, chunk size = 128M</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.371658Z 0 [Note] InnoDB: Completed initialization of buffer pool</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.373208Z 0 [Note] InnoDB: If the mysqld execution user is authorized, page cleaner thread priority can be changed. See the man page of setpriority().</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.384808Z 0 [Note] InnoDB: Highest supported file format is Barracuda.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.391336Z 0 [Note] InnoDB: Creating shared tablespace <span class="keyword">for</span> temporary tables</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.391463Z 0 [Note] InnoDB: Setting file <span class="string">&#x27;./ibtmp1&#x27;</span> size to 12 MB. Physically writing the file full; Please <span class="built_in">wait</span> ...</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.404213Z 0 [Note] InnoDB: File <span class="string">&#x27;./ibtmp1&#x27;</span> size is now 12 MB.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.404731Z 0 [Note] InnoDB: 96 redo rollback segment(s) found. 96 redo rollback segment(s) are active.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.404753Z 0 [Note] InnoDB: 32 non-redo rollback segment(s) are active.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.405016Z 0 [Note] InnoDB: Waiting <span class="keyword">for</span> purge to start</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.455194Z 0 [Note] InnoDB: 5.7.19 started; <span class="built_in">log</span> sequence number 12143451</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.455947Z 0 [Note] Plugin <span class="string">&#x27;FEDERATED&#x27;</span> is disabled.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.458896Z 0 [Note] Found ca.pem, server-cert.pem and server-key.pem <span class="keyword">in</span> data directory. Trying to <span class="built_in">enable</span> SSL support using them.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.459094Z 0 [Warning] CA certificate ca.pem is self signed.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.460412Z 0 [Note] Server hostname (bind-address): <span class="string">&#x27;*&#x27;</span>; port: 3306</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.460486Z 0 [Note] IPv6 is available.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.460505Z 0 [Note]   - <span class="string">&#x27;::&#x27;</span> resolves to <span class="string">&#x27;::&#x27;</span>;</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.460526Z 0 [Note] Server socket created on IP: <span class="string">&#x27;::&#x27;</span>.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.460875Z 0 [Note] InnoDB: Loading buffer pool(s) from /var/lib/mysql/ib_buffer_pool</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.462385Z 0 [Warning] <span class="string">&#x27;user&#x27;</span> entry <span class="string">&#x27;root@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.462432Z 0 [Warning] <span class="string">&#x27;user&#x27;</span> entry <span class="string">&#x27;mysql.sys@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.462460Z 0 [Warning] <span class="string">&#x27;db&#x27;</span> entry <span class="string">&#x27;performance_schema mysql.session@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.462471Z 0 [Warning] <span class="string">&#x27;db&#x27;</span> entry <span class="string">&#x27;sys mysql.sys@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br><span class="line">mysql_1  | 2017-09-08T03:31:25.462487Z 0 [Warning] <span class="string">&#x27;proxies_priv&#x27;</span> entry <span class="string">&#x27;@ root@localhost&#x27;</span> ignored <span class="keyword">in</span> --skip-name-resolve mode.</span><br></pre></td></tr></table></figure>
+
+<p>我们可以运行一下 <code>docker ps</code> 来看一下现在 Docker 的运行情况。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ docker ps</span><br><span class="line">CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                                      NAMES</span><br><span class="line">dfbe025c3dce        nginx:1.12-alpine   <span class="string">&quot;nginx -g &#x27;daemon ...&quot;</span>   2 minutes ago       Up 13 seconds       0.0.0.0:80-&gt;80/tcp, 0.0.0.0:443-&gt;443/tcp   lumen550_nginx_1</span><br><span class="line">b9088942eff5        tommylau/php:7.1    <span class="string">&quot;docker-php-entryp...&quot;</span>   2 minutes ago       Up 13 seconds       9000/tcp                                   lumen550_php_1</span><br><span class="line">8f67ea7e4a75        mysql:5.7           <span class="string">&quot;docker-entrypoint...&quot;</span>   2 minutes ago       Up 13 seconds       3306/tcp                                   lumen550_mysql_1</span><br></pre></td></tr></table></figure>
+
+<p>可以看到几个服务都已经在正常运行了。</p>
+<h2 id="Lumen-Composer-安装"><a href="#Lumen-Composer-安装" class="headerlink" title="Lumen Composer 安装"></a>Lumen Composer 安装</h2><p>几个服务跑起来了以后，并不代表着 Lumen 就可以正常使用了，因为还有很多的第三方依赖关系，是需要通过 <code>Composer</code> 来完成的。</p>
+<p>这个时候我们需要进入到 PHP Container 的内部，来执行 PHP Composer 相关的命令来加载第三方的库。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker <span class="built_in">exec</span> -ti lumen550_php_1 sh</span><br></pre></td></tr></table></figure>
+
+<p>通过上面的命令，我们就可以进入到 PHP 的容器里面。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">$ composer install --optimize-autoloader --no-dev</span><br><span class="line">Loading composer repositories with package information</span><br><span class="line">Updating dependencies</span><br><span class="line">Package operations: 41 installs, 0 updates, 0 removals</span><br><span class="line">  - Installing symfony/polyfill-mbstring (v1.5.0): Downloading (100%)</span><br><span class="line">  - Installing symfony/http-foundation (v3.3.8): Downloading (100%)</span><br><span class="line">  - Installing symfony/event-dispatcher (v3.3.8): Downloading (100%)</span><br><span class="line">  - Installing psr/log (1.0.2): Downloading (100%)</span><br><span class="line">  - Installing symfony/debug (v3.3.8): Downloading (100%)</span><br><span class="line">  - Installing symfony/http-kernel (v3.3.8): Downloading (100%)</span><br><span class="line">  - Installing nikic/fast-route (v1.2.0): Downloading (100%)</span><br><span class="line">  - Installing mtdowling/cron-expression (v1.2.0): Downloading (100%)</span><br><span class="line">  - Installing monolog/monolog (1.23.0): Downloading (100%)</span><br><span class="line">  - Installing symfony/translation (v3.3.8): Downloading (100%)</span><br><span class="line">  - Installing nesbot/carbon (1.22.1): Downloading (100%)</span><br><span class="line">  - Installing psr/simple-cache (1.0.0): Downloading (100%)</span><br><span class="line">  - Installing psr/container (1.0.0): Downloading (100%)</span><br><span class="line">  - Installing illuminate/contracts (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing doctrine/inflector (v1.2.0): Downloading (100%)</span><br><span class="line">  - Installing illuminate/support (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing symfony/finder (v3.3.8): Downloading (100%)</span><br><span class="line">  - Installing illuminate/filesystem (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/container (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/events (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/view (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/translation (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/validation (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing symfony/process (v3.3.8): Downloading (100%)</span><br><span class="line">  - Installing illuminate/database (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing symfony/console (v3.3.8): Downloading (100%)</span><br><span class="line">  - Installing illuminate/console (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/queue (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/pipeline (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/pagination (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/session (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/http (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/hashing (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/encryption (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/config (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/cache (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/bus (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/broadcasting (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing illuminate/auth (v5.5.2): Downloading (100%)</span><br><span class="line">  - Installing laravel/lumen-framework (v5.5.0): Downloading (100%)</span><br><span class="line">  - Installing vlucas/phpdotenv (v2.4.0): Downloading (100%)</span><br><span class="line">Writing lock file</span><br><span class="line">Generating optimized <span class="built_in">autoload</span> files</span><br><span class="line">$ composer dump-autoload --optimize</span><br><span class="line">Generating optimized <span class="built_in">autoload</span> files</span><br></pre></td></tr></table></figure>
+
+<p>这样，所有需要的文件就算齐备了。</p>
+<p>一般 macOS 下 VirtualBox 默认的虚拟机地址为：192.168.99.100</p>
+<p>所以我们访问下：<a target="_blank" rel="noopener" href="http://192.168.99.100/">http://192.168.99.100/</a></p>
+<p>应该就会看到正在运行的 Lumen 输出了。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.docker.com/compose/">Docker Compose</a></li>
+<li><a target="_blank" rel="noopener" href="https://pkg.phpcomposer.com/">Packagist &#x2F; Composer 中国全量镜像</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/development/" rel="tag"># Development</a>
+              <a href="/tags/nginx/" rel="tag"># Nginx</a>
+              <a href="/tags/brew/" rel="tag"># Brew</a>
+              <a href="/tags/docker/" rel="tag"># Docker</a>
+              <a href="/tags/mysql/" rel="tag"># MySQL</a>
+              <a href="/tags/php/" rel="tag"># PHP</a>
+              <a href="/tags/macos/" rel="tag"># macOS</a>
+              <a href="/tags/laravel/" rel="tag"># Laravel</a>
+              <a href="/tags/lumen/" rel="tag"># Lumen</a>
+              <a href="/tags/lumen-5-5/" rel="tag"># Lumen 5.5</a>
+              <a href="/tags/mysql-5-7/" rel="tag"># MySQL 5.7</a>
+              <a href="/tags/nginx-1-12/" rel="tag"># Nginx 1.12</a>
+              <a href="/tags/php-7-1/" rel="tag"># PHP 7.1</a>
+              <a href="/tags/virtualbox/" rel="tag"># VirtualBox</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/09/04/how-to-upgrade-ps4-hdd/" rel="prev" title="自己动手升级 PS4 硬盘">
+                  <i class="fa fa-angle-left"></i> 自己动手升级 PS4 硬盘
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/02/26/upgrade-hexo-to-v3-5-0/" rel="next" title="将 Hexo 升级到 v3.5.0">
+                  将 Hexo 升级到 v3.5.0 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">362k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">5:29</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 8.1.1">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="动机公司的 Atlassian 全家桶（Jira &#x2F; Confluence &#x2F; Bitbucket &#x2F; Bamboo，全是 Data Center 版）一直挂在 Crowd 上做用户中心。Crowd 的角色很简单：把 Windows AD 当后端，自己再同步一份用户&#x2F;组到下游各个 app 里去。单论 Atlassian 这一摊事儿，跑得也算稳，本来没什么动">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Authentik 接管 Atlassian Data Center 全家桶">
+<meta property="og:url" content="https://tommy.net.cn/2026/05/03/atlassian-dc-with-authentik/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="动机公司的 Atlassian 全家桶（Jira &#x2F; Confluence &#x2F; Bitbucket &#x2F; Bamboo，全是 Data Center 版）一直挂在 Crowd 上做用户中心。Crowd 的角色很简单：把 Windows AD 当后端，自己再同步一份用户&#x2F;组到下游各个 app 里去。单论 Atlassian 这一摊事儿，跑得也算稳，本来没什么动">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2026/05/03/atlassian-dc-with-authentik/cover.jpg">
+<meta property="article:published_time" content="2026-05-02T16:36:23.000Z">
+<meta property="article:modified_time" content="2026-05-02T16:39:09.250Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="Active Directory">
+<meta property="article:tag" content="Atlassian">
+<meta property="article:tag" content="Authentik">
+<meta property="article:tag" content="Bamboo">
+<meta property="article:tag" content="Bitbucket">
+<meta property="article:tag" content="Confluence">
+<meta property="article:tag" content="Crowd">
+<meta property="article:tag" content="Data Center">
+<meta property="article:tag" content="Jira">
+<meta property="article:tag" content="LDAP">
+<meta property="article:tag" content="SAML">
+<meta property="article:tag" content="SSO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2026/05/03/atlassian-dc-with-authentik/cover.jpg">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2026/05/03/atlassian-dc-with-authentik/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2026/05/03/atlassian-dc-with-authentik/","path":"2026/05/03/atlassian-dc-with-authentik/","title":"Authentik 接管 Atlassian Data Center 全家桶"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Authentik 接管 Atlassian Data Center 全家桶 | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js" defer></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js" defer></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.10.1/mermaid.min.js","integrity":"sha256-BmQmdWDS8X2OTbrwELWK366LV6escyWhHHe0XCTU/Hk="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%9C%BA"><span class="nav-number">1.</span> <span class="nav-text">动机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8D%E8%AF%8D%E9%80%9F%E8%A7%88"><span class="nav-number">2.</span> <span class="nav-text">名词速览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">整体架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%81%E7%A7%BB%E6%80%9D%E8%B7%AF"><span class="nav-number">4.</span> <span class="nav-text">迁移思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="nav-number">5.</span> <span class="nav-text">准备工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%8A-SAML-%E6%8E%A5%E8%BF%9B%E6%9D%A5"><span class="nav-number">6.</span> <span class="nav-text">把 SAML 接进来</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Authentik-%E4%BE%A7"><span class="nav-number">6.1.</span> <span class="nav-text">Authentik 侧</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B1%E4%BA%AB%E7%AD%BE%E5%90%8D%E8%AF%81%E4%B9%A6"><span class="nav-number">6.1.1.</span> <span class="nav-text">共享签名证书</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Property-mappings"><span class="nav-number">6.1.2.</span> <span class="nav-text">Property mappings</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SAML-Provider-%E2%80%94-%E4%B8%80%E4%BB%BD%E6%A8%A1%E6%9D%BF%E5%A5%97%E5%9B%9B%E6%AC%A1"><span class="nav-number">6.1.3.</span> <span class="nav-text">SAML Provider — 一份模板套四次</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%8D%E9%9C%80%E8%A6%81-Outpost"><span class="nav-number">6.1.4.</span> <span class="nav-text">不需要 Outpost</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Atlassian-%E4%BE%A7"><span class="nav-number">6.2.</span> <span class="nav-text">Atlassian 侧</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B1%E9%80%9A%E5%AD%97%E6%AE%B5"><span class="nav-number">6.2.1.</span> <span class="nav-text">共通字段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E6%AD%A5%E9%AA%A4%E9%A1%BA%E5%BA%8F"><span class="nav-number">6.2.2.</span> <span class="nav-text">关键步骤顺序</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Confluence"><span class="nav-number">6.2.3.</span> <span class="nav-text">Confluence</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Bitbucket"><span class="nav-number">6.2.4.</span> <span class="nav-text">Bitbucket</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Jira"><span class="nav-number">6.2.5.</span> <span class="nav-text">Jira</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Bamboo"><span class="nav-number">6.2.6.</span> <span class="nav-text">Bamboo</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%A9-SAML-%E6%88%90%E4%B8%BA%E9%BB%98%E8%AE%A4"><span class="nav-number">6.2.7.</span> <span class="nav-text">让 SAML 成为默认</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Break-glass-URL-%E5%A4%A7%E8%A1%A8"><span class="nav-number">6.2.8.</span> <span class="nav-text">Break-glass URL 大表</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B8%A9%E8%BF%87%E7%9A%84%E5%9D%91"><span class="nav-number">6.3.</span> <span class="nav-text">踩过的坑</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9D%91-1-%E2%80%94-%E7%AC%AC%E4%B8%80%E9%81%8D%E6%BC%8F%E4%BA%86-sign-response"><span class="nav-number">6.3.1.</span> <span class="nav-text">坑 1 — 第一遍漏了 sign_response</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9D%91-2-%E2%80%94-%E8%AF%81%E4%B9%A6-PEM-%E8%B4%B4%E8%BF%9B%E5%8E%BB%E6%AF%8F%E8%A1%8C%E7%AC%AC%E4%B8%80%E4%B8%AA%E5%AD%97%E7%AC%A6%E8%A2%AB%E5%90%9E%E4%BA%86"><span class="nav-number">6.3.2.</span> <span class="nav-text">坑 2 — 证书 PEM 贴进去每行第一个字符被吞了</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9D%91-3-%E2%80%94-auth-fallback-%E4%B9%9F%E8%B7%B3-Authentik"><span class="nav-number">6.3.3.</span> <span class="nav-text">坑 3 — ?auth_fallback 也跳 Authentik</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9D%91-4-%E2%80%94-UI-%E8%B7%AF%E5%BE%84%E5%B7%B2%E7%BB%8F%E6%94%B9%E5%90%8D%E4%BA%86"><span class="nav-number">6.3.4.</span> <span class="nav-text">坑 4 — UI 路径已经改名了</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9D%91-5-%E2%80%94-Jira-%E5%8C%BF%E5%90%8D%E9%A1%B5%E9%9D%A2%E7%BB%95%E5%BC%80-SAML"><span class="nav-number">6.3.5.</span> <span class="nav-text">坑 5 — Jira 匿名页面绕开 SAML</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9D%91-6-%E2%80%94-Confluence-%E7%9A%84-SAML-%E8%A1%A8%E5%8D%95%E6%B2%A1%E6%9C%89-%E2%80%9CSign-requests%E2%80%9D-%E5%AD%97%E6%AE%B5"><span class="nav-number">6.3.6.</span> <span class="nav-text">坑 6 — Confluence 的 SAML 表单没有 “Sign requests” 字段</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81"><span class="nav-number">6.4.</span> <span class="nav-text">验证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%8A%E7%94%A8%E6%88%B7%E7%9B%AE%E5%BD%95%E4%BB%8E-Crowd-%E6%8D%A2%E6%88%90-AD-%E7%9B%B4%E8%BF%9E"><span class="nav-number">7.</span> <span class="nav-text">把用户目录从 Crowd 换成 AD 直连</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA-atlassian-bind-AD-%E8%B4%A6%E5%8F%B7"><span class="nav-number">7.1.</span> <span class="nav-text">创建 atlassian-bind AD 账号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9C%A8%E6%AF%8F%E4%B8%AA-Atlassian-app-%E9%87%8C%E5%8A%A0-AD-%E7%94%A8%E6%88%B7%E7%9B%AE%E5%BD%95"><span class="nav-number">7.2.</span> <span class="nav-text">在每个 Atlassian app 里加 AD 用户目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AA%8C%E6%95%B0"><span class="nav-number">7.3.</span> <span class="nav-text">验数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E6%8E%89-Crowd-%E9%82%A3%E4%B8%AA%E7%9B%AE%E5%BD%95"><span class="nav-number">7.4.</span> <span class="nav-text">关掉 Crowd 那个目录</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3-Basic-Auth-on-REST"><span class="nav-number">8.</span> <span class="nav-text">关 Basic Auth on REST</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%80%E5%BD%B9-Crowd"><span class="nav-number">9.</span> <span class="nav-text">退役 Crowd</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Crowd-%E9%80%80%E5%BD%B9%E5%90%8E%E7%9A%84%E6%96%B0%E5%91%98%E5%B7%A5%E5%BC%80%E9%80%9A%E6%B5%81%E7%A8%8B"><span class="nav-number">10.</span> <span class="nav-text">Crowd 退役后的新员工开通流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E9%9B%B6%E7%A2%8E%E7%BB%8F%E9%AA%8C"><span class="nav-number">11.</span> <span class="nav-text">一些零碎经验</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">12.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#References"><span class="nav-number">13.</span> <span class="nav-text">References</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">127</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">458</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://sl.tommylau.com/" title="https:&#x2F;&#x2F;sl.tommylau.com" rel="noopener" target="_blank">Project Celes</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2026/05/03/atlassian-dc-with-authentik/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Authentik 接管 Atlassian Data Center 全家桶 | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Authentik 接管 Atlassian Data Center 全家桶
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-05-03 00:36:23 / 修改时间：00:39:09" itemprop="dateCreated datePublished" datetime="2026-05-03T00:36:23+08:00">2026-05-03</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/server/" itemprop="url" rel="index"><span itemprop="name">Server</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2026/05/03/atlassian-dc-with-authentik/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2026/05/03/atlassian-dc-with-authentik/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>20k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>18 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><img src="/2026/05/03/atlassian-dc-with-authentik/cover.jpg"></p>
+<h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h2><p>公司的 Atlassian 全家桶（Jira &#x2F; Confluence &#x2F; Bitbucket &#x2F; Bamboo，全是 Data Center 版）一直挂在 Crowd 上做用户中心。Crowd 的角色很简单：把 Windows AD 当后端，自己再同步一份用户&#x2F;组到下游各个 app 里去。单论 Atlassian 这一摊事儿，跑得也算稳，本来没什么动它的理由。</p>
+<p>真正想动它，是因为 Authentik 这条新线。Authentik 是不久前刚搭起来的统一身份入口，<strong>长期目标是把公司里越来越多的新业务（自建工具、内部看板、第三方 SaaS、新上的开源服务）都收到一个 SSO 入口下面</strong>——新业务要么走 SAML、要么走 OIDC，统一接到 Authentik 就完事，不再需要每上一个新服务都重新写一遍 AD 集成、也不再需要把 LDAP 凭据发出去给一堆服务各自持有。</p>
+<p>Atlassian 这一摊老资格自然该并进来。从「Atlassian → Crowd → AD」改成「Atlassian → Authentik → AD」之后：</p>
+<ul>
+<li>公司里所有服务的登录入口长一个样，不会出现「这套走 Crowd、那套走 Authentik、新业务又是另一套」的割裂</li>
+<li>直接跟 AD 说话的服务从一堆收敛到「只有 Authentik」，AD 那边的攻击面和暴露的 bind 凭据数都跟着收</li>
+<li>以后想给 Atlassian 加任何额外的访问策略（按 IP、按设备、按角色），在 Authentik 一处加完即可，不用挨个 app 改</li>
+<li>Crowd 这一层可以一并退役，少一个 Java + Postgres 实例要养</li>
+</ul>
+<p>折腾下来发现：<strong>只要先做 SAML、再换用户目录、最后退役 Crowd</strong>，整条链路可以平滑切。下游已有用户的 issue 分配、权限、关注者一个都不会丢。这篇把每一步、踩过的坑、最终配置都写下来，下次再切别的 app 直接抄。</p>
+<span id="more"></span>
+
+<h2 id="名词速览"><a href="#名词速览" class="headerlink" title="名词速览"></a>名词速览</h2><p>文章里频繁出现的几个缩写和概念，怕第一次接触的读者懵，先过一下：</p>
+<ul>
+<li><strong>SSO</strong>（Single Sign-On）—— 单点登录。一次登录，下游多个系统通用，登录这件事统一收到一个身份服务来做。</li>
+<li><strong>IdP &#x2F; SP</strong> —— SSO 里的两个角色。IdP（Identity Provider，身份提供方）负责验证用户、签发凭证，本文就是 Authentik；SP（Service Provider，服务提供方）是消费这份凭证的业务系统，本文就是 Jira &#x2F; Confluence &#x2F; Bitbucket &#x2F; Bamboo。</li>
+<li><strong>SAML</strong>（Security Assertion Markup Language）—— 上一代主流 SSO 协议，基于 XML，2005 年定型。Atlassian &#x2F; Salesforce &#x2F; 各种企业 SaaS 这类老牌产品基本都支持，本文用的就是它。</li>
+<li><strong>OIDC</strong>（OpenID Connect）—— 新一代 SSO 协议，构建在 OAuth 2.0 之上，基于 JSON &#x2F; JWT，对 Web 和移动 App 友好。Atlassian Data Center 这一侧，Jira &#x2F; Confluence &#x2F; Bitbucket 已经<strong>原生</strong>支持 OIDC，只有 Bamboo 还得靠第三方插件。本文统一走 SAML 主要是为了四个 app 走同一套配置路径、模板可复用，并不是 OIDC 跑不了——如果改走 OIDC，Bamboo 那一档就要单独引入第三方插件来维护。</li>
+<li><strong>LDAP &#x2F; AD</strong> —— LDAP 是用户&#x2F;组目录的查询协议；AD（Active Directory）是微软自家的 LDAP 实现。本文里 AD 是「事实源」，所有用户身份最终都从这里来。</li>
+<li><strong>NameID &#x2F; Audience &#x2F; ACS URL</strong> —— SAML 协议里的几个关键字段。NameID 是 IdP 告诉 SP「这个登录的人是谁」用的标识；Audience 是 SP 自报的接收方身份（IdP 用来判断这份断言该发给谁）；ACS URL（Assertion Consumer Service）是 SP 用来接收 SAML 断言的入口。后面填配置时反复见到。</li>
+<li><strong>JIT provisioning</strong>（Just-In-Time provisioning）—— 用户第一次 SSO 登录时，SP 在本地数据库<strong>自动</strong>给 ta 建一个账号。本文没启用，理由后面「迁移思路」里说。</li>
+<li><strong>Crowd</strong> —— Atlassian 自家的用户中心 &#x2F; SSO 中转层产品，跑在 Server &#x2F; Data Center 模式下。本文要退役的就是它。</li>
+</ul>
+<h2 id="整体架构"><a href="#整体架构" class="headerlink" title="整体架构"></a>整体架构</h2><p>切换前：</p>
+<pre><code class="mermaid">flowchart LR
+    AD[Active Directory<br/>dc.example.com]
+    Crowd[Crowd<br/>crowd.example.com]
+    Jira[Jira]
+    Conf[Confluence]
+    Bit[Bitbucket]
+    Bam[Bamboo]
+    User[User Browser]
+
+    AD -->|LDAP sync| Crowd
+    Crowd -->|user directory| Jira
+    Crowd -->|user directory| Conf
+    Crowd -->|user directory| Bit
+    Crowd -->|user directory| Bam
+    User -->|login| Crowd</code></pre>
+
+<p>切换后：</p>
+<pre><code class="mermaid">flowchart LR
+    AD[Active Directory<br/>dc.example.com]
+    Auth[Authentik<br/>auth.example.com]
+    Jira[Jira]
+    Conf[Confluence]
+    Bit[Bitbucket]
+    Bam[Bamboo]
+    User[User Browser]
+
+    AD -->|LDAP sync<br/>authentik-bind| Auth
+    AD -->|user directory<br/>atlassian-bind read-only| Jira
+    AD -->|user directory<br/>atlassian-bind read-only| Conf
+    AD -->|user directory<br/>atlassian-bind read-only| Bit
+    AD -->|user directory<br/>atlassian-bind read-only| Bam
+    User -->|SAML SSO| Auth
+    Auth -.assertion.-> Jira
+    Auth -.assertion.-> Conf
+    Auth -.assertion.-> Bit
+    Auth -.assertion.-> Bam</code></pre>
+
+<h2 id="迁移思路"><a href="#迁移思路" class="headerlink" title="迁移思路"></a>迁移思路</h2><p>两个原则定下来后剩下的就好拆：</p>
+<ol>
+<li><strong>AD 是唯一事实源</strong>，所有用户和组都从 AD 来</li>
+<li><strong>只允许 Authentik 拿特权 bind</strong>（带 Reset Password 那种），别的服务一律用只读 bind</li>
+</ol>
+<p>按这两条，主线分三步：</p>
+<p><strong>第一步：先上 SAML，用户目录不动</strong> —— 每个 app 加一个 Authentik 的 SAML 配置，登录走 Authentik，但用户依然落在 Crowd 那个目录上。SAML NameID 用 sAMAccountName，恰好就是 Crowd 同步过来的 username key，登录时不会建新账号、也不会有重复。回滚成本极低——一个 REST PATCH 就能把本地登录框打开。</p>
+<p><strong>第二步：把用户目录从 Crowd 换成 AD 直连</strong> —— 每个 app 加一个新的「Microsoft Active Directory」目录，bind 用一个新的只读账号 <code>atlassian-bind</code>，base DN 限定 <code>OU=People</code>，group 限定 <code>OU=Atlassian,OU=Groups</code>。用户&#x2F;组数和 Crowd 那边对齐了，再把 Crowd 那个目录关掉（不删，留底）。</p>
+<p><strong>第三步：退役 Crowd</strong> —— 先备份整个 Crowd 实例，停掉，观察一个月没人来抱怨，再彻底销毁 + 删 DNS + 删 AD 里的 <code>crowd-administrators</code> 组。</p>
+<p>主线之外还有两件配套的事，跟主线穿插着做：第二步完事之后顺手把 REST 的 Basic Auth 关掉收紧攻击面、第三步退役 Crowd 之后调整新员工开通流程。下面按时间顺序一段段写。</p>
+<p>JIT provisioning 我没用。理由：JIT 之后组同步是滞后的（首次登录才创建），用户选择器里搜不到没登录过的人，预先建账号也做不了。AD 直连同步的话这些都是顺带就有的。</p>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>涉及到的服务版本和域名：</p>
+<table>
+<thead>
+<tr>
+<th>服务</th>
+<th>版本</th>
+<th>域名</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Authentik</td>
+<td>2026.2.2</td>
+<td><code>auth.example.com</code></td>
+</tr>
+<tr>
+<td>Jira Software Data Center</td>
+<td>11.3.1</td>
+<td><code>jira.example.com</code></td>
+</tr>
+<tr>
+<td>Confluence Data Center</td>
+<td>10.2.2</td>
+<td><code>wiki.example.com</code></td>
+</tr>
+<tr>
+<td>Bitbucket Data Center</td>
+<td>9.4.16</td>
+<td><code>git.example.com</code></td>
+</tr>
+<tr>
+<td>Bamboo Data Center</td>
+<td>12.1.1</td>
+<td><code>ci.example.com</code></td>
+</tr>
+<tr>
+<td>Crowd Data Center（待退役）</td>
+<td>7.1.3</td>
+<td><code>crowd.example.com</code></td>
+</tr>
+</tbody></table>
+<p>部署上，所有服务都跑在 Docker 里，Docker 又跑在 PVE 的 LXC 容器中。这套基础设施跟本文 SAML 配置没关系，下文不展开——但能解释为什么后面看到 <code>ssh root@auth.example.com</code> 接着 <code>docker exec authentik-server ...</code> 这种写法。</p>
+<blockquote>
+<p>⚠️ 前提：<strong>SAML SSO 是 Atlassian Data Center 限定</strong>功能。Server 版（已 EOL）和早期 Cloud Standard 都不带。Data Center 自带的「SSO 2.0 &#x2F; Authentication methods」模块够用，<strong>完全不需要</strong>装 Resolution &#x2F; miniorange &#x2F; Kantega 之类的第三方插件。</p>
+</blockquote>
+<p>AD 这边事先把组建好：</p>
+<ul>
+<li><code>confluence-users</code> &#x2F; <code>bitbucket-users</code> &#x2F; <code>jira-software-users</code> &#x2F; <code>bamboo-users</code></li>
+<li>注意 Jira 那个组是 <code>jira-software-users</code>，<strong>不是</strong> <code>jira-users</code></li>
+<li>全部放在 <code>OU=Atlassian,OU=Groups</code> 下面</li>
+</ul>
+<p>每个组里把要给访问权限的人加进去（一开始我同步过来 ~67 人）。</p>
+<h2 id="把-SAML-接进来"><a href="#把-SAML-接进来" class="headerlink" title="把 SAML 接进来"></a>把 SAML 接进来</h2><p>这一段是登录入口的切换：在 Authentik 上建好四个 SAML provider 和对应的 application，每个 Atlassian app 里再把 SAML 配置填进去。这一阶段 Crowd 还在原位继续做用户目录，登录入口先切走、用户库不动，回滚成本压到最低。</p>
+<h3 id="Authentik-侧"><a href="#Authentik-侧" class="headerlink" title="Authentik 侧"></a>Authentik 侧</h3><h4 id="共享签名证书"><a href="#共享签名证书" class="headerlink" title="共享签名证书"></a>共享签名证书</h4><p>四个 SAML provider 共用一张自签证书，方便统一管理。<strong>不要复用通配 TLS 证书</strong>——下次 TLS 轮替时四个 SP 全炸。也<strong>不要复用 Authentik 自己的 <code>authentik Self-signed Certificate</code></strong>，它有效期只有两年，太短。</p>
+<p>直接 Web UI 也能建，但用 <code>ak shell</code> 几行就出来：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh root@auth.example.com</span><br><span class="line">docker <span class="built_in">exec</span> -it authentik-server ak shell</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> authentik.crypto.builder <span class="keyword">import</span> CertificateBuilder</span><br><span class="line">b = CertificateBuilder(<span class="string">&quot;atlassian-saml&quot;</span>)</span><br><span class="line">b.build(subject_alt_names=[], validity_days=<span class="number">3650</span>)  <span class="comment"># 10 年</span></span><br><span class="line">ckp = b.save()</span><br></pre></td></tr></table></figure>
+
+<p>之后在 <code>System → Certificates</code> 里能看到 <code>atlassian-saml</code>，subject 是 <code>CN=atlassian-saml,O=authentik,OU=Self-signed</code>。</p>
+<h4 id="Property-mappings"><a href="#Property-mappings" class="headerlink" title="Property mappings"></a>Property mappings</h4><p>NameID 用 username（sAMAccountName），下游各个 app 的本地用户 key 就是这个，对得上。三个 default mapping 直接复用：</p>
+<table>
+<thead>
+<tr>
+<th>Mapping 名</th>
+<th>SAML attribute</th>
+<th>取值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Username</td>
+<td><code>http://schemas.goauthentik.io/2021/02/saml/username</code></td>
+<td><code>request.user.username</code>（&#x3D; sAMAccountName）</td>
+</tr>
+<tr>
+<td>Email</td>
+<td><code>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress</code></td>
+<td><code>request.user.email</code>（&#x3D; AD <code>mail</code>）</td>
+</tr>
+<tr>
+<td>Name</td>
+<td><code>http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name</code></td>
+<td><code>request.user.name</code></td>
+</tr>
+</tbody></table>
+<p>再加一个<strong>自定义</strong> Groups mapping 过滤一下：AD 里我有 ~16 个组，但只有 10 个跟 Atlassian 相关，其它的（部门组、内部工具组等）不该塞进 SAML 里。</p>
+<p><code>Customisation → Property Mappings → Create → SAML Provider Property Mapping</code>：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Name</td>
+<td><code>atlassian-groups</code></td>
+</tr>
+<tr>
+<td>SAML Attribute Name</td>
+<td><code>http://schemas.xmlsoap.org/claims/Group</code></td>
+</tr>
+<tr>
+<td>Friendly Name</td>
+<td><code>Group</code></td>
+</tr>
+</tbody></table>
+<p>Expression：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> group <span class="keyword">in</span> request.user.groups.<span class="built_in">all</span>():</span><br><span class="line">    dn = group.attributes.get(<span class="string">&quot;distinguishedName&quot;</span>, <span class="string">&quot;&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">&quot;,OU=Atlassian,OU=Groups,&quot;</span> <span class="keyword">in</span> dn:</span><br><span class="line">        <span class="keyword">yield</span> group.name</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Confluence &#x2F; Bitbucket &#x2F; Bamboo 的 SAML 配置里<strong>没有 Groups 字段可填</strong>——它们读组靠 user directory，不靠 SAML。但发出去无害，留个口子万一以后想用 group attribute 决策。</p>
+</blockquote>
+<h4 id="SAML-Provider-—-一份模板套四次"><a href="#SAML-Provider-—-一份模板套四次" class="headerlink" title="SAML Provider — 一份模板套四次"></a>SAML Provider — 一份模板套四次</h4><p>每个 app 一个 provider。Web UI 点一遍可以，但 <code>ak shell</code> 跑脚本更不容易出错。下面这份是 Bitbucket 的，其它三个改名字、改 ACS、改 audience 就行：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> authentik.providers.saml.models <span class="keyword">import</span> SAMLProvider, SAMLPropertyMapping</span><br><span class="line"><span class="keyword">from</span> authentik.core.models <span class="keyword">import</span> Application, Group</span><br><span class="line"><span class="keyword">from</span> authentik.crypto.models <span class="keyword">import</span> CertificateKeyPair</span><br><span class="line"><span class="keyword">from</span> authentik.flows.models <span class="keyword">import</span> Flow</span><br><span class="line"><span class="keyword">from</span> authentik.policies.models <span class="keyword">import</span> PolicyBinding</span><br><span class="line"></span><br><span class="line">cert       = CertificateKeyPair.objects.get(name=<span class="string">&quot;atlassian-saml&quot;</span>)</span><br><span class="line">auth_flow  = Flow.objects.get(slug=<span class="string">&quot;default-authentication-flow&quot;</span>)</span><br><span class="line">authz_flow = Flow.objects.get(slug=<span class="string">&quot;default-provider-authorization-implicit-consent&quot;</span>)</span><br><span class="line">inval_flow = Flow.objects.get(slug=<span class="string">&quot;default-provider-invalidation-flow&quot;</span>)</span><br><span class="line"></span><br><span class="line">m_username = SAMLPropertyMapping.objects.get(name=<span class="string">&quot;authentik default SAML Mapping: Username&quot;</span>)</span><br><span class="line">m_email    = SAMLPropertyMapping.objects.get(name=<span class="string">&quot;authentik default SAML Mapping: Email&quot;</span>)</span><br><span class="line">m_name     = SAMLPropertyMapping.objects.get(name=<span class="string">&quot;authentik default SAML Mapping: Name&quot;</span>)</span><br><span class="line">m_groups   = SAMLPropertyMapping.objects.get(name=<span class="string">&quot;atlassian-groups&quot;</span>)</span><br><span class="line"></span><br><span class="line">p, _ = SAMLProvider.objects.update_or_create(</span><br><span class="line">    name=<span class="string">&quot;bitbucket-saml&quot;</span>,</span><br><span class="line">    defaults=<span class="built_in">dict</span>(</span><br><span class="line">        authentication_flow=auth_flow,</span><br><span class="line">        authorization_flow=authz_flow,</span><br><span class="line">        invalidation_flow=inval_flow,</span><br><span class="line">        acs_url=<span class="string">&quot;https://git.example.com/plugins/servlet/samlconsumer&quot;</span>,</span><br><span class="line">        issuer=<span class="string">&quot;https://auth.example.com&quot;</span>,</span><br><span class="line">        audience=<span class="string">&quot;https://git.example.com&quot;</span>,</span><br><span class="line">        sp_binding=<span class="string">&quot;post&quot;</span>,</span><br><span class="line">        signing_kp=cert,</span><br><span class="line">        sign_assertion=<span class="literal">True</span>,</span><br><span class="line">        sign_response=<span class="literal">True</span>,</span><br><span class="line">        name_id_mapping=m_username,</span><br><span class="line">        digest_algorithm=<span class="string">&quot;http://www.w3.org/2001/04/xmlenc#sha256&quot;</span>,</span><br><span class="line">        signature_algorithm=<span class="string">&quot;http://www.w3.org/2001/04/xmldsig-more#rsa-sha256&quot;</span>,</span><br><span class="line">    ),</span><br><span class="line">)</span><br><span class="line">p.property_mappings.<span class="built_in">set</span>([m_username, m_email, m_name, m_groups])</span><br><span class="line"></span><br><span class="line">app, _ = Application.objects.update_or_create(</span><br><span class="line">    slug=<span class="string">&quot;bitbucket&quot;</span>,</span><br><span class="line">    defaults=<span class="built_in">dict</span>(</span><br><span class="line">        name=<span class="string">&quot;Bitbucket&quot;</span>,</span><br><span class="line">        provider=p,</span><br><span class="line">        meta_launch_url=<span class="string">&quot;https://git.example.com&quot;</span>,</span><br><span class="line">    ),</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">group = Group.objects.get(name=<span class="string">&quot;bitbucket-users&quot;</span>)</span><br><span class="line">PolicyBinding.objects.update_or_create(</span><br><span class="line">    target=app, group=group,</span><br><span class="line">    defaults=<span class="built_in">dict</span>(order=<span class="number">10</span>, enabled=<span class="literal">True</span>),</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>几个非默认值要留意：</p>
+<ul>
+<li><code>sp_binding=&quot;post&quot;</code>：ACS 走 HTTP-POST，不是 Redirect。Atlassian Data Center 这边吃 POST。</li>
+<li><code>sign_assertion=True</code> 且 <code>sign_response=True</code>：内层 <code>&lt;saml:Assertion&gt;</code> 必须签，外层 <code>&lt;samlp:Response&gt;</code> 也签上做纵深防御。Atlassian 两个都接受。<strong>第一遍漏了 sign_response，回头补的</strong>。</li>
+<li><code>verification_kp</code> 留空：Atlassian 默认不签 AuthnRequest，Authentik 也不强制要验。</li>
+<li><code>encryption_kp</code> 留空：TLS 已经把信道加密了，再做 SAML payload 加密性价比不高。</li>
+<li>时钟容差是 Authentik 默认（前后各 5 分钟），别忘了 NTP。</li>
+</ul>
+<p>四个 provider 创建完，记下来每个的 ID（在 <code>Applications → Providers</code> 里能看到，比如 5&#x2F;6&#x2F;7&#x2F;8），后面取 IdP metadata 用得到：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">https:</span>/<span class="regexp">/auth.example.com/api</span><span class="regexp">/v3/providers</span><span class="regexp">/saml/</span>&lt;id&gt;<span class="regexp">/metadata/</span><span class="string">?d</span>ownload</span><br></pre></td></tr></table></figure>
+
+<p>每个 application 在 <code>Applications → Applications</code> 里再绑一个 <code>Group</code> policy binding，限定只有 <code>&lt;app&gt;-users</code> 这个 AD 组的成员能 SSO 进来。组外用户在 IdP 这一层就被拒了，根本到不了 Atlassian。</p>
+<h4 id="不需要-Outpost"><a href="#不需要-Outpost" class="headerlink" title="不需要 Outpost"></a>不需要 Outpost</h4><p>四个 app 都直接说 SAML，跟 Authentik 之间不走 LDAP outpost，也不走 proxy outpost。Outpost 那一套这里完全用不上。</p>
+<h3 id="Atlassian-侧"><a href="#Atlassian-侧" class="headerlink" title="Atlassian 侧"></a>Atlassian 侧</h3><p>四个 app 的 SAML 配置长得几乎一样，<strong>最大差异是各自的 break-glass URL 不一样</strong>——下面单独列表。</p>
+<h4 id="共通字段"><a href="#共通字段" class="headerlink" title="共通字段"></a>共通字段</h4><table>
+<thead>
+<tr>
+<th>字段</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Configuration name</td>
+<td><code>Authentik</code></td>
+</tr>
+<tr>
+<td>Login button text</td>
+<td><code>Sign in with Authentik</code></td>
+</tr>
+<tr>
+<td>Single sign-on issuer</td>
+<td><code>https://auth.example.com</code></td>
+</tr>
+<tr>
+<td>Identity provider single sign-on URL</td>
+<td><code>https://auth.example.com/application/saml/&lt;slug&gt;/sso/binding/redirect/</code></td>
+</tr>
+<tr>
+<td>X.509 Certificate</td>
+<td><code>atlassian-saml</code> 的完整 PEM</td>
+</tr>
+<tr>
+<td>Username mapping</td>
+<td><code>${NameID}</code></td>
+</tr>
+<tr>
+<td>JIT provisioning</td>
+<td>OFF</td>
+</tr>
+<tr>
+<td>Update users on login</td>
+<td>OFF</td>
+</tr>
+<tr>
+<td>Encrypt assertions</td>
+<td>OFF</td>
+</tr>
+<tr>
+<td>Show IdP on the login page</td>
+<td>ON</td>
+</tr>
+<tr>
+<td>Remember user logins</td>
+<td>ON</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>关于 <code>Username mapping</code> —— Atlassian 这个字段既能填 SAML 属性 URI（比如 <code>http://schemas.goauthentik.io/2021/02/saml/username</code>），也能填占位符 <code>${NameID}</code>。<strong>优先用 <code>${NameID}</code></strong>：URI 形式在不同版本的 Atlassian SAML 里支持度参差，<code>${NameID}</code> 永远 work，少一层映射。</p>
+</blockquote>
+<h4 id="关键步骤顺序"><a href="#关键步骤顺序" class="headerlink" title="关键步骤顺序"></a>关键步骤顺序</h4><p>四个 app 的操作我都按这个顺序走，最重要的是<strong>先开 fallback 再保存 SAML</strong>。否则 SAML 一保存出问题，自己也进不去：</p>
+<ol>
+<li><p><strong>REST PATCH 打开 fallback</strong>（先做这一步）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -u &lt;admin&gt; -X PATCH <span class="string">&quot;https://&lt;app&gt;/rest/authconfig/1.0/sso&quot;</span> \</span><br><span class="line">  -H <span class="string">&quot;Content-Type: application/json&quot;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;&quot;enable-authentication-fallback&quot;: true&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>UI 进 <code>Authentication methods → Add configuration → SAML single sign-on</code></p>
+</li>
+<li><p>共通字段照上表填，证书 PEM 用「SSH 拿出来 → pbcopy」的办法贴（见后面踩坑 #2）</p>
+</li>
+<li><p>保存，<strong>开无痕窗口</strong>测：浏览器到 <code>https://&lt;app&gt;</code> → 跳 Authentik → AD 密码 → 落到原来那个用户（不应该是新建账号）</p>
+</li>
+<li><p>测 break-glass URL（每个 app 不一样，下一节列表）能进本地登录框</p>
+</li>
+<li><p>一切 OK 后，<strong>再 PATCH 一次把本地登录框藏起来</strong>，让 SAML 成默认入口：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -u &lt;admin&gt; -X PATCH <span class="string">&quot;https://&lt;app&gt;/rest/authconfig/1.0/sso&quot;</span> \</span><br><span class="line">  -H <span class="string">&quot;Content-Type: application/json&quot;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;&quot;show-login-form&quot;: false&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>下一个 app</p>
+</li>
+</ol>
+<h4 id="Confluence"><a href="#Confluence" class="headerlink" title="Confluence"></a>Confluence</h4><p>UI 路径：<code>Confluence Administration → General Configuration → Authentication methods</code>（在「USERS &amp; SECURITY」组里）。</p>
+<p>Break-glass URL：<code>https://wiki.example.com/login.action?auth_fallback</code></p>
+<p>Confluence 的 SAML 表单<strong>没有 Groups attribute 字段</strong>，也<strong>没有 Sign requests 字段</strong>（那是 Jira-only）。</p>
+<h4 id="Bitbucket"><a href="#Bitbucket" class="headerlink" title="Bitbucket"></a>Bitbucket</h4><p>UI 路径：<code>Bitbucket Administration → Accounts → Authentication methods → Add configuration → SAML single sign-on</code></p>
+<p>Break-glass URL：<code>https://git.example.com/login?auth_fallback</code>（注意是 <code>/login</code>，<strong>不是</strong> <code>/login.action</code>）</p>
+<p>Git over SSH &#x2F; git over HTTPS 都不走 SAML——SSH 用 key，HTTPS 用 HTTP access token（前缀 <code>BBDC-</code> 那种）。SAML 切完不影响 git 操作。后面要禁 Basic Auth 时记得 <code>/scm/*</code> 加白名单，否则 git push&#x2F;pull 直接挂。</p>
+<h4 id="Jira"><a href="#Jira" class="headerlink" title="Jira"></a>Jira</h4><p>UI 路径：<code>Jira Administration → System → Authentication methods → Add configuration → SAML single sign-on</code></p>
+<p>Break-glass URL：<code>https://jira.example.com/login.jsp?auth_fallback</code></p>
+<p>Jira 11.1+ 的表单比其它三个多两栏：</p>
+<ul>
+<li><strong>NameID Policy</strong>：选 <code>Unspecified</code>（跟 Authentik 默认对齐）</li>
+<li><strong>Sign requests</strong>：OFF（Authentik 这边没要求 SP 签 AuthnRequest）</li>
+</ul>
+<p>还有一个 Jira-only 的开关 <code>Include customer logins (JSM)</code>——我把它<strong>关掉</strong>，让 JSM 的客户门户继续走本地登录：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span><span class="attr">&quot;show-login-form-for-jsm&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>⚠️ Jira 还有个「匿名用户能看到 dashboard 骨架」的坑，跟 SAML 没关系但是切完 SSO 一定会注意到。详见后面踩坑 #5。</p>
+</blockquote>
+<h4 id="Bamboo"><a href="#Bamboo" class="headerlink" title="Bamboo"></a>Bamboo</h4><p>UI 路径：<code>Bamboo Administration → Security → Authentication methods → Add configuration → SAML single sign-on</code></p>
+<p>Break-glass URL：<code>https://ci.example.com/userlogin.action?auth_fallback</code>（注意是 <code>userlogin.action</code>）</p>
+<p>Bamboo 12.1.1 没有原生 OIDC 支持（要 OIDC 得装 Kantega &#x2F; miniorange 之类的第三方插件），SAML 是 Atlassian 自带方案的唯一选项。Remote agent（比如 <code>agent-win</code>）走 agent token 鉴权，<strong>不受 SAML 影响</strong>。</p>
+<h4 id="让-SAML-成为默认"><a href="#让-SAML-成为默认" class="headerlink" title="让 SAML 成为默认"></a>让 SAML 成为默认</h4><p>四个 app 都没有「Set as default」按钮。机制是：把 <code>Username/password</code> 那一行的 <code>Show on login page</code> 关掉。关掉之后匿名用户访问 <code>https://&lt;app&gt;</code> 直接重定向到 Authentik；<code>?auth_fallback</code> URL 仍然能用，因为它走的是另一条 servlet。</p>
+<p>REST 等价：<code>{&quot;show-login-form&quot;: false}</code>。</p>
+<h4 id="Break-glass-URL-大表"><a href="#Break-glass-URL-大表" class="headerlink" title="Break-glass URL 大表"></a>Break-glass URL 大表</h4><p>四个 app 的 break-glass 全都不一样，单独存一份留着：</p>
+<table>
+<thead>
+<tr>
+<th>App</th>
+<th>URL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Confluence</td>
+<td><code>https://wiki.example.com/login.action?auth_fallback</code></td>
+</tr>
+<tr>
+<td>Bitbucket</td>
+<td><code>https://git.example.com/login?auth_fallback</code></td>
+</tr>
+<tr>
+<td>Jira</td>
+<td><code>https://jira.example.com/login.jsp?auth_fallback</code></td>
+</tr>
+<tr>
+<td>Bamboo</td>
+<td><code>https://ci.example.com/userlogin.action?auth_fallback</code></td>
+</tr>
+</tbody></table>
+<p>前提是 <code>enable-authentication-fallback: true</code> 已经 PATCH 过。</p>
+<h3 id="踩过的坑"><a href="#踩过的坑" class="headerlink" title="踩过的坑"></a>踩过的坑</h3><h4 id="坑-1-—-第一遍漏了-sign-response"><a href="#坑-1-—-第一遍漏了-sign-response" class="headerlink" title="坑 1 — 第一遍漏了 sign_response"></a>坑 1 — 第一遍漏了 sign_response</h4><p>Authentik 的 SAML provider 默认 <code>sign_response=False</code>、<code>sign_assertion=True</code>。第一遍创建 Confluence 的时候直接保存了，后来回头补。理论上 sign_assertion 已经够 Atlassian 验证完整性了，但同时签 response 没坏处，做纵深防御：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">p = SAMLProvider.objects.get(name=<span class="string">&quot;confluence-saml&quot;</span>)</span><br><span class="line">p.sign_response = <span class="literal">True</span></span><br><span class="line">p.save()</span><br></pre></td></tr></table></figure>
+
+<p>后面 Bitbucket &#x2F; Jira &#x2F; Bamboo 一开始就两个都开。</p>
+<h4 id="坑-2-—-证书-PEM-贴进去每行第一个字符被吞了"><a href="#坑-2-—-证书-PEM-贴进去每行第一个字符被吞了" class="headerlink" title="坑 2 — 证书 PEM 贴进去每行第一个字符被吞了"></a>坑 2 — 证书 PEM 贴进去每行第一个字符被吞了</h4><p>把 <code>atlassian-saml</code> 的 PEM 从 Authentik UI 复制出来贴到 Confluence 的 X.509 字段，结果 <code>-----BEGIN CERTIFICATE-----</code> 变成了 <code>----BEGIN CERTIFICATE----</code>，每行 base64 也都丢了第一个字符。SAML 这种是直接签名校验失败。</p>
+<p>不是证书的问题，是<strong>渲染层吃字符</strong>——某些 UI 控件对每行第一个字节的处理有 bug。绕开：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 Authentik 容器里把证书导出到 /tmp</span></span><br><span class="line">ssh root@auth.example.com \</span><br><span class="line">  <span class="string">&quot;docker exec authentik-server ak shell -c \</span></span><br><span class="line"><span class="string">   &#x27;from authentik.crypto.models import CertificateKeyPair; \</span></span><br><span class="line"><span class="string">    print(CertificateKeyPair.objects.get(name=\&quot;atlassian-saml\&quot;).certificate_data)&#x27; \</span></span><br><span class="line"><span class="string">   | grep -v &#x27;^&#123;&#x27; | grep -v &#x27;###&#x27; | grep -v &#x27;objects imported&#x27; \</span></span><br><span class="line"><span class="string">   &gt; /tmp/atlassian-saml.crt&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 直接拉到本机剪贴板</span></span><br><span class="line">ssh root@auth.example.com <span class="built_in">cat</span> /tmp/atlassian-saml.crt | pbcopy</span><br></pre></td></tr></table></figure>
+
+<p>然后 ⌘V 贴进去，零字符丢失。</p>
+<h4 id="坑-3-—-auth-fallback-也跳-Authentik"><a href="#坑-3-—-auth-fallback-也跳-Authentik" class="headerlink" title="坑 3 — ?auth_fallback 也跳 Authentik"></a>坑 3 — <code>?auth_fallback</code> 也跳 Authentik</h4><p>第一次配完 Confluence，访问 <code>https://wiki.example.com/login.action?auth_fallback</code>，结果<strong>也跳了 Authentik</strong>。意味着 fallback 没生效。</p>
+<p>原因是 <code>enable-authentication-fallback</code> 默认是 <code>false</code>，UI 里没那个开关，必须走 REST：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -u &lt;admin&gt; -X PATCH <span class="string">&quot;https://wiki.example.com/rest/authconfig/1.0/sso&quot;</span> \</span><br><span class="line">  -H <span class="string">&quot;Content-Type: application/json&quot;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;&quot;enable-authentication-fallback&quot;: true&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>PATCH 完再访问 <code>?auth_fallback</code>，本地登录框就回来了。所以<strong>这一步必须放在保存 SAML 之前</strong>——否则 SAML 一旦配错，自己也进不去。</p>
+<h4 id="坑-4-—-UI-路径已经改名了"><a href="#坑-4-—-UI-路径已经改名了" class="headerlink" title="坑 4 — UI 路径已经改名了"></a>坑 4 — UI 路径已经改名了</h4><p>网上很多老教程写「<code>User Management → SSO 2.0 → Add SAML configuration</code>」，Data Center 10.x 现在的路径是「<code>General Configuration → Authentication methods</code>」。<code>SSO 2.0</code> 这个老名字基本只在文档里能见到。四个 app 的菜单都重命名过，照新的找。</p>
+<h4 id="坑-5-—-Jira-匿名页面绕开-SAML"><a href="#坑-5-—-Jira-匿名页面绕开-SAML" class="headerlink" title="坑 5 — Jira 匿名页面绕开 SAML"></a>坑 5 — Jira 匿名页面绕开 SAML</h4><p>切完 SAML 后，开无痕窗口访问 <code>https://jira.example.com/secure/Dashboard.jspa</code>，<strong>直接 200 返回 dashboard 骨架</strong>——虽然没有真实数据（只有 “Loading…” 占位），但页面能渲染、URL 不跳登录。<code>/browse/</code> 倒是正常 302 到登录。</p>
+<p>试过两条路：</p>
+<ol>
+<li>把全局 <code>Use Jira</code> &#x2F; <code>Browse Projects</code> 权限里的 <code>Anyone</code> 摘掉——没用，dashboard 骨架照样出来</li>
+<li>Jira mode 切 Private——我已经是 Private 了</li>
+</ol>
+<p>最后是开 Jira 的 dark feature：</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:<span class="regexp">//</span>jira.example.com<span class="regexp">/secure/</span>SiteDarkFeatures!default.jspa</span><br></pre></td></tr></table></figure>
+
+<p>里面输 <code>public.access.disabled</code>，Enable。这个 dark feature 从 Jira 7.2.10 就有了，全局把所有匿名 URL 都重定向到 <code>/login.jsp</code>，再也没有骨架可看。</p>
+<blockquote>
+<p>⚠️ 副作用：监控的健康检查 <strong>不能</strong>再打 <code>/</code>，要打 <code>/status</code>。后者永远匿名访问，返回 <code>{&quot;state&quot;:&quot;RUNNING&quot;}</code>。LB 那边记得改。</p>
+</blockquote>
+<h4 id="坑-6-—-Confluence-的-SAML-表单没有-“Sign-requests”-字段"><a href="#坑-6-—-Confluence-的-SAML-表单没有-“Sign-requests”-字段" class="headerlink" title="坑 6 — Confluence 的 SAML 表单没有 “Sign requests” 字段"></a>坑 6 — Confluence 的 SAML 表单没有 “Sign requests” 字段</h4><p>UI 上确实没有，因为「Sign requests」是 Jira 11.1+ 才加的，其它三个 app 都不暴露这个开关。Authentik 这边 <code>verification_kp=None</code>，本来就不要求 SP 签 AuthnRequest，所以表单上有没有都无所谓，不用纠结。</p>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>每个 app 切完之后这套都跑一遍：</p>
+<ol>
+<li>无痕窗口 → <code>https://&lt;app&gt;</code> → 跳 Authentik → AD 密码 → 落到<strong>已有用户</strong>（不是新建）</li>
+<li><code>?auth_fallback</code> URL → 本地登录框出来</li>
+<li>把测试账号从 <code>&lt;app&gt;-users</code> 组里临时拿掉 → 重新登录 → Authentik 直接拒绝（”You do not have access to this application”）</li>
+<li>跨 app SSO：登完 Confluence 再访问 Jira，无须重新输密码</li>
+<li>App link &#x2F; 各种集成（Confluence 引 Jira issue、Bitbucket commit 关联 Jira ticket）依然能用——这些走 OAuth 不走 SAML</li>
+<li>Bitbucket 的 git push&#x2F;pull、Bamboo 的 remote agent 也都正常</li>
+</ol>
+<p>Authentik 这边查事件日志确认登录成功：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ssh root@auth.example.com <span class="string">&quot;docker exec authentik-server ak shell -c &#x27;</span></span><br><span class="line"><span class="string">from authentik.events.models import Event</span></span><br><span class="line"><span class="string">from datetime import datetime, timedelta, timezone</span></span><br><span class="line"><span class="string">since = datetime.now(timezone.utc) - timedelta(minutes=15)</span></span><br><span class="line"><span class="string">for e in Event.objects.filter(created__gte=since).order_by(\&quot;-created\&quot;)[:20]:</span></span><br><span class="line"><span class="string">    if e.action in (\&quot;login\&quot;,\&quot;login_failed\&quot;,\&quot;authorize_application\&quot;,\&quot;configuration_error\&quot;):</span></span><br><span class="line"><span class="string">        print(e.created, e.action, e.user, e.context.get(\&quot;application\&quot;, \&quot;-\&quot;))</span></span><br><span class="line"><span class="string">&#x27;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>正常情况会看到 <code>login</code> 后面跟着 <code>authorize_application</code>，application 字段就是 <code>confluence</code> &#x2F; <code>jira</code> 之类。</p>
+<h2 id="把用户目录从-Crowd-换成-AD-直连"><a href="#把用户目录从-Crowd-换成-AD-直连" class="headerlink" title="把用户目录从 Crowd 换成 AD 直连"></a>把用户目录从 Crowd 换成 AD 直连</h2><p>SAML 跑稳一周以后，开始换用户目录。整体思路：每个 app 加一个新的 AD 目录，bind 用一个新的只读账号 <code>atlassian-bind</code>，等同步完毕、用户&#x2F;组数对上、user key 也对上，再把 Crowd 那个目录 <strong>disable（不删）</strong>。</p>
+<h3 id="创建-atlassian-bind-AD-账号"><a href="#创建-atlassian-bind-AD-账号" class="headerlink" title="创建 atlassian-bind AD 账号"></a>创建 atlassian-bind AD 账号</h3><p>在 AD 域控上 PowerShell：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$pw</span> = <span class="built_in">Read-Host</span> <span class="literal">-AsSecureString</span> <span class="string">&quot;Password for atlassian-bind&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">New-ADUser</span> `</span><br><span class="line">    <span class="literal">-Name</span> <span class="string">&quot;atlassian-bind&quot;</span> `</span><br><span class="line">    <span class="literal">-SamAccountName</span> <span class="string">&quot;atlassian-bind&quot;</span> `</span><br><span class="line">    <span class="literal">-UserPrincipalName</span> <span class="string">&quot;atlassian-bind@example.com&quot;</span> `</span><br><span class="line">    <span class="literal">-Path</span> <span class="string">&quot;OU=Services,DC=example,DC=com&quot;</span> `</span><br><span class="line">    <span class="literal">-AccountPassword</span> <span class="variable">$pw</span> `</span><br><span class="line">    <span class="literal">-Enabled</span> <span class="variable">$true</span> `</span><br><span class="line">    <span class="literal">-PasswordNeverExpires</span> <span class="variable">$true</span> `</span><br><span class="line">    <span class="literal">-CannotChangePassword</span> <span class="variable">$true</span> `</span><br><span class="line">    <span class="literal">-Description</span> <span class="string">&quot;Atlassian apps LDAP read-only bind&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>不要给它 Reset Password 之类的特权 ACL</strong>——只用默认 <code>Domain Users</code> 在 <code>OU=People</code>&#x2F;<code>OU=Groups</code> 上的读权限就够了。Atlassian 这边只读模式不会写回 AD。</p>
+<h3 id="在每个-Atlassian-app-里加-AD-用户目录"><a href="#在每个-Atlassian-app-里加-AD-用户目录" class="headerlink" title="在每个 Atlassian app 里加 AD 用户目录"></a>在每个 Atlassian app 里加 AD 用户目录</h3><p><code>User Management → User Directories → Add Directory → Microsoft Active Directory</code>：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Name</td>
+<td><code>AD - example.com</code></td>
+</tr>
+<tr>
+<td>Directory type</td>
+<td>Microsoft Active Directory</td>
+</tr>
+<tr>
+<td><strong>Permissions</strong></td>
+<td><strong>Read Only, with Local Groups</strong> ← 必须这个，atlassian-bind 没写权限</td>
+</tr>
+<tr>
+<td>Hostname</td>
+<td><code>dc.example.com</code></td>
+</tr>
+<tr>
+<td>Use SSL</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Port</td>
+<td><code>636</code></td>
+</tr>
+<tr>
+<td>Username</td>
+<td><code>CN=atlassian-bind,OU=Services,DC=example,DC=com</code></td>
+</tr>
+<tr>
+<td>Password</td>
+<td>上面建的密码</td>
+</tr>
+<tr>
+<td>Base DN</td>
+<td><code>DC=example,DC=com</code></td>
+</tr>
+<tr>
+<td>Additional User DN</td>
+<td><code>OU=People</code></td>
+</tr>
+<tr>
+<td>Additional Group DN</td>
+<td><code>OU=Atlassian,OU=Groups</code> ← 注意限定到 Atlassian 子 OU，不要拉整个 <code>OU=Groups</code></td>
+</tr>
+<tr>
+<td>User name attribute</td>
+<td><code>sAMAccountName</code></td>
+</tr>
+<tr>
+<td>User unique ID</td>
+<td><code>objectSid</code></td>
+</tr>
+<tr>
+<td>User RDN</td>
+<td><code>cn</code></td>
+</tr>
+<tr>
+<td>User object filter</td>
+<td><code>(&amp;(objectCategory=person)(objectClass=user))</code></td>
+</tr>
+<tr>
+<td>Group object filter</td>
+<td><code>(objectCategory=group)</code></td>
+</tr>
+<tr>
+<td>Group membership attribute</td>
+<td><code>member</code></td>
+</tr>
+<tr>
+<td>User membership attribute</td>
+<td><code>distinguishedName</code></td>
+</tr>
+<tr>
+<td>Synchronisation interval</td>
+<td><code>60</code> minutes</td>
+</tr>
+</tbody></table>
+<p>保存 → Test → Sync。Sync 完成后把新目录的优先级<strong>拉到 Crowd 上面</strong>，然后访问用户选择器搜几个人，确认拿到的是新目录里的副本（看 <code>Directory</code> 列）。</p>
+<h3 id="验数"><a href="#验数" class="headerlink" title="验数"></a>验数</h3><p>直接到每个 app 的 Postgres 里查：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- Confluence / Jira / Bitbucket / Bamboo 都是 cwd_* 这套表</span></span><br><span class="line"><span class="keyword">SELECT</span> id, directory_name, lower_directory_name, active</span><br><span class="line"><span class="keyword">FROM</span> cwd_directory <span class="keyword">ORDER</span> <span class="keyword">BY</span> directory_position;</span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span> directory_id, <span class="built_in">COUNT</span>(<span class="operator">*</span>)</span><br><span class="line"><span class="keyword">FROM</span> cwd_user</span><br><span class="line"><span class="keyword">WHERE</span> active <span class="operator">=</span> <span class="string">&#x27;T&#x27;</span></span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> directory_id;</span><br></pre></td></tr></table></figure>
+
+<p>新旧两个目录的活跃用户数应该一致（我这里两边都是 67~68）。Confluence&#x2F;Jira 的 user key（比如 <code>JIRAUSER10101</code>、<code>2c9280828f99ac2a018f99b208a90003</code>）是按 username 落进 <code>cwd_user</code> 的，目录切换不会重发新 key——这就是为什么前面坚持 NameID &#x3D; <code>sAMAccountName</code> 的原因，<strong>整条链路 user identity 都用 username 串起来</strong>，issue 分配、权限、关注者全部稳如老狗。</p>
+<h3 id="关掉-Crowd-那个目录"><a href="#关掉-Crowd-那个目录" class="headerlink" title="关掉 Crowd 那个目录"></a>关掉 Crowd 那个目录</h3><p>每个 app 的 Crowd 目录 <strong>Disable，不要 Delete</strong>。Disable 之后用户不会消失（key 还在），只是不再从 Crowd 拉新数据。万一 AD 这边出问题，Crowd 一键回滚。</p>
+<h2 id="关-Basic-Auth-on-REST"><a href="#关-Basic-Auth-on-REST" class="headerlink" title="关 Basic Auth on REST"></a>关 Basic Auth on REST</h2><p>第二步切完用户目录之后，顺手把 REST 接口的 Basic Auth 关了。四个 app 健康检查里都会有一条「Basic Authentication Disabled」的告警，Atlassian 推荐切 SSO 后把 REST API 的 Basic Auth 关掉，逼大家用 PAT（personal access token）。</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">PUT</span> /rest/basicauth/<span class="number">1</span>.<span class="number">0</span>/config</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>App</th>
+<th>body</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Confluence</td>
+<td><code>{&quot;block-requests&quot;: true, &quot;allowed-paths&quot;: [], &quot;allowed-users&quot;: []}</code></td>
+<td>没东西用 Basic</td>
+</tr>
+<tr>
+<td>Jira</td>
+<td>同上</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>Bamboo</td>
+<td>同上</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>Bitbucket</td>
+<td><code>{&quot;block-requests&quot;: true, &quot;allowed-paths&quot;: [&quot;/scm/*&quot;], &quot;allowed-users&quot;: []}</code></td>
+<td><strong><code>/scm/*</code> 必须放过</strong>，git over HTTPS 还得用 HTTP access token 走 Basic</td>
+</tr>
+</tbody></table>
+<p>验证：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 匿名 Basic → 应该 403</span></span><br><span class="line">curl -u <span class="string">&#x27;fake:fake&#x27;</span> https://wiki.example.com/rest/api/space</span><br><span class="line"></span><br><span class="line"><span class="comment"># Bearer PAT → 200</span></span><br><span class="line">curl -H <span class="string">&quot;Authorization: Bearer <span class="variable">$PAT</span>&quot;</span> https://wiki.example.com/rest/api/space</span><br><span class="line"></span><br><span class="line"><span class="comment"># Bitbucket /scm/* → 401（白名单内，只是没真凭据）</span></span><br><span class="line">curl -u <span class="string">&#x27;fake:fake&#x27;</span> https://git.example.com/scm/myrepo/info/refs?service=git-upload-pack</span><br></pre></td></tr></table></figure>
+
+<h2 id="退役-Crowd"><a href="#退役-Crowd" class="headerlink" title="退役 Crowd"></a>退役 Crowd</h2><p>跑了一两个月，没人来抱怨「我登不进 Jira」「我看不到 Confluence 空间」之后，可以彻底干掉 Crowd 了：</p>
+<ol>
+<li>给 Crowd 实例做一份完整备份，单独存档并标记为受保护，免得被保留策略误删</li>
+<li>停服务，关掉开机自启</li>
+<li>观察一个月，期间没人哭就继续</li>
+<li>彻底销毁实例</li>
+</ol>
+<p>收尾：</p>
+<ul>
+<li>DNS 里删掉 <code>crowd.example.com</code> 的 A 记录</li>
+<li>AD 里 <code>Remove-ADGroup -Identity &quot;crowd-administrators&quot;</code> 那个组也清掉</li>
+</ul>
+<h2 id="Crowd-退役后的新员工开通流程"><a href="#Crowd-退役后的新员工开通流程" class="headerlink" title="Crowd 退役后的新员工开通流程"></a>Crowd 退役后的新员工开通流程</h2><p>Crowd 还在的时候有个隐藏作用：「Group memberships when creating accounts」会在新账号第一次登录时自动塞进 <code>confluence-users</code> 等几个组。Crowd 没了之后，<strong>新员工进 AD 但没自动加 Atlassian 组</strong>，Authentik 这一层就直接拒了，根本登不进任何 Atlassian app。</p>
+<p>替代方案两条：</p>
+<ol>
+<li>在 AD 域控上跑 <code>Sync-AtlassianGroups.ps1</code> 这种定时任务，根据 OU 自动把 Employees 加到对应 <code>*-users</code> 组里</li>
+<li>在「新员工建账号」流程里直接加上四个组——我后来改的是这条，写了个 <code>New-EmployeeUser.ps1</code>，建账号时 <code>Add-ADGroupMember</code> 一并搞定，省得再起一个定时任务</li>
+</ol>
+<p>任选一种。外包之类的临时账号要走人工审核，<strong>别</strong>塞默认。</p>
+<h2 id="一些零碎经验"><a href="#一些零碎经验" class="headerlink" title="一些零碎经验"></a>一些零碎经验</h2><ul>
+<li><strong>AD bind 严格分两份</strong>：<code>authentik-bind</code> 有 Reset Password ACL（密码 writeback 用），只给 Authentik 用；<code>atlassian-bind</code> 只读，给四个 app。其它服务想接 AD 都各自再开只读账号，不要互相串。</li>
+<li><strong>Audience &#x2F; Issuer &#x2F; ACS URL 必须严丝合缝</strong>：差一个 <code>/</code> 都会在 Atlassian 这边被拒。Authentik 的 audience 写 <code>https://jira.example.com</code>，Atlassian 这边的 base URL 也得是同样的、不带末尾斜杠。</li>
+<li><strong>NTP</strong>：Authentik 和四个 Atlassian 实例都要走同一台 NTP，时钟差超过 5 分钟 SAML 直接拒。</li>
+<li><strong>不要拿通配 TLS 证书签 SAML</strong>：TLS 证书每年&#x2F;每两年一轮替，每次都得重新分发 IdP 元数据给四个 SP。专门一张 10 年自签 <code>atlassian-saml</code>。</li>
+<li><strong>App link 不动</strong>：四个 app 之间的 OAuth 互信不依赖 SAML，切了不用动。</li>
+<li><strong>SP-initiated only</strong>：我没配 IdP-initiated 流程，从 Authentik My Apps 里点 tile 是 IdP-initiated，会走得通但不是主用法。</li>
+</ul>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>切下来回头看，整条链路其实没那么吓人——把节奏拆成「先 SAML、再换用户目录、再退 Crowd」三段，每一段都能独立回滚。最容易踩的反而不是 SAML 本身，是这些边边角角：回退开关没开、UI 路径改名、Jira 匿名页面、证书贴歪。把这些列出来记一份，下次再切别的 app 就轻车熟路。</p>
+<p>Crowd 服役这么多年也算尽职尽责，但一个十多年没换 UI、还要单独跑 Java 实例的 SSO 中转层，确实可以光荣退役了。Authentik 这边除了少了一跳，多端 SSO、MFA、未来想加什么社交登录也都顺手。</p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><p><strong>Atlassian Data Center 官方文档</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://confluence.atlassian.com/enterprise/openid-connect-for-atlassian-data-center-applications-987142159.html">OpenID Connect for Atlassian Data Center applications</a> —— 用来确认 Jira &#x2F; Confluence &#x2F; Bitbucket 已经原生支持 OIDC（Bamboo 例外）</li>
+<li><a target="_blank" rel="noopener" href="https://www.atlassian.com/blog/enterprise/openid-connect">Authentication, simplified: OpenID Connect for Data Center</a> —— Atlassian 官方关于 OIDC for Data Center 的公告</li>
+<li><a target="_blank" rel="noopener" href="https://support.atlassian.com/jira/kb/configure-oidc-jira-datacenter-atlassian-sso/">Configuring OIDC using the Atlassian SSO for Data Center App in Jira</a> —— 想走 OIDC 路线时的配置入口</li>
+<li><a target="_blank" rel="noopener" href="https://confluence.atlassian.com/doc/single-sign-on-for-confluence-data-center-879955981.html">Single sign-on for Confluence Data Center</a> —— Confluence 这一侧 SSO 配置文档</li>
+<li><a target="_blank" rel="noopener" href="https://confluence.atlassian.com/confkb/enable-default-login-page-to-bypass-saml-in-confluence-data-center-957972845.html">Enable default login page to bypass SAML in Confluence Data Center</a> —— 踩坑 #3 <code>?auth_fallback</code> 不生效的官方说明</li>
+</ul>
+<p><strong>Authentik</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.goauthentik.io/">authentik documentation</a> —— SAML Provider、Property Mapping、Application、Policy Binding 等概念都在这</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/goauthentik/authentik">authentik on GitHub</a> —— 源码、Issue、Discussion</li>
+</ul>
+<p><strong>第三方扩展（Bamboo OIDC 替代方案）</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.kantega-sso.com/articles/sso-in-jira-and-confluence-with-openid-connect">Kantega SSO — SSO in Jira and Confluence with OpenID Connect</a> —— 给 Bamboo 加 OIDC 时可用的第三方插件之一</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/atlassian/" rel="tag"># Atlassian</a>
+              <a href="/tags/crowd/" rel="tag"># Crowd</a>
+              <a href="/tags/bamboo/" rel="tag"># Bamboo</a>
+              <a href="/tags/authentik/" rel="tag"># Authentik</a>
+              <a href="/tags/saml/" rel="tag"># SAML</a>
+              <a href="/tags/sso/" rel="tag"># SSO</a>
+              <a href="/tags/jira/" rel="tag"># Jira</a>
+              <a href="/tags/confluence/" rel="tag"># Confluence</a>
+              <a href="/tags/bitbucket/" rel="tag"># Bitbucket</a>
+              <a href="/tags/ldap/" rel="tag"># LDAP</a>
+              <a href="/tags/active-directory/" rel="tag"># Active Directory</a>
+              <a href="/tags/data-center/" rel="tag"># Data Center</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/" rel="prev" title="SFP 猫棒接管运营商光猫，外加 igmpproxy 跑通 IPTV">
+                  <i class="fa fa-angle-left"></i> SFP 猫棒接管运营商光猫，外加 igmpproxy 跑通 IPTV
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">362k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">5:29</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js" defer></script>
+
+</body>
+</html>

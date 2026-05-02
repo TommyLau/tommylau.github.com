@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 8.1.1">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"tommy.net.cn","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.27.0","exturl":false,"sidebar":{"position":"right","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="缘起家里那台中国移动给配的 ZTE F663N 光猫，已经服役 6 年多了。 这玩意儿当年我就吐槽过——只有 LAN1 一个千兆口、限制 4 个终端、Wi-Fi 还停留在 2.4GHz 802.11n。当时实在受不了，就有了那篇 《解包和打包中兴光猫配置文件》，写了个工具把 cfg 解包改桥接，套自己的路由器和 AC Wi-Fi，总算把 100M 跑满了。 带宽从最早的 50Mbps 一路升到现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SFP 猫棒接管运营商光猫，外加 igmpproxy 跑通 IPTV">
+<meta property="og:url" content="https://tommy.net.cn/2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/index.html">
+<meta property="og:site_name" content="Tommy 的自留地">
+<meta property="og:description" content="缘起家里那台中国移动给配的 ZTE F663N 光猫，已经服役 6 年多了。 这玩意儿当年我就吐槽过——只有 LAN1 一个千兆口、限制 4 个终端、Wi-Fi 还停留在 2.4GHz 802.11n。当时实在受不了，就有了那篇 《解包和打包中兴光猫配置文件》，写了个工具把 cfg 解包改桥接，套自己的路由器和 AC Wi-Fi，总算把 100M 跑满了。 带宽从最早的 50Mbps 一路升到现">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tommy.net.cn/2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/cover.jpg">
+<meta property="og:image" content="https://tommy.net.cn/2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/dfp-34x-2c2.jpg">
+<meta property="og:image" content="https://tommy.net.cn/2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/seed-ac5.jpg">
+<meta property="article:published_time" content="2026-05-01T15:49:53.000Z">
+<meta property="article:modified_time" content="2026-05-02T16:39:09.247Z">
+<meta property="article:author" content="Tommy Lau">
+<meta property="article:tag" content="CMCC">
+<meta property="article:tag" content="China Mobile">
+<meta property="article:tag" content="GPON">
+<meta property="article:tag" content="HSGQ">
+<meta property="article:tag" content="IGMP">
+<meta property="article:tag" content="IPTV">
+<meta property="article:tag" content="MT7987">
+<meta property="article:tag" content="MediaTek">
+<meta property="article:tag" content="ODI">
+<meta property="article:tag" content="ONU">
+<meta property="article:tag" content="OpenWrt">
+<meta property="article:tag" content="SFP">
+<meta property="article:tag" content="VLAN">
+<meta property="article:tag" content="iStoreOS">
+<meta property="article:tag" content="igmpproxy">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tommy.net.cn/2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/cover.jpg">
+
+
+<link rel="canonical" href="https://tommy.net.cn/2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://tommy.net.cn/2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/","path":"2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/","title":"SFP 猫棒接管运营商光猫，外加 igmpproxy 跑通 IPTV"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>SFP 猫棒接管运营商光猫，外加 igmpproxy 跑通 IPTV | Tommy 的自留地</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-26506304-1"></script>
+  <script class="next-config" data-name="google_analytics" type="application/json">{"tracking_id":"UA-26506304-1","only_pageview":false,"measure_protocol_api_secret":null}</script>
+  <script src="/js/third-party/analytics/google-analytics.js" defer></script>
+
+  <script src="/js/third-party/analytics/baidu-analytics.js" defer></script>
+  <script async src="https://hm.baidu.com/hm.js?738b9697f6ea907ee58ceb6ea0510d67"></script>
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.10.1/mermaid.min.js","integrity":"sha256-BmQmdWDS8X2OTbrwELWK366LV6escyWhHHe0XCTU/Hk="}}</script>
+  <script src="/js/third-party/tags/mermaid.js" defer></script>
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Tommy 的自留地" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Tommy 的自留地</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不以物喜，不以己悲</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li><li class="menu-item menu-item-python"><a href="/python/" rel="section"><i class="fab fa-python fa-fw"></i>Python</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%98%E8%B5%B7"><span class="nav-number">1.</span> <span class="nav-text">缘起</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%8B%93%E6%89%91"><span class="nav-number">2.</span> <span class="nav-text">整体拓扑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SFP-%E5%85%89%E7%8C%AB%E6%A3%92%EF%BC%9A%E9%80%89%E4%BB%80%E4%B9%88%E3%80%81%E6%80%8E%E4%B9%88%E8%BF%9B"><span class="nav-number">3.</span> <span class="nav-text">SFP 光猫棒：选什么、怎么进</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%92%E8%BF%90%E8%90%A5%E5%95%86%E5%8F%82%E6%95%B0%EF%BC%88%E5%85%8B%E9%9A%86%E5%8E%9F%E5%85%89%E7%8C%AB%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">扒运营商参数（克隆原光猫）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MAC-KEY-%E9%87%8D%E7%94%9F%E6%88%90"><span class="nav-number">4.1.</span> <span class="nav-text">MAC_KEY 重生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%83%A7%E5%85%A5-profile"><span class="nav-number">4.2.</span> <span class="nav-text">烧入 profile</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%AF%E7%94%B1%E5%99%A8%E9%85%8D-VLAN%EF%BC%9A%E5%85%88%E6%8A%8A%E5%AE%B9%E6%98%93%E7%9A%84%E6%90%9E%E5%AE%9A"><span class="nav-number">5.</span> <span class="nav-text">路由器配 VLAN：先把容易的搞定</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IPTV%EF%BC%9A%E4%BB%A5%E4%B8%BA%E5%BE%88%E7%AE%80%E5%8D%95%EF%BC%8C%E7%BB%93%E6%9E%9C%E2%80%A6%E2%80%A6"><span class="nav-number">6.</span> <span class="nav-text">IPTV：以为很简单，结果……</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%8F%AA%E9%85%8D-VLAN-48%EF%BC%8C%E5%8F%91%E7%8E%B0%E5%B0%91%E4%BA%86%E7%82%B9%E4%B8%9C%E8%A5%BF"><span class="nav-number">6.1.</span> <span class="nav-text">第一阶段：只配 VLAN 48，发现少了点东西</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%95%E8%BF%87%E7%9A%84%E5%BC%AF%E8%B7%AF%EF%BC%88%E9%81%BF%E5%9D%91%EF%BC%89"><span class="nav-number">6.2.</span> <span class="nav-text">试过的弯路（避坑）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E9%98%B6%E6%AE%B5%EF%BC%9AL2-%E6%A1%A5%E8%B7%A8-VLAN-flood%E2%80%94%E2%80%94%E8%BF%98%E6%98%AF%E4%B8%8D%E8%A1%8C"><span class="nav-number">6.3.</span> <span class="nav-text">第二阶段：L2 桥跨 VLAN flood——还是不行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E9%98%B6%E6%AE%B5%EF%BC%9Aigmpproxy-L3-%E6%96%B9%E6%A1%88"><span class="nav-number">6.4.</span> <span class="nav-text">第三阶段：igmpproxy L3 方案</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%B6%E5%B0%BE%E7%9A%84%E5%9D%91%EF%BC%9Aaltnet-%E4%B8%8D%E8%83%BD%E5%86%99-0-0-0-0-0"><span class="nav-number">6.5.</span> <span class="nav-text">收尾的坑：altnet 不能写 0.0.0.0&#x2F;0</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81"><span class="nav-number">6.6.</span> <span class="nav-text">验证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E5%B1%82%E5%BF%83%E6%B3%95"><span class="nav-number">7.</span> <span class="nav-text">三层心法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number">8.</span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">9.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Tommy Lau"
+      src="/images/Onion_Stone.jpg">
+  <p class="site-author-name" itemprop="name">Tommy Lau</p>
+  <div class="site-description" itemprop="description">不以物喜，不以己悲</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">127</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">458</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/TommyLau" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/TommyLau" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;TommyLau" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://youtube.com/tommylhg" title="YouTube → https:&#x2F;&#x2F;youtube.com&#x2F;tommylhg" rel="noopener me" target="_blank"><i class="fab fa-youtube fa-fw"></i>YouTube</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://hub.docker.com/r/tommylau/" title="DockerHub → https:&#x2F;&#x2F;hub.docker.com&#x2F;r&#x2F;tommylau&#x2F;" rel="noopener me" target="_blank"><i class="fab fa-docker fa-fw"></i>DockerHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="http://magustest.com/" title="http:&#x2F;&#x2F;magustest.com&#x2F;" rel="noopener" target="_blank">进化的测试</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://sl.tommylau.com/" title="https:&#x2F;&#x2F;sl.tommylau.com" rel="noopener" target="_blank">Project Celes</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://tommy.net.cn/2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/Onion_Stone.jpg">
+      <meta itemprop="name" content="Tommy Lau">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tommy 的自留地">
+      <meta itemprop="description" content="不以物喜，不以己悲">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="SFP 猫棒接管运营商光猫，外加 igmpproxy 跑通 IPTV | Tommy 的自留地">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SFP 猫棒接管运营商光猫，外加 igmpproxy 跑通 IPTV
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-05-01 23:49:53" itemprop="dateCreated datePublished" datetime="2026-05-01T23:49:53+08:00">2026-05-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-05-03 00:39:09" itemprop="dateModified" datetime="2026-05-03T00:39:09+08:00">2026-05-03</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/network/" itemprop="url" rel="index"><span itemprop="name">Network</span></a>
+        </span>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>9.4k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>9 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><img src="/2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/cover.jpg"></p>
+<h2 id="缘起"><a href="#缘起" class="headerlink" title="缘起"></a>缘起</h2><p>家里那台中国移动给配的 ZTE F663N 光猫，已经服役 6 年多了。</p>
+<p>这玩意儿当年我就吐槽过——只有 LAN1 一个千兆口、限制 4 个终端、Wi-Fi 还停留在 2.4GHz 802.11n。当时实在受不了，就有了那篇 <a href="/2020/08/10/unpack-and-pack-zte-optical-modem-config-file/">《解包和打包中兴光猫配置文件》</a>，写了个工具把 cfg 解包改桥接，套自己的路由器和 AC Wi-Fi，总算把 100M 跑满了。</p>
+<p>带宽从最早的 50Mbps 一路升到现在的 500Mbps，光猫这台硬件却没换过，一直在原地扛着。年头一长，老化的迹象就藏不住了：莫名其妙断流、PPPoE 重拨不上来、TR-069 后台时不时被推一份「看似为你好」的配置回来、最近半年甚至到了<strong>三五天就得手动重启一次</strong>的程度。修一台疲态尽显的运营商光猫，还要继续替它擦屁股，实在没意思。</p>
+<p>正好赶上换路由器，挑了一台 BeeconMini SEED AC5——MT7987 SoC、2.5G 双 RJ45、自带 SFP 槽、带 PoE 输出。SFP 槽这个配置就很有意思：插一根 SFP 光猫棒，光纤直接进路由器，运营商那台砖头就可以扔抽屉里了。PoE 输出留着以后扩 AP 不用走砖头电源，这条也是加分项。</p>
+<p>顺手再吐槽一句：现在所有运营商的 IPTV 都还在死磕「魔百盒 + 多播 VLAN」这套上古架构。智能电视、Apple TV、安卓盒子早就什么都能装，节目源完全可以做成一个 App，账号鉴权 + DRM 在云端搞定就行——非要塞一个独立硬件 + 多播 VLAN，本质是<strong>业务捆绑、硬件 KPI、加上多一道防盗看的物理壁垒</strong>。这套配下来网络拓扑直接复杂 N 倍，也是为什么大量用户最后还是认栽用回运营商光猫。这篇就把怎么绕开它记一下。</p>
+<span id="more"></span>
+
+<h2 id="整体拓扑"><a href="#整体拓扑" class="headerlink" title="整体拓扑"></a>整体拓扑</h2><pre><code class="mermaid">flowchart TD
+    ISP[ISP 光纤]
+    SFP["HSGQ DFP-34X-2C2<br/>(SFP 光猫棒，烧入运营商克隆 profile)"]
+    AC5["BeeconMini SEED AC5<br/>SFP 槽 + 2×2.5G + PoE"]
+    LAN["br-lan<br/>VLAN 6 untagged"]
+    WAN["pppoe-wan<br/>VLAN 41"]
+    TR069["tr069<br/>VLAN 46, DHCP"]
+    IPTV["br-iptv + iptv_mcast<br/>+ igmpproxy"]
+    AP[AP / 客户端]
+    NET[公网]
+    ACS[运营商 ACS]
+    MBOX["魔百盒<br/>(移动 IPTV)"]
+    TV[电视]
+
+    ISP --> SFP --> AC5
+    AC5 --> LAN --> AP
+    AC5 --> WAN --> NET
+    AC5 --> TR069 --> ACS
+    AC5 --> IPTV --> MBOX --> TV</code></pre>
+
+<h2 id="SFP-光猫棒：选什么、怎么进"><a href="#SFP-光猫棒：选什么、怎么进" class="headerlink" title="SFP 光猫棒：选什么、怎么进"></a>SFP 光猫棒：选什么、怎么进</h2><p><img src="/2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/dfp-34x-2c2.jpg" alt="DFP-34X-2C2 SFP 光猫棒"></p>
+<p>这次用的是 <strong>HSGQ DFP-34X-2C2</strong>，Realtek RTL960x 方案。选它有两个理由：</p>
+<ol>
+<li><strong>能刷 ODI 固件</strong>，telnet 进去用 <code>flash get / flash set</code> 直接读写 boot 参数，比改运营商光猫的固件友好十倍。</li>
+<li>社区资料齐全，OMCI 字段克隆有现成参考。</li>
+</ol>
+<p>猫棒的进入方式：</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Default IP</td>
+<td><code>192.168.1.1</code>（无 DHCP，本机配静态 <code>192.168.1.2</code>）</td>
+</tr>
+<tr>
+<td>默认账号</td>
+<td><code>admin</code> &#x2F; <code>admin</code></td>
+</tr>
+<tr>
+<td>Web UI</td>
+<td><a target="_blank" rel="noopener" href="http://192.168.1.1/">http://192.168.1.1</a></td>
+</tr>
+<tr>
+<td>Telnet</td>
+<td><code>telnet 192.168.1.1</code></td>
+</tr>
+</tbody></table>
+<p>固件用 <a target="_blank" rel="noopener" href="https://github.com/Anime4000/RTL960x">Anime4000&#x2F;RTL960x</a> 仓库里的 ODI 系列。我实际刷的是 <code>M114_sfp_ODI_Vlan_220414.tar</code>（2022-04-14 的 VLAN 构建）。</p>
+<h2 id="扒运营商参数（克隆原光猫）"><a href="#扒运营商参数（克隆原光猫）" class="headerlink" title="扒运营商参数（克隆原光猫）"></a>扒运营商参数（克隆原光猫）</h2><p>要让 OLT 接受这根猫棒，得让它自报家门跟原光猫一模一样。每家运营商的注册逻辑不太一样：</p>
+<ul>
+<li><strong>广东移动</strong>：PLOAM 密码 &#x3D; LOID（ASCII 转 hex）</li>
+<li><strong>上海移动</strong>：取原光猫的 LOID 当 PLOAM 密码（再加 SN 和 VLAN ID）</li>
+</ul>
+<p>需要的字段（下面用 <code>&lt;placeholder&gt;</code> 表示需要替换为实际值）：</p>
+<ul>
+<li><code>GPON_SN</code>（如 <code>CMHIxxxxxxxx</code>，从原光猫超管页或 OMCI 抓出）</li>
+<li><code>GPON_PLOAM_PASSWD</code>（hex 形式，下面会讲怎么算）</li>
+<li><code>ELAN_MAC_ADDR</code>（原光猫 LAN MAC）</li>
+<li><code>OUI</code>（取 MAC 前 3 字节）</li>
+<li>OMCI 相关：<code>HW_CWMP_MANUFACTURER</code>, <code>HW_CWMP_PRODUCTCLASS</code>, <code>HW_HWVER</code>, <code>OMCI_SW_VER1/2</code>, <code>GPON_ONU_MODEL</code>, <code>OMCI_VEIP_SLOT_ID</code>, <code>OMCI_OLT_MODE</code></li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>以下命令里所有具体值都是示例占位</strong>。实际克隆时请用你自己原光猫的真实参数，不要照抄博客里的字符串——那既不会工作，也不该公开。</p>
+</blockquote>
+<p>最关键的一步是 OMCI 字段——OLT 在 OMCI 协商阶段会校验厂商和型号，对不上就拒绝注册。OLT 看的不是光猫外壳上印的型号，而是它在协商里报上来的那一串字段，所以<strong>克隆要从 OMCI 视角抄，不能从用户视角抄</strong>。从原光猫的 <code>ctromfile.cfg</code>（解码后的 OMCI&#x2F;管理配置 XML）能看到 OLT 实际看到的是什么字段，照抄就行。</p>
+<blockquote>
+<p>我家原光猫是 ZTE F663N，但它 OMCI 上 <code>ONU Vendor ID</code> 报的是 <code>MTKc</code>（MediaTek 芯片），<code>ONU Model</code> 是 <code>EPON</code>，<code>ONU Hardware Version</code> 是 <code>PT632V1.0</code>——这些都不能写错。F663N 内部 cfg 怎么解出来的，可以参考我之前那篇 <a href="/2020/08/10/unpack-and-pack-zte-optical-modem-config-file/">解包打包工具</a>。</p>
+</blockquote>
+<h3 id="MAC-KEY-重生成"><a href="#MAC-KEY-重生成" class="headerlink" title="MAC_KEY 重生成"></a>MAC_KEY 重生成</h3><p>HSGQ 固件 V1.0-220304+ 引入了 <code>MAC_KEY</code>，每次改 <code>ELAN_MAC_ADDR</code> 都要重新生成：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> -n <span class="string">&quot;hsgq1.9aMAC_ADDR_UPPERCASE&quot;</span> | <span class="built_in">md5sum</span></span><br><span class="line"><span class="comment"># 例: hsgq1.9aAABBCCDDEEFF → &lt;对应的 32 位 md5&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="烧入-profile"><a href="#烧入-profile" class="headerlink" title="烧入 profile"></a>烧入 profile</h3><p>最后用一组 <code>flash set</code> 把克隆参数刷进去：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">flash <span class="built_in">set</span> PON_VENDOR_ID ZTEG</span><br><span class="line">flash <span class="built_in">set</span> HW_CWMP_MANUFACTURER ZTEG</span><br><span class="line">flash <span class="built_in">set</span> HW_CWMP_PRODUCTCLASS F663N</span><br><span class="line">flash <span class="built_in">set</span> HW_HWVER PT632V1.0</span><br><span class="line">flash <span class="built_in">set</span> OMCI_VEIP_SLOT_ID 255</span><br><span class="line">flash <span class="built_in">set</span> OMCI_OLT_MODE 3</span><br><span class="line">flash <span class="built_in">set</span> OMCI_FAKE_OK 1</span><br><span class="line">flash <span class="built_in">set</span> OMCI_SW_VER1 V1.1.0P1T9</span><br><span class="line">flash <span class="built_in">set</span> OMCI_SW_VER2 V1.1.0P1T9</span><br><span class="line">flash <span class="built_in">set</span> GPON_ONU_MODEL EPON</span><br><span class="line">flash <span class="built_in">set</span> GPON_SN &lt;你的_GPON_SN&gt;</span><br><span class="line">flash <span class="built_in">set</span> GPON_PLOAM_PASSWD &lt;LOID_的_hex&gt;</span><br><span class="line">flash <span class="built_in">set</span> ELAN_MAC_ADDR &lt;原光猫_LAN_MAC&gt;</span><br><span class="line">flash <span class="built_in">set</span> MAC_KEY &lt;md5_of_hsgq1.9a+大写MAC&gt;</span><br><span class="line">flash <span class="built_in">set</span> OUI &lt;MAC前3字节用逗号分隔&gt;</span><br><span class="line">flash <span class="built_in">set</span> HW_SERIAL_NO &lt;原光猫_HW_serial&gt;</span><br><span class="line">reboot</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>⚠️ <strong>PLOAM 错了 ONU 会被拒，可恢复；但 SN 克隆错了可能被运营商风控标记。先在小范围验证再上线。</strong></p>
+<p>另外提一句合规：克隆 SN&#x2F;MAC 是灰色地带，本文记的是自家电路上的折腾过程，不是教你去蹭别人的宽带。运营商真要查，PON 口下挂的设备都是看得见的。</p>
+</blockquote>
+<p>猫棒重启后插回 SFP 槽，OLT 收到注册请求，验证通过会下发 PPPoE&#x2F;IPTV&#x2F;TR-069 的 service profile。</p>
+<h2 id="路由器配-VLAN：先把容易的搞定"><a href="#路由器配-VLAN：先把容易的搞定" class="headerlink" title="路由器配 VLAN：先把容易的搞定"></a>路由器配 VLAN：先把容易的搞定</h2><p><img src="/2026/05/01/sfp-stick-replaces-onu-iptv-via-igmpproxy/seed-ac5.jpg" alt="BeeconMini SEED AC5"></p>
+<p>下游路由器用的是 SEED AC5（iStoreOS，MT7987），SFP 槽里就是上面那根猫棒，所以从猫棒出来的所有 VLAN 都直接落在 <code>eth1</code> 上。需要识别四个 VLAN：</p>
+<table>
+<thead>
+<tr>
+<th>VID</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>41</td>
+<td>互联网（PPPoE 拨号）</td>
+</tr>
+<tr>
+<td>46</td>
+<td>TR-069 管理</td>
+</tr>
+<tr>
+<td>48</td>
+<td>IPTV 单播控制（DHCP &#x2F; 鉴权 &#x2F; EPG &#x2F; 回看 &#x2F; 时移）</td>
+</tr>
+<tr>
+<td>900</td>
+<td>IPTV 多播视频流（直播）</td>
+</tr>
+</tbody></table>
+<p>**互联网 &#x2F; TR-069 这部分是常规操作。**PPPoE 在 OpenWrt 里就是标准配置：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">uci <span class="built_in">set</span> network.wan.proto=<span class="string">&#x27;pppoe&#x27;</span></span><br><span class="line">uci <span class="built_in">set</span> network.wan.device=<span class="string">&#x27;eth1.41&#x27;</span></span><br><span class="line">uci <span class="built_in">set</span> network.wan.username=<span class="string">&#x27;&lt;你的宽带账号&gt;@139.gd&#x27;</span></span><br><span class="line">uci <span class="built_in">set</span> network.wan.password=<span class="string">&#x27;&lt;密码&gt;&#x27;</span></span><br><span class="line">uci commit network</span><br><span class="line">ifup wan</span><br></pre></td></tr></table></figure>
+
+<p>TR-069 类似，DHCP 拿地址但<strong>关掉 default route 和 peer DNS</strong>，避免污染主路由表：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">uci <span class="built_in">set</span> network.tr069.proto=<span class="string">&#x27;dhcp&#x27;</span></span><br><span class="line">uci <span class="built_in">set</span> network.tr069.device=<span class="string">&#x27;eth1.46&#x27;</span></span><br><span class="line">uci <span class="built_in">set</span> network.tr069.defaultroute=<span class="string">&#x27;0&#x27;</span></span><br><span class="line">uci <span class="built_in">set</span> network.tr069.peerdns=<span class="string">&#x27;0&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>到这里互联网部分跑通——PPPoE 拨号、IPv6、CGNAT 全都正常，2.5G 物理口直接打满。</p>
+<p>难的是 IPTV。这才是这篇文章的重头戏。</p>
+<h2 id="IPTV：以为很简单，结果……"><a href="#IPTV：以为很简单，结果……" class="headerlink" title="IPTV：以为很简单，结果……"></a>IPTV：以为很简单，结果……</h2><p>家里有长辈，他们不像年轻人都看网络点播，习惯坐沙发上看电视直播——这也是为什么必须把 IPTV 跑通，不能「算了用网络版凑合」。</p>
+<p>最初看这事是真不当回事的。原来那台 F663N 光猫上有一个独立的 IPTV LAN 口，运营商出厂时就把对应的 VLAN、PPPoE&#x2F;IPoE、组播参数都在光猫内部配好了，魔百盒直接插那个口就能开机看直播，<strong>用户根本不需要知道 VLAN 48、VLAN 900 这些东西的存在</strong>。所以我换猫棒的时候很自然地想：那不就是把这一个口的逻辑挪到自己路由器上吗？给机顶盒拉一个 VLAN，配下 DHCP，应该半小时搞完。</p>
+<p>结果整整折腾了一天。</p>
+<h3 id="第一阶段：只配-VLAN-48，发现少了点东西"><a href="#第一阶段：只配-VLAN-48，发现少了点东西" class="headerlink" title="第一阶段：只配 VLAN 48，发现少了点东西"></a>第一阶段：只配 VLAN 48，发现少了点东西</h3><p>最初的想法很朴素：VLAN 48 是单播控制，VLAN 900 是多播视频，先把 VLAN 48 弄通看看魔百盒能不能开机。</p>
+<p>把 <code>eth1.48</code> 起一个接口、放一个 br-iptv、给魔百盒一个 DHCP——很顺利就跑起来了：</p>
+<ul>
+<li>✅ 魔百盒能开机、能登录、能鉴权</li>
+<li>✅ 频道列表、EPG 正常加载</li>
+<li>✅ <strong>回看正常、时移正常</strong>（这俩走 HTTP 单播，VLAN 48 就够了）</li>
+<li>❌ <strong>直播没画面</strong></li>
+</ul>
+<p>奇了怪了，回看都能看，怎么直播反而不行？看了一下才反应过来：直播走的是组播，封装在 VLAN 900 里，单纯把 VLAN 48 通了根本没把直播流喂下来。</p>
+<h3 id="试过的弯路（避坑）"><a href="#试过的弯路（避坑）" class="headerlink" title="试过的弯路（避坑）"></a>试过的弯路（避坑）</h3><p>在搞清楚要上 igmpproxy 之前，我先试了两条看起来更省事的路子，都不通，记下来给后人避坑：</p>
+<p><strong>弯路 A：VLAN 48 + VLAN 900 都做 untagged 扔同一个桥</strong></p>
+<p>直觉上是把所有 IPTV 流量都堆给魔百盒，让它自己处理。结果魔百盒同时从 VLAN 48 和 VLAN 900 收到 DHCP 响应，<strong>拿到两个 IP</strong>，状态机直接卡住——注册不上 IPTV 平台。</p>
+<p><strong>弯路 B：在 AC5 的交换芯片上把 LAN6 配两个 untagged VLAN</strong></p>
+<p>打算让交换机硬件层面就把两个 VLAN 都送到魔百盒口。结果发现 <strong>AC5 的 eth1 交换芯片不支持同一个端口配置两个 untagged VLAN</strong>——这是硬件限制，VLAN ingress 表里一个 port 只能落到一个 PVID。换句话说，想「魔百盒口同时收 VLAN 48 和 VLAN 900 的 untagged 帧」在 MT7987 这套交换芯片上根本配不出来。</p>
+<p>走完这两条死路之后才确认：<strong>多播必须在路由器上做 L3 处理，不能指望硬件 L2 解决。</strong></p>
+<h3 id="第二阶段：L2-桥跨-VLAN-flood——还是不行"><a href="#第二阶段：L2-桥跨-VLAN-flood——还是不行" class="headerlink" title="第二阶段：L2 桥跨 VLAN flood——还是不行"></a>第二阶段：L2 桥跨 VLAN flood——还是不行</h3><p>下一个直觉：把 <code>eth1.48</code>（控制 VLAN）和 <code>eth1.900</code>（多播 VLAN）扔进同一个 bridge <code>br-iptv</code>，开 IGMP snooping，让多播在桥里 flood 给魔百盒——这跟原 F663N 内部 IGMP-Proxy 的逻辑大致是一样的。</p>
+<p>这套在 MT7987 上<strong>根本不工作</strong>。魔百盒能拿单播 IP，能登录，但选频道之后还是没画面。</p>
+<p>抓包发现：</p>
+<ul>
+<li><code>eth1.900 RX</code> 哗哗地涌进多播包（一个频道几百 kB&#x2F;s）</li>
+<li><code>eth1.48 TX</code> 几乎纹丝不动</li>
+<li><code>bridge mdb show dev br-iptv</code> 全空——即使魔百盒在发合法的 IGMP v2 report</li>
+</ul>
+<p>三个原因，每个都能让你怀疑人生：</p>
+<ol>
+<li><p><strong>MTK PPE &#x2F; hwnat 在劫持流量</strong>。iStoreOS 默认 <code>flow_offloading_hw=1</code>，硬件加速会在 Linux bridge 之前就把多播包消化掉。即便 <code>multicast_snooping=0</code> 让桥强制 flood，硬件这层也拦着不放。</p>
+</li>
+<li><p><strong>桥的 IGMP snooping <code>mdb</code> 表始终空的</strong>。桥本身没 IP，querier 源 IP 是 <code>0.0.0.0</code>，snooping 模块在这种状态下不会正确学习魔百盒的 join report。</p>
+</li>
+<li><p><strong>同 trunk 的 split-horizon</strong>：魔百盒和 carrier 都通过同一根物理 eth1 走 VLAN 48 上来，Linux bridge 默认不会把流量送回入口端口（除非开 hairpin），所以即便桥成功转发，魔百盒也收不到 carrier 的回包。</p>
+</li>
+</ol>
+<p>结论：<strong>这套必须上 L3，让内核多播路由（MFC）来干这事，绕开桥和硬件加速</strong>。</p>
+<h3 id="第三阶段：igmpproxy-L3-方案"><a href="#第三阶段：igmpproxy-L3-方案" class="headerlink" title="第三阶段：igmpproxy L3 方案"></a>第三阶段：igmpproxy L3 方案</h3><p>整体思路：</p>
+<pre><code class="mermaid">flowchart TD
+    MBOX["魔百盒<br/>(VLAN 48 untagged, 接交换机 LAN6)"]
+    BR["br-iptv<br/>192.168.99.1/30, 仅含 eth1.48<br/>(downstream)"]
+    PROXY(["igmpproxy<br/>(kernel MFC)"])
+    UP["eth1.900<br/>10.0.0.2/24, 独立 L3 接口<br/>(upstream)"]
+    CARRIER[Carrier 多播头端]
+
+    MBOX --> BR
+    BR --> PROXY
+    PROXY --> UP
+    UP --> CARRIER</code></pre>
+
+<p><code>/etc/config/network</code> 关键部分：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># br-iptv 只放魔百盒这一侧</span><br><span class="line">config device</span><br><span class="line">    option name &#x27;br-iptv&#x27;</span><br><span class="line">    option type &#x27;bridge&#x27;</span><br><span class="line">    list ports &#x27;eth1.48&#x27;</span><br><span class="line">    option igmp_snooping &#x27;1&#x27;</span><br><span class="line">    option multicast_querier &#x27;0&#x27;   # 让 igmpproxy 当 querier</span><br><span class="line"></span><br><span class="line">config interface &#x27;iptv&#x27;</span><br><span class="line">    option proto &#x27;static&#x27;</span><br><span class="line">    option device &#x27;br-iptv&#x27;</span><br><span class="line">    option ipaddr &#x27;192.168.99.1&#x27;</span><br><span class="line">    option netmask &#x27;255.255.255.252&#x27;</span><br><span class="line">    option defaultroute &#x27;0&#x27;</span><br><span class="line"></span><br><span class="line"># eth1.900 独立做 upstream</span><br><span class="line">config interface &#x27;iptv_mcast&#x27;</span><br><span class="line">    option proto &#x27;static&#x27;</span><br><span class="line">    option device &#x27;eth1.900&#x27;</span><br><span class="line">    option ipaddr &#x27;10.0.0.2&#x27;</span><br><span class="line">    option netmask &#x27;255.255.255.0&#x27;</span><br><span class="line">    option defaultroute &#x27;0&#x27;</span><br><span class="line">    option peerdns &#x27;0&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>防火墙加一个区让两边互通：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">config zone</span><br><span class="line">    option name &#x27;iptv&#x27;</span><br><span class="line">    option input &#x27;ACCEPT&#x27;</span><br><span class="line">    option output &#x27;ACCEPT&#x27;</span><br><span class="line">    option forward &#x27;ACCEPT&#x27;</span><br><span class="line">    list network &#x27;iptv&#x27;</span><br><span class="line">    list network &#x27;iptv_mcast&#x27;</span><br></pre></td></tr></table></figure>
+
+<p><strong>最重要：硬件 flow offload 必须关掉</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uci set firewall.@defaults[0].flow_offloading_hw=&#x27;0&#x27;</span><br><span class="line">uci set firewall.@defaults[0].flow_offloading=&#x27;1&#x27;      # 软件 offload 留着</span><br></pre></td></tr></table></figure>
+
+<p><code>/etc/config/igmpproxy</code>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">config igmpproxy</span><br><span class="line">    option quickleave 1</span><br><span class="line"></span><br><span class="line">config phyint iptv_mcast</span><br><span class="line">    option network &#x27;iptv_mcast&#x27;</span><br><span class="line">    option direction &#x27;upstream&#x27;</span><br><span class="line">    list altnet &#x27;183.235.0.0/16&#x27;</span><br><span class="line"></span><br><span class="line">config phyint iptv</span><br><span class="line">    option network &#x27;iptv&#x27;</span><br><span class="line">    option direction &#x27;downstream&#x27;</span><br><span class="line">    list altnet &#x27;100.64.0.0/10&#x27;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/etc/init.d/igmpproxy <span class="built_in">enable</span></span><br><span class="line">/etc/init.d/igmpproxy restart</span><br></pre></td></tr></table></figure>
+
+<h3 id="收尾的坑：altnet-不能写-0-0-0-0-0"><a href="#收尾的坑：altnet-不能写-0-0-0-0-0" class="headerlink" title="收尾的坑：altnet 不能写 0.0.0.0/0"></a>收尾的坑：<code>altnet</code> 不能写 <code>0.0.0.0/0</code></h3><p>第一遍配的时候我图省事在 upstream 和 downstream 两边都写了 <code>altnet 0.0.0.0/0</code>，<code>igmpproxy</code> 死活不工作，日志一直在刷：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">warn igmpproxy: No interfaces found <span class="keyword">for</span> <span class="selector-tag">source</span> <span class="number">100.98</span><span class="selector-class">.x</span>.<span class="attribute">y</span></span><br></pre></td></tr></table></figure>
+
+<p><code>ip mroute show</code> 永远是 <code>Iif: unresolved</code>。</p>
+<p>原因在 <code>igmpproxy 0.4</code> 的 <code>getIfByAddress()</code> 实现：它用<strong>最长前缀匹配</strong>来决定 IGMP 报文是从哪个 phyint 进来的。两边都是 <code>0.0.0.0/0</code>（mask &#x3D; 0），两个接口都「匹配」但优先级一致，函数返回 NULL，IGMP 报文直接被拒收。</p>
+<p>修法是给两边各自一个<strong>能区分来源 IP 的具体段</strong>：</p>
+<ul>
+<li>upstream <code>eth1.900</code>：<code>altnet 183.235.0.0/16</code> —— carrier 多播头端的源段（用 <code>tcpdump -i eth1.900 -nn &#39;multicast&#39;</code> 实测确认）</li>
+<li>downstream <code>iptv</code> (br-iptv)：<code>altnet 100.64.0.0/10</code> —— 运营商 CGNAT 大段（实测魔百盒拿到的就是 <code>100.98.x.x</code> 之类的 IP，全在这段里）</li>
+</ul>
+<p>改完重启 <code>igmpproxy</code>，立即就工作了。</p>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 内核 MFC 已建立路由</span></span><br><span class="line">$ ip mroute show</span><br><span class="line">(183.235.0.17,239.10.0.114)  Iif: eth1.900  Oifs: br-iptv  State: resolved</span><br><span class="line"></span><br><span class="line"><span class="comment"># br-iptv 出口数据流飙升（一个 HD 频道大约 3-4 MB / 12s）</span></span><br><span class="line">$ ip -s <span class="built_in">link</span> show br-iptv | grep -A1 TX</span><br><span class="line">TX:  bytes  packets ...</span><br><span class="line">     3418950   2589</span><br><span class="line"></span><br><span class="line"><span class="comment"># 魔百盒 IGMP join 在 eth1.48 入口可见</span></span><br><span class="line">$ tcpdump -i eth1.48 -nn -e <span class="string">&#x27;igmp&#x27;</span></span><br><span class="line">&lt;MBOX-MAC&gt; &gt; 01:00:5e:0b:00:44, vlan 48, p 0,</span><br><span class="line">  &lt;MBOX-IP&gt; &gt; 239.11.0.68: igmp v2 report 239.11.0.68</span><br></pre></td></tr></table></figure>
+
+<p>电视画面瞬间出来，遥控切台也丝滑。</p>
+<h2 id="三层心法"><a href="#三层心法" class="headerlink" title="三层心法"></a>三层心法</h2><p>把这件事拆成三个层次记住：</p>
+<ol>
+<li><p><strong>运营商 PON 鉴权 &#x3D; 克隆 OMCI 字段</strong>。SN &#x2F; PLOAM 是公开的克隆要点，OMCI 那一堆 <code>HW_CWMP_*</code>、<code>OMCI_SW_VER*</code>、<code>GPON_ONU_MODEL</code> 才是 OLT 真正用来识别「你是不是合法设备」的地方。</p>
+</li>
+<li><p><strong>PPPoE &#x2F; TR-069 &#x2F; IPTV 单播 &#x3D; L2 透传就行</strong>。VLAN 41&#x2F;46&#x2F;48 在 OpenWrt 上当成普通 8021q sub-interface 处理，连标准 NAT&#x2F;DHCP 流程都能跑。<strong>注意 IPTV 的回看和时移都走单播 HTTP，只配 VLAN 48 就够；唯独直播是多播，必须额外处理 VLAN 900。</strong></p>
+</li>
+<li><p><strong>多播 IPTV ≠ L2 转发</strong>。在 MT7987 这类带 PPE 硬件加速的平台上，L2 桥跨 VLAN flood 多播是不工作的。<strong>正解是 L3：igmpproxy + 关 hwnat + altnet 写具体段</strong>。</p>
+</li>
+</ol>
+<p>附带踩出来的几条经验：</p>
+<ul>
+<li><code>getIfByAddress</code> 的最长前缀匹配会让 <code>0.0.0.0/0</code> 成为陷阱，写 altnet 一定要用能区分来源的具体段。</li>
+<li><code>flow_offloading_hw</code> 默认开但<strong>对多播路由有害</strong>，软件 flow offload (<code>flow_offloading=1</code>) 是安全的——这个组合是 MT7987 这一代 SoC 上多播工作的硬条件。</li>
+<li><code>multicast_querier=1</code> 在桥没 IP 的情况下源会变成 <code>0.0.0.0</code>，许多机顶盒和 snooping 模块对这种 query 处理有问题——交给 igmpproxy 做 querier 反而更可靠。</li>
+<li>别试图在交换芯片上让一个端口同时 untagged 两个 VLAN，至少 MT7987 这套硬件不支持。</li>
+</ul>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>跑了一段时间，记录一下实际效果：</p>
+<ul>
+<li>那台 ZTE F663N 已经收进抽屉吃灰，光纤直接进 AC5 的 SFP 槽。</li>
+<li>PPPoE 的 500M 带宽轻轻松松跑满，2.5G 内网也能稳定 280MB&#x2F;s+。</li>
+<li>直播 4K 频道流畅、回看时移都正常，<strong>切台没感觉跟原来有什么不同</strong>——这条最关键，验收通过。</li>
+<li>不再需要每隔几天去重启那台砖头光猫，省心。</li>
+</ul>
+<p>回头看，这次折腾的本质是<strong>把光猫这个最后的「运营商飞地」也收进自己的网络管理体系里</strong>。六年前那次解 cfg 改桥接是软改，治标；这次直接把硬件也换掉，治本。下一步可能是 PoE 那条 LAN 出去带个吸顶 AP，全屋 Wi-Fi 6E 也升一升，不过那是另一篇文章了。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li>HSGQ DFP-34X-2C2 猫棒文档：<a target="_blank" rel="noopener" href="https://hack-gpon.org/ont-odi-realtek-dfp-34g-2c2/">hack-gpon.org&#x2F;ont-odi-realtek-dfp-34g-2c2&#x2F;</a></li>
+<li>ODI 固件：<a target="_blank" rel="noopener" href="https://github.com/Anime4000/RTL960x">github.com&#x2F;Anime4000&#x2F;RTL960x</a></li>
+<li>ZTE OMCI 克隆参考：<a target="_blank" rel="noopener" href="https://github.com/Septrum101/zteOnu">github.com&#x2F;Septrum101&#x2F;zteOnu</a></li>
+<li><code>igmpproxy</code> 源码：<a target="_blank" rel="noopener" href="https://github.com/pali/igmpproxy">github.com&#x2F;pali&#x2F;igmpproxy</a></li>
+<li>OpenWrt IGMP&#x2F;Multicast 文档：<a target="_blank" rel="noopener" href="https://openwrt.org/docs/guide-user/network/wan/multicast">openwrt.org&#x2F;docs&#x2F;guide-user&#x2F;network&#x2F;wan&#x2F;multicast</a></li>
+<li>我之前那篇：<a href="/2020/08/10/unpack-and-pack-zte-optical-modem-config-file/">《解包和打包中兴光猫配置文件》</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="reward-container">
+  <div>请我一杯咖啡吧！</div>
+  <button>
+    赞赏
+  </button>
+  <div class="post-reward">
+      <div>
+        <img src="/images/wechatpay.jpg" alt="Tommy Lau 微信">
+        <span>微信</span>
+      </div>
+      <div>
+        <img src="/images/alipay.jpg" alt="Tommy Lau 支付宝">
+        <span>支付宝</span>
+      </div>
+
+  </div>
+</div>
+
+          <div class="followme">
+  <span>欢迎关注我的其它发布渠道</span>
+
+  <div class="social-list">
+
+      <div class="social-item">
+          <span class="social-link">
+            <span class="icon">
+              <i class="fab fa-weixin"></i>
+            </span>
+
+            <span class="label">WeChat</span>
+          </span>
+
+          <img class="social-item-img" src="/images/wechat_channel.jpg">
+      </div>
+  </div>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/openwrt/" rel="tag"># OpenWrt</a>
+              <a href="/tags/china-mobile/" rel="tag"># China Mobile</a>
+              <a href="/tags/cmcc/" rel="tag"># CMCC</a>
+              <a href="/tags/onu/" rel="tag"># ONU</a>
+              <a href="/tags/sfp/" rel="tag"># SFP</a>
+              <a href="/tags/hsgq/" rel="tag"># HSGQ</a>
+              <a href="/tags/odi/" rel="tag"># ODI</a>
+              <a href="/tags/gpon/" rel="tag"># GPON</a>
+              <a href="/tags/istoreos/" rel="tag"># iStoreOS</a>
+              <a href="/tags/iptv/" rel="tag"># IPTV</a>
+              <a href="/tags/igmp/" rel="tag"># IGMP</a>
+              <a href="/tags/igmpproxy/" rel="tag"># igmpproxy</a>
+              <a href="/tags/mediatek/" rel="tag"># MediaTek</a>
+              <a href="/tags/mt7987/" rel="tag"># MT7987</a>
+              <a href="/tags/vlan/" rel="tag"># VLAN</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/01/28/clawdbot-experience/" rel="prev" title="Clawdbot 使用体验：当 AI 成为你的「贾维斯」">
+                  <i class="fa fa-angle-left"></i> Clawdbot 使用体验：当 AI 成为你的「贾维斯」
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/05/03/atlassian-dc-with-authentik/" rel="next" title="Authentik 接管 Atlassian Data Center 全家桶">
+                  Authentik 接管 Atlassian Data Center 全家桶 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    
+  <div class="comments" id="disqus_thread">
+    <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+  </div>
+  
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2014 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Tommy Lau</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">362k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">5:29</span>
+  </span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script class="next-config" data-name="disqus" type="application/json">{"enable":true,"shortname":"tommylau","count":true,"i18n":{"disqus":"disqus"}}</script>
+<script src="/js/third-party/comments/disqus.js" defer></script>
+
+</body>
+</html>
